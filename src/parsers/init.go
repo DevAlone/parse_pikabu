@@ -1,0 +1,73 @@
+package parsers
+
+import (
+	. "config"
+	"local/pikago"
+	"logging"
+	"time"
+)
+
+func Run() {
+	parseForwardClient, err := pikago.NewClient()
+	parseForwardClient.SetTimeout(Settings.ParserParseForwardClientTimeout)
+	parseForwardClient.NumberOfRequestTries = 128
+	parseForwardClient.ChangeProxyOnNthBadTry = 5
+
+	if err != nil {
+		panic(err)
+	}
+	parseForwardClient.Debug = Settings.Debug
+	proxyProvider, err := pikago.GetProxyPyProxyProvider(Settings.ProxyProviderBaseURL, Settings.ProxyProviderClientTimeout)
+	if err != nil {
+		panic(err)
+	}
+	proxyProvider.ProxiesPerRequest = 64
+
+	parseForwardClient.ProxyProvider = proxyProvider
+	proxyProvider.Log = logging.Log
+
+	err = parseForwardClient.OpenStateFromFile(".db.user.state")
+	if err != nil {
+		logging.Log.Info("error opening state, let's try to login")
+		err = parseForwardClient.Login(
+			Settings.ParserParseForwardClientUsername,
+			Settings.ParserParseForwardClientPassword,
+		)
+		if err != nil {
+			panic(err)
+		}
+		err = parseForwardClient.SaveStateToFile(".db.user.state")
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	if err := parseForwardClient.SaveStateToFile(".db.user.state"); err != nil {
+		panic(err)
+	}
+
+	for true {
+		processError := func(err error) {
+			if err == nil {
+				return
+			}
+			logging.Log.Error("main: ", err)
+
+			if Settings.Debug {
+				panic(err)
+			}
+
+			time.Sleep(time.Duration(Settings.ParserParseForwardSleepOnErrorTime) * time.Second)
+		}
+
+		processError(
+			ParseCommentsForward(parseForwardClient),
+		)
+
+		processError(
+			parseForwardClient.SaveStateToFile(".db.user.state"),
+		)
+
+		time.Sleep(time.Duration(Settings.ParserParseForwardSleepTime) * time.Second)
+	}
+}

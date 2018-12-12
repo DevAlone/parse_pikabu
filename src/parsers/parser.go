@@ -1,0 +1,127 @@
+package parsers
+
+import (
+	. "config"
+	"errors"
+	"local/pikago"
+	"strconv"
+)
+
+func ParseCommentsForward(c *pikago.Client) error {
+	lastId, err := GetLastId(c)
+	if err != nil {
+		return err
+	}
+
+	if err := ProcessSavedComments(c, nil); err != nil {
+		return err
+	}
+
+	// save some comments
+	tasksCount := Settings.ParserParseForwardCommentsAtTime
+	tasks := make(chan error)
+
+	for i := 0; i < tasksCount; i++ {
+		go func(n uint64) {
+			err := c.CommentSave(lastId + n)
+			tasks <- err
+		}(uint64(i))
+	}
+
+	for i := 0; i < tasksCount; i++ {
+		err := <-tasks
+		if err != nil {
+			return err
+		}
+	}
+
+	if err := ProcessSavedComments(c, &lastId); err != nil {
+		return err
+	}
+
+	err = SetLastId(lastId+1, c)
+	return err
+}
+
+func ProcessSavedComments(c *pikago.Client, maxId *uint64) error {
+	result, err := c.SavedCommentsGet(0)
+
+	if err != nil {
+		return err
+	}
+
+	if len(result.Data) == 0 {
+		return nil
+	}
+
+	tasksCount := len(result.Data)
+	tasks := make(chan error)
+
+	for _, _savedComment := range result.Data {
+		go func(savedComment pikago.SavedComment) {
+			if savedComment.Comment == nil {
+				tasks <- errors.New("savedComment.Comment == nil")
+			}
+			if err := ProcessSavedComment(savedComment.Comment, c); err != nil {
+				tasks <- err
+			}
+			if savedComment.ParentComment != nil {
+				if err := ProcessSavedComment(savedComment.ParentComment, c); err != nil {
+					tasks <- err
+				}
+			}
+			// unsave
+			currentCommentId := savedComment.Comment.Id
+			if err := c.CommentUnsave(currentCommentId); err != nil {
+				tasks <- err
+			}
+			if maxId != nil && currentCommentId > *maxId {
+				*maxId = currentCommentId
+			}
+			tasks <- nil
+		}(_savedComment)
+	}
+
+	for i := 0; i < tasksCount; i++ {
+		err := <-tasks
+		if err != nil {
+			return err
+		}
+	}
+
+	return ProcessSavedComments(c, maxId)
+}
+
+func ProcessSavedComment(comment *pikago.Comment, c *pikago.Client) error {
+	return SaveParsedComment(comment)
+}
+
+func GetLastId(c *pikago.Client) (uint64, error) {
+	var appData map[string]interface{}
+
+	if c.AppData == nil {
+		c.AppData = make(map[string]interface{})
+	}
+
+	appData = c.AppData.(map[string]interface{})
+
+	if id, ok := appData["parser/comments/last_id"]; ok {
+		floatId, err := strconv.ParseFloat(id.(string), 64)
+		if err != nil {
+			return 0, err
+		}
+		return uint64(floatId), nil
+	} else {
+		appData["parser/comments/last_id"] = strconv.FormatInt(1, 10)
+		return 1, nil
+	}
+}
+
+func SetLastId(id uint64, c *pikago.Client) error {
+	_, err := GetLastId(c)
+	if err != nil {
+		return err
+	}
+	c.AppData.(map[string]interface{})["parser/comments/last_id"] = strconv.FormatUint(id, 10)
+	return nil
+}

@@ -1,0 +1,385 @@
+package parsers
+
+import (
+	"github.com/go-pg/pg"
+	"github.com/sergi/go-diff/diffmatchpatch"
+
+	"errors"
+	"fmt"
+	"local/pikago"
+	"logging"
+	. "models"
+	"reflect"
+	"strings"
+	"sync"
+	"time"
+)
+
+var mutexSaveParsedComment = &sync.Mutex{}
+
+func SaveParsedComment(comment *pikago.Comment) error {
+	parsingTimestamp, err := checkYear2038(time.Now().Unix())
+	if err != nil {
+		return err
+	}
+	//return nil
+
+	if len(comment.Content.Text) == 0 && len(comment.Content.Images) == 0 {
+		return errors.New(fmt.Sprint("empty comment with id ", comment.Id, " from story ", comment.StoryId))
+	}
+
+	// TODO: block only with the same id
+	mutexSaveParsedComment.Lock()
+	defer mutexSaveParsedComment.Unlock()
+
+	tx, err := Db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	dbComment := &Comment{Id: comment.Id}
+	err = tx.Select(dbComment)
+
+	if err == pg.ErrNoRows {
+		if err := createNewAndSave(comment, parsingTimestamp, tx); err != nil {
+			return err
+		}
+	} else if err == nil {
+		if err := createVersionAndSave(dbComment, comment, parsingTimestamp, tx); err != nil {
+			return err
+		}
+	} else {
+		return errors.New(fmt.Sprint("SaveParsedComment():", err))
+	}
+
+	txErr := tx.Commit()
+
+	return txErr
+}
+
+func createCommentIdsVersion(comment *pikago.Comment, parsingTimestamp int32, tx *pg.Tx) (*CommentImagesVersion, error) {
+	imageIdsSet := map[uint64]bool{}
+
+	for _, image := range comment.Content.Images {
+		var width int32 = 0
+		var height int32 = 0
+
+		if image.ImageSize != nil {
+			if len(image.ImageSize) != 2 {
+				return nil, errors.New(fmt.Sprint(
+					"bad image size: ", image.ImageSize,
+					"from comment with id", comment.Id, " from story ", comment.StoryId))
+			}
+			width = image.ImageSize[0]
+			height = image.ImageSize[1]
+		}
+
+		animationBaseURL := ""
+		animationPreviewURL := ""
+		animationFormats := map[string]int{}
+		if image.Animation != nil {
+			animationBaseURL = image.Animation.BaseURL
+			animationPreviewURL = image.Animation.PreviewURL
+			animationFormats = image.Animation.Formats
+		}
+
+		dbImage := &Image{
+			SmallURL:            strings.TrimSpace(image.SmallURL),
+			LargeURL:            strings.TrimSpace(image.LargeURL),
+			AnimationBaseURL:    strings.TrimSpace(animationBaseURL),
+			AnimationPreviewURL: strings.TrimSpace(animationPreviewURL),
+			AnimationFormats:    animationFormats,
+			Width:               width,
+			Height:              height,
+		}
+		_, err := tx.Model(dbImage).
+			Where("small_url = ?small_url and large_url = ?large_url and animation_base_url = ?animation_base_url and animation_preview_url = ?animation_preview_url").
+			Returning("id").
+			SelectOrInsert()
+		if err != nil {
+			return nil, err
+		}
+		imageIdsSet[dbImage.Id] = true
+	}
+	imageIds := []uint64{}
+	for key, _ := range imageIdsSet {
+		imageIds = append(imageIds, key)
+	}
+	return &CommentImagesVersion{
+		ParsingTimestamp: parsingTimestamp,
+		CommentId:        comment.Id,
+		ImageIds:         imageIds,
+	}, nil
+}
+
+func createNewAndSave(comment *pikago.Comment, parsingTimestamp int32, tx *pg.Tx) error {
+	creationTimestamp, err := checkYear2038(comment.CreatedAtTimestamp)
+	if err != nil {
+		return err
+	}
+
+	if len(comment.Content.Text) == 0 && len(comment.Content.Images) == 0 {
+		logging.Log.Error(fmt.Sprint("Empty comment with id ", comment.Id, " from story ", comment.StoryId))
+	}
+
+	dbComment := &Comment{
+		Id:                         comment.Id,
+		ParentId:                   comment.ParentId,
+		CreationTimestamp:          creationTimestamp,
+		FirstParsingTimestamp:      parsingTimestamp,
+		LastParsingTimestamp:       parsingTimestamp,
+		Rating:                     comment.Rating,
+		StoryId:                    comment.StoryId,
+		UserId:                     comment.AuthorId,
+		AuthorUsername:             comment.AuthorUsername,
+		IsHidden:                   comment.IsHidden,
+		IsDeleted:                  comment.IsDeleted,
+		IsAuthorCommunityModerator: comment.IsAuthorCommunityModerator,
+		IsAuthorPikabuTeam:         comment.IsAuthorPikabuTeam,
+		Text:                       strings.TrimSpace(comment.Content.Text),
+	}
+	err = tx.Insert(dbComment)
+	if err != nil {
+		return err
+	}
+
+	dbCommentImagesVersion, err := createCommentIdsVersion(comment, parsingTimestamp, tx)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Model(dbCommentImagesVersion).Insert()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func createVersionAndSave(dbComment *Comment, comment *pikago.Comment, parsingTimestamp int32, tx *pg.Tx) error {
+	// compare fields
+	if err := processSimpleFields(dbComment, comment, parsingTimestamp, tx); err != nil {
+		return err
+	}
+
+	// compare images
+	if err := processImages(dbComment, comment, parsingTimestamp, tx); err != nil {
+		return err
+	}
+
+	// compare text
+	if err := processText(dbComment, comment, parsingTimestamp, tx); err != nil {
+		return err
+	}
+
+	// save model
+	dbComment.LastParsingTimestamp = parsingTimestamp
+	if _, err := tx.Model(dbComment).Where("id = ?id").Update(); err != nil {
+		return err
+	}
+
+	return nil
+}
+func processText(dbComment *Comment, comment *pikago.Comment, parsingTimestamp int32, tx *pg.Tx) error {
+	text1 := dbComment.Text
+	text2 := strings.TrimSpace(comment.Content.Text)
+
+	if text1 == text2 {
+		return nil
+	}
+
+	// second to first
+	dmp := diffmatchpatch.New()
+	diffs := dmp.DiffMain(text2, text1, false)
+	delta := dmp.DiffToDelta(diffs)
+
+	commentTextVersion := &CommentTextVersion{
+		CommentId: dbComment.Id,
+		Timestamp: dbComment.LastParsingTimestamp,
+		Diffs:     delta,
+	}
+
+	if _, err := tx.Model(commentTextVersion).Insert(); err != nil {
+		return err
+	}
+
+	dbComment.Text = text2
+
+	return nil
+}
+func processImages(dbComment *Comment, comment *pikago.Comment, parsingTimestamp int32, tx *pg.Tx) error {
+	commentImagesVersion := &CommentImagesVersion{}
+	err := tx.Model(commentImagesVersion).
+		Where("comment_id = ?", dbComment.Id).
+		Order("parsing_timestamp DESC").
+		Limit(1).
+		Select()
+
+	if err == pg.ErrNoRows {
+		dbCommentImagesVersion, err := createCommentIdsVersion(comment, parsingTimestamp, tx)
+		if err != nil {
+			return err
+		}
+		_, err = tx.Model(dbCommentImagesVersion).Insert()
+		if err != nil {
+			return err
+		}
+	} else if err == nil {
+		// do update
+		newCommentImagesVersion, err := createCommentIdsVersion(comment, parsingTimestamp, tx)
+		if err != nil {
+			return err
+		}
+		if !areCommentImagesEqual(commentImagesVersion, newCommentImagesVersion) {
+			_, err = tx.Model(newCommentImagesVersion).Insert()
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		return err
+	}
+
+	return nil
+}
+func areCommentImagesEqual(images1, images2 *CommentImagesVersion) bool {
+	set1 := make(map[uint64]bool)
+	set2 := make(map[uint64]bool)
+
+	for _, id := range images1.ImageIds {
+		set1[id] = true
+	}
+	for _, id := range images2.ImageIds {
+		set2[id] = true
+	}
+
+	return reflect.DeepEqual(set1, set2)
+}
+
+func processSimpleFields(dbComment *Comment, comment *pikago.Comment, parsingTimestamp int32, tx *pg.Tx) error {
+	// TODO: refactor this shit
+
+	if dbComment.ParentId != comment.ParentId {
+		obj := &CommentParentIdVersion{}
+		obj.Value = dbComment.ParentId
+		obj.Timestamp = dbComment.LastParsingTimestamp
+		obj.ItemId = comment.Id
+		if _, err := tx.Model(obj).OnConflict("DO NOTHING").Insert(); err != nil {
+			return err
+		}
+		dbComment.ParentId = comment.ParentId
+	}
+
+	createdAtTimestamp, err := checkYear2038(comment.CreatedAtTimestamp)
+	if err != nil {
+		return err
+	}
+	if dbComment.CreationTimestamp != createdAtTimestamp {
+		obj := &CommentCreatingTimestampVersion{}
+		obj.Value = dbComment.CreationTimestamp
+		obj.Timestamp = dbComment.LastParsingTimestamp
+		obj.ItemId = comment.Id
+		if _, err := tx.Model(obj).OnConflict("DO NOTHING").Insert(); err != nil {
+			return err
+		}
+		dbComment.CreationTimestamp = createdAtTimestamp
+	}
+
+	// TODO: pluses and minuses
+	if dbComment.Rating != comment.Rating {
+		obj := &CommentRatingVersion{}
+		obj.Value = dbComment.Rating
+		obj.Timestamp = dbComment.LastParsingTimestamp
+		obj.ItemId = comment.Id
+		if _, err := tx.Model(obj).OnConflict("DO NOTHING").Insert(); err != nil {
+			return err
+		}
+		dbComment.Rating = comment.Rating
+	}
+
+	if dbComment.StoryId != comment.StoryId {
+		obj := &CommentStoryIdVersion{}
+		obj.Value = dbComment.StoryId
+		obj.Timestamp = dbComment.LastParsingTimestamp
+		obj.ItemId = comment.Id
+		if _, err := tx.Model(obj).OnConflict("DO NOTHING").Insert(); err != nil {
+			return err
+		}
+		dbComment.StoryId = comment.StoryId
+	}
+
+	if dbComment.UserId != comment.AuthorId {
+		obj := &CommentUserIdVersion{}
+		obj.Value = dbComment.UserId
+		obj.Timestamp = dbComment.LastParsingTimestamp
+		obj.ItemId = comment.Id
+		if _, err := tx.Model(obj).OnConflict("DO NOTHING").Insert(); err != nil {
+			return err
+		}
+		dbComment.UserId = comment.AuthorId
+	}
+
+	if dbComment.AuthorUsername != comment.AuthorUsername {
+		obj := &CommentAuthorUsernameVersion{}
+		obj.Value = dbComment.AuthorUsername
+		obj.Timestamp = dbComment.LastParsingTimestamp
+		obj.ItemId = comment.Id
+		if _, err := tx.Model(obj).OnConflict("DO NOTHING").Insert(); err != nil {
+			return err
+		}
+		dbComment.AuthorUsername = comment.AuthorUsername
+	}
+
+	if dbComment.IsHidden != comment.IsHidden {
+		obj := &CommentIsHiddenVersion{}
+		obj.Value = dbComment.IsHidden
+		obj.Timestamp = dbComment.LastParsingTimestamp
+		obj.ItemId = comment.Id
+		if _, err := tx.Model(obj).OnConflict("DO NOTHING").Insert(); err != nil {
+			return err
+		}
+		dbComment.IsHidden = comment.IsHidden
+	}
+
+	if dbComment.IsDeleted != comment.IsDeleted {
+		obj := &CommentIsDeletedVersion{}
+		obj.Value = dbComment.IsDeleted
+		obj.Timestamp = dbComment.LastParsingTimestamp
+		obj.ItemId = comment.Id
+		if _, err := tx.Model(obj).OnConflict("DO NOTHING").Insert(); err != nil {
+			return err
+		}
+		dbComment.IsDeleted = comment.IsDeleted
+	}
+
+	if dbComment.IsAuthorCommunityModerator != comment.IsAuthorCommunityModerator {
+		obj := &CommentIsAuthorCommunityModeratorVersion{}
+		obj.Value = dbComment.IsAuthorCommunityModerator
+		obj.Timestamp = dbComment.LastParsingTimestamp
+		obj.ItemId = comment.Id
+		if _, err := tx.Model(obj).OnConflict("DO NOTHING").Insert(); err != nil {
+			return err
+		}
+		dbComment.IsAuthorCommunityModerator = comment.IsAuthorCommunityModerator
+	}
+
+	if dbComment.IsAuthorPikabuTeam != comment.IsAuthorPikabuTeam {
+		obj := &CommentIsAuthorPikabuTeamVersion{}
+		obj.Value = dbComment.IsAuthorPikabuTeam
+		obj.Timestamp = dbComment.LastParsingTimestamp
+		obj.ItemId = comment.Id
+		if _, err := tx.Model(obj).OnConflict("DO NOTHING").Insert(); err != nil {
+			return err
+		}
+		dbComment.IsAuthorPikabuTeam = comment.IsAuthorPikabuTeam
+	}
+
+	return nil
+}
+
+func checkYear2038(value int64) (int32, error) {
+	if value >= 2147483647 {
+		return 0, errors.New("2038 problem happened :(")
+	}
+	return int32(value), nil
+}

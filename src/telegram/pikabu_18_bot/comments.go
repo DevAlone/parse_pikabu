@@ -1,0 +1,303 @@
+package pikabu_18_bot
+
+import (
+	"errors"
+	"fmt"
+	"github.com/go-pg/pg"
+	"github.com/sergi/go-diff/diffmatchpatch"
+	. "models"
+	"strconv"
+	"time"
+	tb "gopkg.in/tucnak/telebot.v2"
+	"strings"
+)
+
+func (this *Pikabu18Bot) processGetComment(message *tb.Message, id uint64) {
+	comment, images, err := GetCommentById(id)
+	if err != nil {
+		_, err := this.Bot.Send(message.Sender, err.Error(), tb.ModeMarkdown)
+		if err != nil {
+			Log.Error(err)
+		}
+	}
+	this.sendCommentWithImages(message, comment, images, nil)
+}
+
+func (this *Pikabu18Bot) processGetDeleted(message *tb.Message, porn bool) {
+	message.Payload = strings.TrimSpace(message.Payload)
+	var lowerThanId uint64 = 9223372036854775807
+
+	if len(message.Payload) > 0 {
+		_id, err := strconv.ParseUint(message.Payload, 10, 64)
+		if err != nil {
+			_, err := this.Bot.Send(message.Sender, "id должен состоять из цифр")
+			if err != nil {
+				Log.Error(err)
+			}
+			return
+		}
+		lowerThanId = _id
+	}
+	comment := &Comment{}
+
+	query := Db.Model(comment)
+
+	if porn {
+		query = query.Where(
+			"is_deleted = true AND id < ? AND LOWER(text) SIMILAR TO '%(16+|клубничка|порнографическое|эротика)%'",
+			lowerThanId,
+		)
+	} else {
+		query = query.Where("is_deleted = true AND id < ?", lowerThanId)
+	}
+	query = query.Order("id DESC").Limit(1)
+
+	err := query.Select()
+
+	if err == pg.ErrNoRows {
+		_, err := this.Bot.Send(message.Sender, "комментарий не найден")
+		if err != nil {
+			Log.Error(err)
+		}
+		return
+	} else if err != nil {
+		Log.Error(err)
+		_, err := this.Bot.Send(message.Sender, "что-то пошло не так")
+		if err != nil {
+			Log.Error(err)
+		}
+		return
+	}
+	var moreCommand string
+	if porn {
+		moreCommand = "/porn "
+	} else {
+		moreCommand = "/deleted "
+	}
+
+	moreCommand += strconv.FormatUint(comment.Id, 10)
+
+	this.sendComment(message, comment, [][]tb.InlineButton{[]tb.InlineButton{tb.InlineButton{
+		Text: "друг просит ещё",
+		Data: moreCommand,
+	}}})
+}
+
+func (this *Pikabu18Bot) sendComment(message *tb.Message, comment *Comment, buttons[][]tb.InlineButton) {
+	err := patchComment(comment)
+	if err != nil {
+		_, err := this.Bot.Send(message.Sender, "невозможно получить первую версию комментария")
+		if err != nil {
+			Log.Error(err)
+		}
+	}
+	images, err := getCommentImages(comment)
+	if err != nil {
+		_, err := this.Bot.Send(message.Sender, "невозможно получить изображения")
+		if err != nil {
+			Log.Error(err)
+		}
+	}
+	this.sendCommentWithImages(message, comment, images, buttons)
+}
+
+func (this *Pikabu18Bot) sendCommentWithImages(
+		message *tb.Message, comment *Comment, images[]struct{ URL string }, buttons[][]tb.InlineButton) {
+	timestampToReadableString := func(t int64) string {
+		return fmt.Sprint(time.Unix(t, 0))
+	}
+	text := "`https://pikabu.ru/story/_" + strconv.FormatUint(comment.StoryId, 10) + "?cid=" + strconv.FormatUint(comment.Id, 10) + "`\n"
+	text += "рейтинг: *" + fmt.Sprint(int64(comment.Rating)) + "* автор: *" + comment.AuthorUsername + "*\n"
+	text += "`создан:\t\t\t\t\t\t\t\t\t\t\t\t" + timestampToReadableString(int64(comment.CreationTimestamp)) + "`\n"
+	if strings.ToLower(message.Sender.Username) == "devalone" {
+		text += "`первый парсинг:\t\t\t\t" + timestampToReadableString(int64(comment.FirstParsingTimestamp)) + "`\n"
+		text += "`последний парсинг:\t" + timestampToReadableString(int64(comment.LastParsingTimestamp)) + "`\n"
+	}
+	if comment.IsDeleted {
+		text += "удалён "
+	}
+	if comment.IsAuthorPikabuTeam {
+		text += "от команды Пикабу "
+	}
+	text += "\n"
+
+	if len(text)+len(comment.Text) > 8000 {
+		text += "ошибка: комментарий слишком длинный, отправляю файлом"
+		_, err := this.Bot.Send(message.Sender, text, tb.ModeMarkdown, getKeyboardForComment(comment, buttons))
+		if err != nil {
+			Log.Error(err)
+		}
+		err = this.SendFile(message.Sender, []byte(comment.Text))
+		if err != nil {
+			Log.Error(err)
+		}
+	} else {
+		text += "```\n" + comment.Text + "\n```"
+		_, err := this.Bot.Send(message.Sender, text, tb.ModeMarkdown, getKeyboardForComment(comment, buttons))
+		if err != nil {
+			Log.Error(err)
+		}
+	}
+
+	for _, image := range images {
+		this.Bot.Notify(message.Sender, tb.UploadingPhoto)
+		url := image.URL
+		var err error
+
+		if strings.HasSuffix(image.URL, ".mp4") {
+			_, err = this.Bot.Send(message.Sender, &tb.Video{File: tb.FromURL(url)})
+		} else if strings.HasSuffix(image.URL, ".gif"){
+			_, err = this.Bot.Send(message.Sender, url)
+			//_, err = this.Bot.Send(message.Sender, &tb.Photo{File: tb.FromURL(url)})
+		} else {
+			_, err = this.Bot.Send(message.Sender, &tb.Photo{File: tb.FromURL(url)})
+		}
+		if err != nil {
+			Log.Error(err)
+			_, err = this.Bot.Send(message.Sender, "не могу прикрепить картинку, отправляю URL. \n" + url)
+			if err != nil {
+				Log.Error(err, ". URL: ", url)
+			}
+		}
+	}
+}
+
+func GetCommentById(id uint64) (*Comment, []struct{ URL string }, error) {
+	var err error
+
+	dbComment := &Comment{}
+	if id == 0 || id == 9223372036854775807 {
+		ordering := ""
+		if id == 0 {
+			ordering = "creation_timestamp"
+		} else {
+			ordering = "creation_timestamp DESC"
+		}
+		err = Db.Model(dbComment).Order(ordering).Limit(1).Select()
+		id = dbComment.Id
+	} else {
+		dbComment = &Comment{Id: id}
+		err = Db.Select(dbComment)
+	}
+
+	if err == pg.ErrNoRows {
+		return nil, nil, errors.New("404, комментарий не найден")
+	} else if err != nil {
+		Log.Error("get comment: ", err)
+		return nil, nil, errors.New("какая-то очень плохая ошибка случилась")
+	}
+
+	err = patchComment(dbComment)
+	if err != nil {
+		return nil, nil, err
+	}
+	images, err := getCommentImages(dbComment)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return dbComment, images, nil
+}
+
+func patchComment(comment *Comment) error {
+	dbCommentTextVersions := []CommentTextVersion{}
+	err := Db.Model(&dbCommentTextVersions).
+		Where("comment_id = ?", comment.Id).
+			Order("timestamp DESC").
+				Select()
+
+	if err != nil && err != pg.ErrNoRows {
+		Log.Error("get comment text versions: ", err)
+		return errors.New("какая-то очень плохая ошибка случилась")
+	}
+	for _, dbCommentTextVersion := range dbCommentTextVersions {
+		dmp := diffmatchpatch.New()
+		diffs, err := dmp.DiffFromDelta(comment.Text, dbCommentTextVersion.Diffs)
+		if err != nil {
+			Log.Error("diff error: ", err)
+			return errors.New("что-то пошло не так")
+		}
+		comment.Text = dmp.DiffText2(diffs)
+	}
+	return nil
+}
+
+func getCommentImages(comment *Comment) ([]struct{URL string}, error) {
+	dbImagesVersions := []CommentImagesVersion{}
+	err := Db.Model(&dbImagesVersions).
+		Where("comment_id = ?", comment.Id).
+		Order("parsing_timestamp").
+		Select()
+
+	if err != nil {
+		Log.Error("get comment images version: ", err)
+		return nil, errors.New("какая-то очень плохая ошибка случилась")
+	}
+	idSet := map[uint64]bool{}
+
+	for _, dbImagesVersion := range dbImagesVersions {
+		for _, dbImageId := range dbImagesVersion.ImageIds {
+			idSet[dbImageId] = true
+		}
+	}
+	images := []struct{ URL string }{}
+	for id, _ := range idSet {
+		dbImage := &Image{Id: id}
+		err := Db.Model(dbImage).Where("id = ?id").Select()
+		if err != nil {
+			Log.Error(err)
+			return nil, errors.New("какая-то очень плохая ошибка случилась")
+		}
+		imageURL := ""
+		if len(dbImage.LargeURL) > 0 {
+			imageURL = dbImage.LargeURL
+		} else if len(dbImage.AnimationBaseURL) > 0 {
+			imageURL = dbImage.AnimationBaseURL + ".gif"
+		} else if len(dbImage.SmallURL) > 0 {
+			imageURL = dbImage.SmallURL
+		} else {
+			Log.Error(errors.New(fmt.Sprint("bad image with id = ", id)))
+			return nil, errors.New("плохая картинка")
+		}
+
+		image := struct{ URL string }{imageURL}
+		images = append(images, image)
+	}
+	return images, nil
+}
+
+func getKeyboardForComment(comment *Comment, buttons[][]tb.InlineButton) interface{} {
+	inlineKeys := [][]tb.InlineButton{
+		[]tb.InlineButton{},
+	}
+
+	if comment.ParentId > 0 {
+		inlineKeys[0] = append(
+			inlineKeys[0],
+			tb.InlineButton{
+				Text: "показать родительский комментарий",
+				Data: "/comment "+strconv.FormatUint(comment.ParentId, 10),
+			},
+		)
+	}
+
+	inlineKeys[0] = append(
+		inlineKeys[0],
+		tb.InlineButton{
+			Text: "открыть на пикабу",
+			URL: "https://pikabu.ru/story/_"+
+				strconv.FormatUint(comment.StoryId, 10)+
+					"?cid="+strconv.FormatUint(comment.Id, 10),
+		},
+	)
+
+	if buttons != nil {
+		for _, buttonsRow := range buttons {
+			inlineKeys = append(inlineKeys, buttonsRow)
+		}
+	}
+
+	return &tb.ReplyMarkup{
+		InlineKeyboard: inlineKeys,
+	}
+}

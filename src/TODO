@@ -1,0 +1,4 @@
+fix saving deleted comments issue
+check time before starting
+fix time syncronization issue in db
+add substrings index for user table, column username

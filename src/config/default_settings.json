@@ -1,0 +1,17 @@
+{
+    "Debug": false,
+    "Database": {
+        "Name": "test",
+        "Username": "test",
+        "Password": "test"
+    },
+    "ParserParseForwardCommentsAtTime": 32,
+    "ParserParseForwardClientTimeout": 20,
+    "ProxyProviderClientTimeout": 60,
+    "ProxyProviderBaseURL": "https://eivailohciihi4uquapach7abei9iesh.d3d.info/api/v1/",
+    "_ProxyProviderBaseURL": "https://proxy.d3d.info/api/v1/",
+    "ParserParseForwardClientUsername": "",
+    "ParserParseForwardClientPassword": "",
+    "ParserParseForwardSleepTime": 6,
+    "ParserParseForwardSleepOnErrorTime": 10
+}
