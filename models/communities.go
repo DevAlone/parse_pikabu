@@ -1,5 +1,7 @@
 package models
 
+// TODO: update structure
+
 type Community struct {
 	TableName   struct{} `sql:"communities_app_community"`
 	Id          uint64

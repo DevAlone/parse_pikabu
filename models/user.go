@@ -1,86 +1,63 @@
 package models
 
+// TODO: update structure
+
 type User struct {
-	TableName struct{} `sql:"core_user"`
+	PikabuId uint64 `sql:",pk"`
 
-	Id                  uint64
-	Username            string `sql:",type:varchar(64),notnull"`
-	Rating              int32  `sql:",notnull"`
-	CommentsCount       int32  `sql:",notnull"`
-	PostsCount          int32  `sql:",notnull"`
-	HotPostsCount       int32  `sql:",notnull"`
-	PlusesCount         int32  `sql:",notnull"`
-	MinusesCount        int32  `sql:",notnull"`
-	SubscribersCount    int32  `sql:",notnull"`
-	IsRatingBan         bool   `sql:",notnull"`
-	UpdatingPeriod      int32  `sql:",notnull"`
-	AvatarURL           string
-	Info                string
-	IsUpdated           bool  `sql:",notnull"`
-	LastUpdateTimestamp int64 `sql:",notnull"`
-	Approved            string
-	Awards              string
-	Gender              string `sql:",notnull"`
-	PikabuId            int64
-	SignupTimestamp     int64 `sql:",notnull"`
-	Deleted             bool  `sql:",notnull,default:false"`
-}
+	Username           string        `sql:",notnull"`
+	Rating             int32         `sql:",notnull"`
+	Gender             string        `sql:",notnull"`
+	NumberOfComments   uint32        `sql:",notnull"`
+	NumberOfStories    uint32        `sql:",notnull"`
+	NumberOfHotStories uint32        `sql:",notnull"`
+	NumberOfPluses     uint32        `sql:",notnull"`
+	NumberOfMinuses    uint32        `sql:",notnull"`
+	SignupTimestamp    TimestampType `sql:",notnull"`
+	AvatarURL          string        `sql:",notnull"`
+	// Awards             string
+	Awards
+	ApprovedText string `sql:",notnull"`
+	Communities
+	NumberOfSubscribers uint32 `sql:",notnull"`
+	BanHistory
+	BanEndTimestamp     TimestampType `sql:",notnull"`
+	IsRatingHidden      bool          `sql:",notnull"`
+	IsBanned            bool          `sql:",notnull"`
+	IsPermanentlyBanned bool          `sql:",notnull"`
 
-type PikabuUser struct {
-	TableName struct{} `sql:"core_pikabuuser"`
+	// ?
+	IsDeleted bool `sql:",notnull,default:false"`
 
-	PikabuId    int64  `sql:",pk"`
-	Username    string `sql:",notnull"`
-	IsProcessed bool   `sql:",notnull,default:false"`
+	LastUpdateTimestamp TimestampType `sql:",notnull"`
+	NextUpdateTimestamp TimestampType `sql:",notnull"`
 }
 
-type CountersEntryBase struct {
-	Id        uint64
-	UserId    int64
-	Timestamp int64
-	Value     int32
-}
-
-type UserRatingEntry struct {
-	TableName struct{} `sql:"core_userratingentry"`
-	CountersEntryBase
-}
-type UserSubscribersCountEntry struct {
-	TableName struct{} `sql:"core_usersubscriberscountentry"`
-	CountersEntryBase
-}
-type UserCommentsCountEntry struct {
-	TableName struct{} `sql:"core_usercommentscountentry"`
-	CountersEntryBase
-}
-type UserPostsCountEntry struct {
-	TableName struct{} `sql:"core_userpostscountentry"`
-	CountersEntryBase
-}
-type UserHotPostsCountEntry struct {
-	TableName struct{} `sql:"core_userhotpostscountentry"`
-	CountersEntryBase
-}
-type UserPlusesCountEntry struct {
-	TableName struct{} `sql:"core_userplusescountentry"`
-	CountersEntryBase
-}
-type UserMinusesCountEntry struct {
-	TableName struct{} `sql:"core_userminusescountentry"`
-	CountersEntryBase
-}
-
-// TODO: add comments count and other entries tables
-
-type UserAvatarURLVersion struct {
-	Timestamp int64  `sql:",pk,notnull"`
-	ItemId    int64  `sql:",pk,notnull"`
-	Value     string `sql:",notnull"`
-}
+type UserUsernameVersion struct{ StringFieldVersion}
+type UserRatingVersion struct { Int32FieldVersion }
+type UserGenderVersion struct {StringFieldVersion}
+type UserNumberOfCommentsVersion struct { UInt32FieldVersion }
+type UserNumberOfStoriesVersion struct {UInt32FieldVersion}
+type UserNumberOfHotStoriesVersion struct {UInt32FieldVersion}
+type UserNumberOfPlusesVersion struct {UInt32FieldVersion }
+type UserNumberOfMinusesVersion    struct { UInt32FieldVersion }
+type UserSignupTimestampVersion    struct { TimestampTypeFieldVersion}
+type UserAvatarURLVersion struct {StringFieldVersion }
+Awards
+type UserApprovedTextVersion struct { StringFieldVersion }
+Communities
+type UserNumberOfSubscribersVersion struct {UInt32FieldVersion }
+BanHistory
+type UserBanEndTimestampVersion struct { TimestampTypeFieldVersion}
+type UserIsRatingHiddenVersion struct {BoolFieldVersion }
+type UserIsBannedVersion struct {BoolFieldVersion }
+type UserIsPermanentlyBannedVersion struct {BoolFieldVersion }
+type UserIsDeletedVersion struct {BoolFieldVersion}
 
 func init() {
+	// TODO: add proper indices
 	// username is not hash for fast sorting
-	addUniqueIndex("core_user", "username", "")
+	/*addUniqueIndex("core_user", "username", "")
 	addIndex("core_user", "rating", "")
 	addIndex("core_user", "comments_count", "")
 	addIndex("core_user", "posts_count", "")
@@ -126,5 +103,5 @@ func init() {
 	addIndex("core_userpostscountentry", "timestamp", "")
 	addIndex("core_userhotpostscountentry", "timestamp", "")
 	addIndex("core_userplusescountentry", "timestamp", "")
-	addIndex("core_userminusescountentry", "timestamp", "")
+	addIndex("core_userminusescountentry", "timestamp", "")*/
 }

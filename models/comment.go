@@ -1,24 +1,26 @@
 package models
 
+// TODO: update structure
+
 // all fields are the last versions of them
 type Comment struct {
 	Id       uint64
 	ParentId uint64
 	// Parent                     *Comment // TODO: check why this doesn't work // ERROR #23503 insert or update on table "comments" violates foreign key constraint "comments_parent_id_fkey
 	Children              []Comment `pg:"fk:parent_id"`
-	CreationTimestamp     int32 `sql:",notnull"`
-	FirstParsingTimestamp int32 `sql:",notnull"`
-	LastParsingTimestamp  int32 `sql:",notnull"`
+	CreationTimestamp     int32     `sql:",notnull"`
+	FirstParsingTimestamp int32     `sql:",notnull"`
+	LastParsingTimestamp  int32     `sql:",notnull"`
 	// can be null
-	Rating                int32 `sql:",notnull"`
-	StoryId               uint64 `sql:",notnull"` // TODO: add foreign key for story
-	UserId                int32 `sql:",notnull"`
+	Rating  int32  `sql:",notnull"`
+	StoryId uint64 `sql:",notnull"` // TODO: add foreign key for story
+	UserId  int32  `sql:",notnull"`
 	// User                       *User
 	AuthorUsername             string `sql:",notnull"`
-	IsHidden                   bool `sql:",notnull"`
-	IsDeleted                  bool `sql:",notnull"`
-	IsAuthorCommunityModerator bool `sql:",notnull"`
-	IsAuthorPikabuTeam         bool `sql:",notnull"`
+	IsHidden                   bool   `sql:",notnull"`
+	IsDeleted                  bool   `sql:",notnull"`
+	IsAuthorCommunityModerator bool   `sql:",notnull"`
+	IsAuthorPikabuTeam         bool   `sql:",notnull"`
 
 	// TODO: Content
 	Text string `sql:",notnull"`
@@ -28,15 +30,15 @@ type CommentImagesVersion struct {
 	ParsingTimestamp int32  `sql:",pk,notnull"`
 	CommentId        uint64 `sql:",pk,notnull"`
 	Comment          *Comment
-	ImageIds []uint64 `pg:",array"`
+	ImageIds         []uint64 `pg:",array"`
 }
 
-type CommentParentIdVersion struct{ Uint64FieldVersion }
+type CommentParentIdVersion struct{ UInt64FieldVersion }
 type CommentCreatingTimestampVersion struct{ Int32FieldVersion }
 type CommentRatingVersion struct{ Int32FieldVersion }
-type CommentStoryIdVersion struct{ Uint64FieldVersion }
+type CommentStoryIdVersion struct{ UInt64FieldVersion }
 type CommentUserIdVersion struct{ Int32FieldVersion }
-type CommentAuthorUsernameVersion struct{ TextFieldVersion }
+type CommentAuthorUsernameVersion struct{ StringFieldVersion }
 type CommentIsHiddenVersion struct{ BoolFieldVersion }
 type CommentIsDeletedVersion struct{ BoolFieldVersion }
 type CommentIsAuthorCommunityModeratorVersion struct{ BoolFieldVersion }

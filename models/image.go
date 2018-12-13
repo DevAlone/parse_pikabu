@@ -1,5 +1,7 @@
 package models
 
+// TODO: update structure
+
 type Image struct {
 	Id                  uint64
 	SmallURL            string `sql:",notnull,unique:comment_image__small_url__large_url__animation_base_url__animation_preview_url"`
