@@ -5,22 +5,21 @@ package models
 type User struct {
 	PikabuId uint64 `sql:",pk"`
 
-	Username           string        `sql:",notnull"`
-	Rating             int32         `sql:",notnull"`
-	Gender             string        `sql:",notnull"`
-	NumberOfComments   uint32        `sql:",notnull"`
-	NumberOfStories    uint32        `sql:",notnull"`
-	NumberOfHotStories uint32        `sql:",notnull"`
-	NumberOfPluses     uint32        `sql:",notnull"`
-	NumberOfMinuses    uint32        `sql:",notnull"`
-	SignupTimestamp    TimestampType `sql:",notnull"`
-	AvatarURL          string        `sql:",notnull"`
-	// Awards             string
-	Awards
-	ApprovedText string `sql:",notnull"`
-	Communities
-	NumberOfSubscribers uint32 `sql:",notnull"`
-	BanHistory
+	Username            string        `sql:",notnull"`
+	Gender              string        `sql:",notnull"`
+	Rating              int32         `sql:",notnull"`
+	NumberOfComments    uint32        `sql:",notnull"`
+	NumberOfSubscribers uint32        `sql:",notnull"`
+	NumberOfStories     uint32        `sql:",notnull"`
+	NumberOfHotStories  uint32        `sql:",notnull"`
+	NumberOfPluses      uint32        `sql:",notnull"`
+	NumberOfMinuses     uint32        `sql:",notnull"`
+	SignupTimestamp     TimestampType `sql:",notnull"`
+	AvatarURL           string        `sql:",notnull"`
+	ApprovedText        string        `sql:",notnull"`
+	Awards              []uint64      `sql:",notnull,array"`
+	Communities         []uint64      `sql:",notnull,array"`
+	BanHistory          []uint64      `sql:",notnull,array"`
 	BanEndTimestamp     TimestampType `sql:",notnull"`
 	IsRatingHidden      bool          `sql:",notnull"`
 	IsBanned            bool          `sql:",notnull"`
@@ -33,26 +32,82 @@ type User struct {
 	NextUpdateTimestamp TimestampType `sql:",notnull"`
 }
 
-type UserUsernameVersion struct{ StringFieldVersion}
-type UserRatingVersion struct { Int32FieldVersion }
-type UserGenderVersion struct {StringFieldVersion}
-type UserNumberOfCommentsVersion struct { UInt32FieldVersion }
-type UserNumberOfStoriesVersion struct {UInt32FieldVersion}
-type UserNumberOfHotStoriesVersion struct {UInt32FieldVersion}
-type UserNumberOfPlusesVersion struct {UInt32FieldVersion }
-type UserNumberOfMinusesVersion    struct { UInt32FieldVersion }
-type UserSignupTimestampVersion    struct { TimestampTypeFieldVersion}
-type UserAvatarURLVersion struct {StringFieldVersion }
-Awards
-type UserApprovedTextVersion struct { StringFieldVersion }
-Communities
-type UserNumberOfSubscribersVersion struct {UInt32FieldVersion }
-BanHistory
-type UserBanEndTimestampVersion struct { TimestampTypeFieldVersion}
-type UserIsRatingHiddenVersion struct {BoolFieldVersion }
-type UserIsBannedVersion struct {BoolFieldVersion }
-type UserIsPermanentlyBannedVersion struct {BoolFieldVersion }
-type UserIsDeletedVersion struct {BoolFieldVersion}
+type UserAward struct {
+	PikabuId uint64 `sql:",pk"`
+	UserId   uint64 `sql:",notnull"`
+	// TODO: figure out what the heck it is,
+	// l4rever has 0 in this field in one of his awards
+	AwardId       uint64 `sql:",notnull"`
+	AwardTitle    string `sql:",notnull"`
+	AwardImageURL string `sql:",notnull"`
+	StoryId       uint64 `sql:",notnull"`
+	StoryTitle    string `sql:",notnull"`
+	IssuingDate   string `sql:",notnull"`
+	// TODO: replace to bool?
+	IsHidden  bool   `sql:",notnull"`
+	CommentId uint64 `sql:",notnull"`
+	// link to reason of award whether it was comment, story or anything else
+	Link string `sql:",notnull"`
+}
+
+type UserCommunity struct {
+	Id uint64
+
+	Name      string `sql:",notnull"`
+	Link      string `sql:",notnull"`
+	AvatarURL string `sql:",notnull"`
+}
+
+type UserBanHistoryItem struct {
+	PikabuId uint64 `sql:",pk"`
+
+	BanStartTimestamp TimestampType `sql:",pk"`
+	// id of comment caused ban if there was such
+	CommentId               uint64 `sql:",pk"`
+	CommentHtmlDeleteReason string `sql:",pk"`
+	StoryId                 uint64 `sql:",pk"`
+	UserId                  uint64 `sql:",pk"`
+	BanReason               string `sql:",pk"`
+	BanReasonId             uint64 `sql:",pk"`
+	StoryURL                string `sql:",pk"`
+	ModeratorId             uint64 `sql:",pk"`
+	ModeratorName           string `sql:",pk"`
+	ModeratorAvatar         string `sql:",pk"`
+	// TODO: figure out what it means
+	ReasonsLimit uint64 `sql:",pk"`
+	ReasonCount  uint64 `sql:",pk"`
+	ReasonTitle  string `sql:",pk"`
+}
+
+type UserUsernameVersion struct{ StringFieldVersion }
+type UserRatingVersion struct{ Int32FieldVersion }
+type UserGenderVersion struct{ StringFieldVersion }
+type UserNumberOfCommentsVersion struct{ UInt32FieldVersion }
+type UserNumberOfStoriesVersion struct{ UInt32FieldVersion }
+type UserNumberOfHotStoriesVersion struct{ UInt32FieldVersion }
+type UserNumberOfPlusesVersion struct{ UInt32FieldVersion }
+type UserNumberOfMinusesVersion struct{ UInt32FieldVersion }
+type UserSignupTimestampVersion struct{ TimestampTypeFieldVersion }
+type UserAvatarURLVersion struct{ StringFieldVersion }
+type UserAwardsVersion struct {
+	FieldVersionBase
+	Awards []UserAward `sql:",notnull,array"`
+}
+type UserApprovedTextVersion struct{ StringFieldVersion }
+type UserCommunitiesVersion struct {
+	FieldVersionBase
+	Communities []UserCommunity `sql:",notnull,array"`
+}
+type UserNumberOfSubscribersVersion struct{ UInt32FieldVersion }
+type UserBanHistoryVersion struct {
+	FieldVersionBase
+	BanHistoryItems []UserBanHistoryItem `sql:",notnull,array"`
+}
+type UserBanEndTimestampVersion struct{ TimestampTypeFieldVersion }
+type UserIsRatingHiddenVersion struct{ BoolFieldVersion }
+type UserIsBannedVersion struct{ BoolFieldVersion }
+type UserIsPermanentlyBannedVersion struct{ BoolFieldVersion }
+type UserIsDeletedVersion struct{ BoolFieldVersion }
 
 func init() {
 	// TODO: add proper indices
