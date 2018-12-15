@@ -11,7 +11,6 @@ func processUserTasks() error {
 		"admin",
 		"l4rever",
 	} {
-		// print(username, "\n")
 		user := &models.PikabuUser{}
 		exists, err := models.Db.Model(user).
 			Where("LOWER(username) = ?", strings.ToLower(username)).
@@ -48,12 +47,8 @@ func AddParseUserByUsernameTask(username string) error {
 		Where("LOWER(username) = ?", username).
 		Exists()
 
-	if err != nil {
+	if err != nil || exists {
 		return err
-	}
-
-	if exists {
-		return nil
 	}
 
 	task := &models.ParseUserByUsernameTask{
@@ -71,12 +66,8 @@ func AddParseUserByIdTask(id uint64) error {
 		Where("pikabu_id = ?", id).
 		Exists()
 
-	if err != nil {
+	if err != nil || exists {
 		return err
-	}
-
-	if exists {
-		return nil
 	}
 
 	task := &models.ParseUserByIdTask{

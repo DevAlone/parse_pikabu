@@ -3,6 +3,7 @@ package main
 import (
 	"bitbucket.org/d3dev/parse_pikabu/config"
 	"bitbucket.org/d3dev/parse_pikabu/models"
+	"bitbucket.org/d3dev/parse_pikabu/results_processor"
 	"bitbucket.org/d3dev/parse_pikabu/server"
 	"bitbucket.org/d3dev/parse_pikabu/task_manager"
 	"flag"
@@ -27,7 +28,7 @@ func main() {
 	}
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
 
 	// start server
 	go func() {
@@ -41,6 +42,15 @@ func main() {
 	// start task manager
 	go func() {
 		err := task_manager.Run()
+		wg.Done()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	// start results processor
+	go func() {
+		err := results_processor.Run()
 		wg.Done()
 		if err != nil {
 			panic(err)
