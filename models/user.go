@@ -2,18 +2,18 @@ package models
 
 // TODO: update structure
 
-type User struct {
+type PikabuUser struct {
 	PikabuId uint64 `sql:",pk"`
 
 	Username            string        `sql:",notnull"`
 	Gender              string        `sql:",notnull"`
 	Rating              int32         `sql:",notnull"`
-	NumberOfComments    uint32        `sql:",notnull"`
-	NumberOfSubscribers uint32        `sql:",notnull"`
-	NumberOfStories     uint32        `sql:",notnull"`
-	NumberOfHotStories  uint32        `sql:",notnull"`
-	NumberOfPluses      uint32        `sql:",notnull"`
-	NumberOfMinuses     uint32        `sql:",notnull"`
+	NumberOfComments    int32         `sql:",notnull"`
+	NumberOfSubscribers int32         `sql:",notnull"`
+	NumberOfStories     int32         `sql:",notnull"`
+	NumberOfHotStories  int32         `sql:",notnull"`
+	NumberOfPluses      int32         `sql:",notnull"`
+	NumberOfMinuses     int32         `sql:",notnull"`
 	SignupTimestamp     TimestampType `sql:",notnull"`
 	AvatarURL           string        `sql:",notnull"`
 	ApprovedText        string        `sql:",notnull"`
@@ -28,11 +28,11 @@ type User struct {
 	// ?
 	IsDeleted bool `sql:",notnull,default:false"`
 
-	LastUpdateTimestamp TimestampType `sql:",notnull"`
-	NextUpdateTimestamp TimestampType `sql:",notnull"`
+	LastUpdateTimestamp TimestampType `sql:",notnull,default:0"`
+	NextUpdateTimestamp TimestampType `sql:",notnull,default:0"`
 }
 
-type UserAward struct {
+type PikabuUserAward struct {
 	PikabuId uint64 `sql:",pk"`
 	UserId   uint64 `sql:",notnull"`
 	// TODO: figure out what the heck it is,
@@ -50,7 +50,7 @@ type UserAward struct {
 	Link string `sql:",notnull"`
 }
 
-type UserCommunity struct {
+type PikabuUserCommunity struct {
 	Id uint64
 
 	Name      string `sql:",notnull"`
@@ -58,58 +58,87 @@ type UserCommunity struct {
 	AvatarURL string `sql:",notnull"`
 }
 
-type UserBanHistoryItem struct {
+type PikabuUserBanHistoryItem struct {
 	PikabuId uint64 `sql:",pk"`
 
-	BanStartTimestamp TimestampType `sql:",pk"`
+	BanStartTimestamp TimestampType `sql:",notnull"`
 	// id of comment caused ban if there was such
-	CommentId               uint64 `sql:",pk"`
-	CommentHtmlDeleteReason string `sql:",pk"`
-	StoryId                 uint64 `sql:",pk"`
-	UserId                  uint64 `sql:",pk"`
-	BanReason               string `sql:",pk"`
-	BanReasonId             uint64 `sql:",pk"`
-	StoryURL                string `sql:",pk"`
-	ModeratorId             uint64 `sql:",pk"`
-	ModeratorName           string `sql:",pk"`
-	ModeratorAvatar         string `sql:",pk"`
+	CommentId               uint64 `sql:",notnull"`
+	CommentHtmlDeleteReason string `sql:",notnull"`
+	StoryId                 uint64 `sql:",notnull"`
+	UserId                  uint64 `sql:",notnull"`
+	BanReason               string `sql:",notnull"`
+	BanReasonId             uint64 `sql:",notnull"`
+	StoryURL                string `sql:",notnull"`
+	ModeratorId             uint64 `sql:",notnull"`
+	ModeratorName           string `sql:",notnull"`
+	ModeratorAvatar         string `sql:",notnull"`
 	// TODO: figure out what it means
-	ReasonsLimit uint64 `sql:",pk"`
-	ReasonCount  uint64 `sql:",pk"`
-	ReasonTitle  string `sql:",pk"`
+	ReasonsLimit uint64 `sql:",notnull"`
+	ReasonCount  uint64 `sql:",notnull"`
+	ReasonTitle  string `sql:",notnull"`
 }
 
-type UserUsernameVersion struct{ StringFieldVersion }
-type UserRatingVersion struct{ Int32FieldVersion }
-type UserGenderVersion struct{ StringFieldVersion }
-type UserNumberOfCommentsVersion struct{ UInt32FieldVersion }
-type UserNumberOfStoriesVersion struct{ UInt32FieldVersion }
-type UserNumberOfHotStoriesVersion struct{ UInt32FieldVersion }
-type UserNumberOfPlusesVersion struct{ UInt32FieldVersion }
-type UserNumberOfMinusesVersion struct{ UInt32FieldVersion }
-type UserSignupTimestampVersion struct{ TimestampTypeFieldVersion }
-type UserAvatarURLVersion struct{ StringFieldVersion }
-type UserAwardsVersion struct {
+type PikabuUserUsernameVersion struct{ StringFieldVersion }
+type PikabuUserRatingVersion struct{ Int32FieldVersion }
+type PikabuUserGenderVersion struct{ StringFieldVersion }
+type PikabuUserNumberOfCommentsVersion struct{ UInt32FieldVersion }
+type PikabuUserNumberOfStoriesVersion struct{ UInt32FieldVersion }
+type PikabuUserNumberOfHotStoriesVersion struct{ UInt32FieldVersion }
+type PikabuUserNumberOfPlusesVersion struct{ UInt32FieldVersion }
+type PikabuUserNumberOfMinusesVersion struct{ UInt32FieldVersion }
+type PikabuUserSignupTimestampVersion struct{ TimestampTypeFieldVersion }
+type PikabuUserAvatarURLVersion struct{ StringFieldVersion }
+type PikabuUserAwardsVersion struct {
 	FieldVersionBase
-	Awards []UserAward `sql:",notnull,array"`
+	Awards []uint64 `sql:",notnull,array"`
 }
-type UserApprovedTextVersion struct{ StringFieldVersion }
-type UserCommunitiesVersion struct {
+type PikabuUserApprovedTextVersion struct{ StringFieldVersion }
+type PikabuUserCommunitiesVersion struct {
 	FieldVersionBase
-	Communities []UserCommunity `sql:",notnull,array"`
+	Communities []uint64 `sql:",notnull,array"`
 }
-type UserNumberOfSubscribersVersion struct{ UInt32FieldVersion }
-type UserBanHistoryVersion struct {
+type PikabuUserNumberOfSubscribersVersion struct{ UInt32FieldVersion }
+type PikabuUserBanHistoryVersion struct {
 	FieldVersionBase
-	BanHistoryItems []UserBanHistoryItem `sql:",notnull,array"`
+	BanHistoryItems []uint64 `sql:",notnull,array"`
 }
-type UserBanEndTimestampVersion struct{ TimestampTypeFieldVersion }
-type UserIsRatingHiddenVersion struct{ BoolFieldVersion }
-type UserIsBannedVersion struct{ BoolFieldVersion }
-type UserIsPermanentlyBannedVersion struct{ BoolFieldVersion }
-type UserIsDeletedVersion struct{ BoolFieldVersion }
+type PikabuUserBanEndTimestampVersion struct{ TimestampTypeFieldVersion }
+type PikabuUserIsRatingHiddenVersion struct{ BoolFieldVersion }
+type PikabuUserIsBannedVersion struct{ BoolFieldVersion }
+type PikabuUserIsPermanentlyBannedVersion struct{ BoolFieldVersion }
+type PikabuUserIsDeletedVersion struct{ BoolFieldVersion }
 
 func init() {
+	for _, item := range []interface{}{
+		&PikabuUser{},
+		&PikabuUserAward{},
+		&PikabuUserCommunity{},
+		&PikabuUserBanHistoryItem{},
+		&PikabuUserUsernameVersion{},
+		&PikabuUserRatingVersion{},
+		&PikabuUserGenderVersion{},
+		&PikabuUserNumberOfCommentsVersion{},
+		&PikabuUserNumberOfStoriesVersion{},
+		&PikabuUserNumberOfHotStoriesVersion{},
+		&PikabuUserNumberOfPlusesVersion{},
+		&PikabuUserNumberOfMinusesVersion{},
+		&PikabuUserSignupTimestampVersion{},
+		&PikabuUserAvatarURLVersion{},
+		&PikabuUserAwardsVersion{},
+		&PikabuUserApprovedTextVersion{},
+		&PikabuUserCommunitiesVersion{},
+		&PikabuUserNumberOfSubscribersVersion{},
+		&PikabuUserBanHistoryVersion{},
+		&PikabuUserBanEndTimestampVersion{},
+		&PikabuUserIsRatingHiddenVersion{},
+		&PikabuUserIsBannedVersion{},
+		&PikabuUserIsPermanentlyBannedVersion{},
+		&PikabuUserIsDeletedVersion{},
+	} {
+		tables = append(tables, item)
+	}
+
 	// TODO: add proper indices
 	// username is not hash for fast sorting
 	/*addUniqueIndex("core_user", "username", "")

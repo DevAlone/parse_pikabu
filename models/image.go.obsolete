@@ -19,7 +19,8 @@ func init() {
 		addIndex("images", "small_url", "hash")
 		addIndex("images", "large_url", "hash")
 	*/
-
-	addIndex("images", "width", "")
-	addIndex("images", "height", "")
+	/*
+		addIndex("images", "width", "")
+		addIndex("images", "height", "")
+	*/
 }

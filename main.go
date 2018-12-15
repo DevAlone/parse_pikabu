@@ -2,10 +2,11 @@ package main
 
 import (
 	"bitbucket.org/d3dev/parse_pikabu/config"
+	"bitbucket.org/d3dev/parse_pikabu/models"
+	"bitbucket.org/d3dev/parse_pikabu/server"
+	"bitbucket.org/d3dev/parse_pikabu/task_manager"
 	"flag"
-	"fmt"
-	"github.com/nats-io/go-nats"
-	"time"
+	"sync"
 )
 
 func main() {
@@ -19,6 +20,34 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	err = models.InitDb()
+	if err != nil {
+		panic(err)
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	// start server
+	go func() {
+		err := server.Run()
+		wg.Done()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	// start task manager
+	go func() {
+		err := task_manager.Run()
+		wg.Done()
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	wg.Wait()
 
 	// withoutParsers := flag.Bool("without-parsers", false, "run without parsers")
 	// withoutBots := flag.Bool("without-bots", false, "run without bots")
@@ -40,33 +69,4 @@ func main() {
 		go parsers.Run()
 	}
 	wg.Wait()*/
-
-	nc, err := nats.Connect(nats.DefaultURL)
-	if err != nil {
-		panic(err)
-	}
-
-	err = nc.Publish("foo", []byte("Hello, fucking World!"))
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = nc.Subscribe("foo", func(m *nats.Msg) {
-		fmt.Printf("Recieved a message: %s\n", string(m.Data))
-	})
-
-	if err != nil {
-		panic(err)
-	}
-
-
-	// msg, err
-	for true {
-		time.Sleep(1 * time.Second)
-		err = nc.Publish("foo", []byte("Hello, fucking World!1"))
-		if err != nil {
-			panic(err)
-		}
-	}
 }
-

@@ -11,6 +11,7 @@ var Settings struct {
 	ProxyProviderClientTimeout int
 	ProxyProviderBaseURL       string
 	Pikabu18BotToken           string
+	ServerListeningAddress     string
 }
 
 func UpdateSettingsFromFile(filename string) error {
@@ -35,4 +36,5 @@ func init() {
 	Settings.ProxyProviderClientTimeout = 60
 	Settings.ProxyProviderBaseURL = "https://eivailohciihi4uquapach7abei9iesh.d3d.info/api/v1/"
 	Settings.Pikabu18BotToken = ""
+	Settings.ServerListeningAddress = "0.0.0.0:8080"
 }

@@ -35,39 +35,27 @@ func (this QueryHook) AfterQuery(event *pg.QueryEvent) {
 func InitDb() error {
 	logging.Log.Info("start initializing database")
 
-	tables = []interface{}{
-		&User{},
-		&UserRatingEntry{},
-		&UserSubscribersCountEntry{},
-		&UserCommentsCountEntry{},
-		&UserPostsCountEntry{},
-		&UserHotPostsCountEntry{},
-		&UserPlusesCountEntry{},
-		&UserMinusesCountEntry{},
-		&UserAvatarURLVersion{},
-		&PikabuUser{},
+	// TODO:
+	/*&Community{},
+	&CommunityCountersEntry{},
 
-		/*&Community{},
-		&CommunityCountersEntry{},
+	&Image{},
 
-		&Image{},
+	&Comment{},
+	&CommentImagesVersion{},
+	&CommentParentIdVersion{},
+	&CommentCreatingTimestampVersion{},
+	&CommentRatingVersion{},
+	&CommentStoryIdVersion{},
+	&CommentUserIdVersion{},
+	&CommentAuthorUsernameVersion{},
+	&CommentIsHiddenVersion{},
+	&CommentIsDeletedVersion{},
+	&CommentIsAuthorCommunityModeratorVersion{},
+	&CommentIsAuthorPikabuTeamVersion{},
+	&CommentTextVersion{},
 
-		&Comment{},
-		&CommentImagesVersion{},
-		&CommentParentIdVersion{},
-		&CommentCreatingTimestampVersion{},
-		&CommentRatingVersion{},
-		&CommentStoryIdVersion{},
-		&CommentUserIdVersion{},
-		&CommentAuthorUsernameVersion{},
-		&CommentIsHiddenVersion{},
-		&CommentIsDeletedVersion{},
-		&CommentIsAuthorCommunityModeratorVersion{},
-		&CommentIsAuthorPikabuTeamVersion{},
-		&CommentTextVersion{},
-
-		&StatisticsUsersInQueueCount{},*/
-	}
+	&StatisticsUsersInQueueCount{},*/
 
 	dbConfig := config.Settings.Database
 	Db = pg.Connect(&pg.Options{
@@ -101,12 +89,15 @@ func InitDb() error {
 }
 
 func createSchema() error {
-	for _, model := range tables {
+	print(len(tables), "\n")
+	for i, model := range tables {
 		err := Db.CreateTable(model, &orm.CreateTableOptions{
 			IfNotExists:   true,
 			FKConstraints: true,
 		})
 		if err != nil {
+			print(i, model, "\n")
+			panic(err)
 			return err
 		}
 	}
