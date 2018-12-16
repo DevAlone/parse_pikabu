@@ -89,7 +89,7 @@ func InitDb() error {
 }
 
 func createSchema() error {
-	print(len(tables), "\n")
+	logging.Log.Debugf("number of tables is %d", len(tables))
 	for i, model := range tables {
 		err := Db.CreateTable(model, &orm.CreateTableOptions{
 			IfNotExists:   true,

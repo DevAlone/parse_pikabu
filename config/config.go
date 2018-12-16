@@ -12,6 +12,7 @@ var Settings struct {
 	ProxyProviderBaseURL       string
 	Pikabu18BotToken           string
 	ServerListeningAddress     string
+	AMQPAddress                string
 }
 
 func UpdateSettingsFromFile(filename string) error {
@@ -37,4 +38,5 @@ func init() {
 	Settings.ProxyProviderBaseURL = "https://eivailohciihi4uquapach7abei9iesh.d3d.info/api/v1/"
 	Settings.Pikabu18BotToken = ""
 	Settings.ServerListeningAddress = "0.0.0.0:8080"
+	Settings.AMQPAddress = "amqp://guest:guest@localhost:5672/"
 }

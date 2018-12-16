@@ -33,50 +33,29 @@ func main() {
 	// start server
 	go func() {
 		err := server.Run()
-		wg.Done()
 		if err != nil {
 			panic(err)
 		}
+		wg.Done()
 	}()
 
 	// start task manager
 	go func() {
 		err := task_manager.Run()
-		wg.Done()
 		if err != nil {
 			panic(err)
 		}
+		wg.Done()
 	}()
 
 	// start results processor
 	go func() {
 		err := results_processor.Run()
-		wg.Done()
 		if err != nil {
 			panic(err)
 		}
+		wg.Done()
 	}()
 
 	wg.Wait()
-
-	// withoutParsers := flag.Bool("without-parsers", false, "run without parsers")
-	// withoutBots := flag.Bool("without-bots", false, "run without bots")
-	/*flag.Parse()
-
-	err := models.InitDb()
-	if err != nil {
-		panic(err)
-	}
-
-	var wg sync.WaitGroup
-
-	if !*withoutBots {
-		wg.Add(1)
-		go pikabu_18_bot.RunPikabu18Bot()
-	}
-	if !*withoutParsers {
-		wg.Add(1)
-		go parsers.Run()
-	}
-	wg.Wait()*/
 }
