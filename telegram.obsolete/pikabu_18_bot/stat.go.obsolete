@@ -1,9 +1,8 @@
 package pikabu_18_bot
 
 import (
-	. "models"
-	"strconv"
 	tb "gopkg.in/tucnak/telebot.v2"
+	"strconv"
 )
 
 func (this *Pikabu18Bot) processGetStat(message *tb.Message) {

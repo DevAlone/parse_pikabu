@@ -22,6 +22,6 @@ func init() {
 		&ParseUserByUsernameTask{},
 		&ParseUserByIdTask{},
 	} {
-		tables = append(tables, table)
+		Tables = append(Tables, table)
 	}
 }

@@ -1,9 +1,6 @@
 package parsers
 
 import (
-	. "config"
-	"local/pikago"
-	"logging"
 	"time"
 )
 

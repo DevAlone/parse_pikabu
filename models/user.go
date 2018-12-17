@@ -7,7 +7,7 @@ type PikabuUser struct {
 
 	Username            string        `sql:",notnull"`
 	Gender              string        `sql:",notnull"`
-	Rating              int32         `sql:",notnull"`
+	Rating              float32       `sql:",notnull"`
 	NumberOfComments    int32         `sql:",notnull"`
 	NumberOfSubscribers int32         `sql:",notnull"`
 	NumberOfStories     int32         `sql:",notnull"`
@@ -28,6 +28,8 @@ type PikabuUser struct {
 	// ?
 	IsDeleted bool `sql:",notnull,default:false"`
 
+	AddedTimestamp TimestampType `sql:",notnull"`
+	// PreviousUpdateTimestamp TimestampType `sql:",notnull, default:0"`
 	LastUpdateTimestamp TimestampType `sql:",notnull,default:0"`
 	NextUpdateTimestamp TimestampType `sql:",notnull,default:0"`
 }
@@ -91,17 +93,17 @@ type PikabuUserSignupTimestampVersion struct{ TimestampTypeFieldVersion }
 type PikabuUserAvatarURLVersion struct{ StringFieldVersion }
 type PikabuUserAwardsVersion struct {
 	FieldVersionBase
-	Awards []uint64 `sql:",notnull,array"`
+	Value []uint64 `sql:",notnull,array"`
 }
 type PikabuUserApprovedTextVersion struct{ StringFieldVersion }
 type PikabuUserCommunitiesVersion struct {
 	FieldVersionBase
-	Communities []uint64 `sql:",notnull,array"`
+	Value []uint64 `sql:",notnull,array"`
 }
 type PikabuUserNumberOfSubscribersVersion struct{ UInt32FieldVersion }
 type PikabuUserBanHistoryVersion struct {
 	FieldVersionBase
-	BanHistoryItems []uint64 `sql:",notnull,array"`
+	Value []uint64 `sql:",notnull,array"`
 }
 type PikabuUserBanEndTimestampVersion struct{ TimestampTypeFieldVersion }
 type PikabuUserIsRatingHiddenVersion struct{ BoolFieldVersion }
@@ -136,7 +138,7 @@ func init() {
 		&PikabuUserIsPermanentlyBannedVersion{},
 		&PikabuUserIsDeletedVersion{},
 	} {
-		tables = append(tables, item)
+		Tables = append(Tables, item)
 	}
 
 	// TODO: add proper indices

@@ -3,7 +3,6 @@
 package pikabu_18_bot
 
 import (
-	. "config"
 	//"encoding/json"
 	//"errors"
 	"encoding/hex"

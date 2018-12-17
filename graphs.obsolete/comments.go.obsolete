@@ -1,8 +1,7 @@
 package graphs
 
 import (
-	. "models"
-
+	"bitbucket.org/d3dev/parse_pikabu/models"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/plotutil"
@@ -15,7 +14,7 @@ func GetCommentsPlotWriterTo(windowSize uint, startTimestamp int64) (io.WriterTo
 	if err != nil {
 		return nil, err
 	}
-	return p.WriterTo(10 * vg.Inch, 5 * vg.Inch, "png")
+	return p.WriterTo(10*vg.Inch, 5*vg.Inch, "png")
 }
 
 func SaveCommentsPlotToFile(filename string, windowSize uint, startTimestamp int64) error {
@@ -36,7 +35,7 @@ func GetCommentsPlot(windowSize uint, startTimestamp int64) (*plot.Plot, error) 
 	}
 	result := []Result{}
 
-	_, err := Db.Query(&result, `
+	_, err := models.Db.Query(&result, `
 WITH stats AS (
     SELECT MIN(creation_timestamp) as min_value, MAX(creation_timestamp) as max_value
     FROM comments WHERE creation_timestamp >= ?1

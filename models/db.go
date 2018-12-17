@@ -13,7 +13,7 @@ import (
 type TimestampType int32
 
 var Db *pg.DB
-var tables []interface{}
+var Tables []interface{}
 var createIndexQueries []string
 
 type QueryHook struct{}
@@ -89,8 +89,8 @@ func InitDb() error {
 }
 
 func createSchema() error {
-	logging.Log.Debugf("number of tables is %d", len(tables))
-	for i, model := range tables {
+	logging.Log.Debugf("number of Tables is %d", len(Tables))
+	for i, model := range Tables {
 		err := Db.CreateTable(model, &orm.CreateTableOptions{
 			IfNotExists:   true,
 			FKConstraints: true,

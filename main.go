@@ -1,4 +1,4 @@
-package main
+package parse_pikabu
 
 import (
 	"bitbucket.org/d3dev/parse_pikabu/config"

@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"github.com/go-pg/pg"
 	"github.com/sergi/go-diff/diffmatchpatch"
-	. "models"
-	"strconv"
-	"time"
 	tb "gopkg.in/tucnak/telebot.v2"
+	"strconv"
 	"strings"
+	"time"
 )
 
 func (this *Pikabu18Bot) processGetComment(message *tb.Message, id uint64) {
@@ -83,7 +82,7 @@ func (this *Pikabu18Bot) processGetDeleted(message *tb.Message, porn bool) {
 	}}})
 }
 
-func (this *Pikabu18Bot) sendComment(message *tb.Message, comment *Comment, buttons[][]tb.InlineButton) {
+func (this *Pikabu18Bot) sendComment(message *tb.Message, comment *Comment, buttons [][]tb.InlineButton) {
 	err := patchComment(comment)
 	if err != nil {
 		_, err := this.Bot.Send(message.Sender, "невозможно получить первую версию комментария")
@@ -102,7 +101,7 @@ func (this *Pikabu18Bot) sendComment(message *tb.Message, comment *Comment, butt
 }
 
 func (this *Pikabu18Bot) sendCommentWithImages(
-		message *tb.Message, comment *Comment, images[]struct{ URL string }, buttons[][]tb.InlineButton) {
+	message *tb.Message, comment *Comment, images []struct{ URL string }, buttons [][]tb.InlineButton) {
 	timestampToReadableString := func(t int64) string {
 		return fmt.Sprint(time.Unix(t, 0))
 	}
@@ -146,7 +145,7 @@ func (this *Pikabu18Bot) sendCommentWithImages(
 
 		if strings.HasSuffix(image.URL, ".mp4") {
 			_, err = this.Bot.Send(message.Sender, &tb.Video{File: tb.FromURL(url)})
-		} else if strings.HasSuffix(image.URL, ".gif"){
+		} else if strings.HasSuffix(image.URL, ".gif") {
 			_, err = this.Bot.Send(message.Sender, url)
 			//_, err = this.Bot.Send(message.Sender, &tb.Photo{File: tb.FromURL(url)})
 		} else {
@@ -154,7 +153,7 @@ func (this *Pikabu18Bot) sendCommentWithImages(
 		}
 		if err != nil {
 			Log.Error(err)
-			_, err = this.Bot.Send(message.Sender, "не могу прикрепить картинку, отправляю URL. \n" + url)
+			_, err = this.Bot.Send(message.Sender, "не могу прикрепить картинку, отправляю URL. \n"+url)
 			if err != nil {
 				Log.Error(err, ". URL: ", url)
 			}
@@ -203,8 +202,8 @@ func patchComment(comment *Comment) error {
 	dbCommentTextVersions := []CommentTextVersion{}
 	err := Db.Model(&dbCommentTextVersions).
 		Where("comment_id = ?", comment.Id).
-			Order("timestamp DESC").
-				Select()
+		Order("timestamp DESC").
+		Select()
 
 	if err != nil && err != pg.ErrNoRows {
 		Log.Error("get comment text versions: ", err)
@@ -222,7 +221,7 @@ func patchComment(comment *Comment) error {
 	return nil
 }
 
-func getCommentImages(comment *Comment) ([]struct{URL string}, error) {
+func getCommentImages(comment *Comment) ([]struct{ URL string }, error) {
 	dbImagesVersions := []CommentImagesVersion{}
 	err := Db.Model(&dbImagesVersions).
 		Where("comment_id = ?", comment.Id).
@@ -266,7 +265,7 @@ func getCommentImages(comment *Comment) ([]struct{URL string}, error) {
 	return images, nil
 }
 
-func getKeyboardForComment(comment *Comment, buttons[][]tb.InlineButton) interface{} {
+func getKeyboardForComment(comment *Comment, buttons [][]tb.InlineButton) interface{} {
 	inlineKeys := [][]tb.InlineButton{
 		[]tb.InlineButton{},
 	}
@@ -276,7 +275,7 @@ func getKeyboardForComment(comment *Comment, buttons[][]tb.InlineButton) interfa
 			inlineKeys[0],
 			tb.InlineButton{
 				Text: "показать родительский комментарий",
-				Data: "/comment "+strconv.FormatUint(comment.ParentId, 10),
+				Data: "/comment " + strconv.FormatUint(comment.ParentId, 10),
 			},
 		)
 	}
@@ -285,9 +284,9 @@ func getKeyboardForComment(comment *Comment, buttons[][]tb.InlineButton) interfa
 		inlineKeys[0],
 		tb.InlineButton{
 			Text: "открыть на пикабу",
-			URL: "https://pikabu.ru/story/_"+
-				strconv.FormatUint(comment.StoryId, 10)+
-					"?cid="+strconv.FormatUint(comment.Id, 10),
+			URL: "https://pikabu.ru/story/_" +
+				strconv.FormatUint(comment.StoryId, 10) +
+				"?cid=" + strconv.FormatUint(comment.Id, 10),
 		},
 	)
 
