@@ -440,26 +440,144 @@ func processField(
 
 func createAwardIdsArray(
 	tx *pg.Tx,
-	awards []pikago.UserProfileAward,
+	parsedAwards []pikago.UserProfileAward,
 ) ([]uint64, error) {
-	// TODO: implement
-	return []uint64{}, nil
+	result := []uint64{}
+
+	for _, parsedAward := range parsedAwards {
+		award := &models.PikabuUserAward{
+			PikabuId:      parsedAward.Id.Value,
+			UserId:        parsedAward.UserId.Value,
+			AwardId:       parsedAward.AwardId.Value,
+			AwardTitle:    parsedAward.AwardTitle,
+			AwardImageURL: parsedAward.AwardImageURL,
+			StoryId:       parsedAward.StoryId.Value,
+			StoryTitle:    parsedAward.StoryTitle,
+			IssuingDate:   parsedAward.IssuingDate,
+			IsHidden:      parsedAward.IsHidden.Value != 0,
+			CommentId:     parsedAward.CommentId.Value,
+			Link:          parsedAward.Link,
+		}
+		awardFromDb := &models.PikabuUserAward{
+			PikabuId: parsedAward.Id.Value,
+		}
+		err := tx.Select(awardFromDb)
+		found := err != pg.ErrNoRows
+		if found && err != nil {
+			return nil, err
+		}
+		if found && !reflect.DeepEqual(award, awardFromDb) {
+			return nil, errors.New(fmt.Sprintf(
+				"award with id %v has been changed. Old state %v, new state %v",
+				parsedAward.Id.Value,
+				awardFromDb,
+				award,
+			))
+		}
+		if !found {
+			err := tx.Insert(award)
+			if err != nil {
+				return nil, err
+			}
+		}
+		result = append(result, award.PikabuId)
+	}
+	return result, nil
 }
 
 func createCommunityIdsArray(
 	tx *pg.Tx,
-	awards []pikago.UserProfileCommunity,
+	parsedCommunities []pikago.UserProfileCommunity,
 ) ([]uint64, error) {
-	// TODO: implement
-	return []uint64{}, nil
+	result := []uint64{}
+
+	for _, parsedCommunity := range parsedCommunities {
+		community := &models.PikabuUserCommunity{
+			Name:      parsedCommunity.Name,
+			Link:      parsedCommunity.Link,
+			AvatarURL: parsedCommunity.AvatarURL,
+		}
+		communityFromDb := &models.PikabuUserCommunity{}
+		err := tx.Model(communityFromDb).
+			Where("link = ?", parsedCommunity.Link).
+			Select()
+		found := err != pg.ErrNoRows
+		if found && err != nil {
+			return nil, err
+		}
+
+		if found {
+			community.Id = communityFromDb.Id
+			if !reflect.DeepEqual(community, communityFromDb) {
+				return nil, errors.New(fmt.Sprintf(
+					"community with link %v has been changed. Old state %v, new state %v",
+					community.Link,
+					communityFromDb,
+					community,
+				))
+			}
+		} else {
+			_, err := tx.Model(community).Returning("*").Insert()
+			if err != nil {
+				return nil, err
+			}
+		}
+		result = append(result, community.Id)
+	}
+
+	return result, nil
 }
 
 func createBanHistoryIdsArray(
 	tx *pg.Tx,
-	awards []pikago.UserProfileBanHistory,
+	parsedBanHistoryItems []pikago.UserProfileBanHistory,
 ) ([]uint64, error) {
-	// TODO: implement
-	return []uint64{}, nil
+	result := []uint64{}
+
+	for _, parsedBanHistoryItem := range parsedBanHistoryItems {
+		banHistoryItem := &models.PikabuUserBanHistoryItem{
+			PikabuId:                parsedBanHistoryItem.Id.Value,
+			BanStartTimestamp:       models.TimestampType(parsedBanHistoryItem.BanStartTimestamp.Value),
+			CommentId:               parsedBanHistoryItem.CommentId.Value,
+			CommentHtmlDeleteReason: parsedBanHistoryItem.CommentHtmlDeleteReason,
+			StoryId:                 parsedBanHistoryItem.StoryId.Value,
+			UserId:                  parsedBanHistoryItem.UserId.Value,
+			BanReason:               parsedBanHistoryItem.BanReason,
+			BanReasonId:             parsedBanHistoryItem.BanReasonId.Value,
+			StoryURL:                parsedBanHistoryItem.StoryURL,
+			ModeratorId:             parsedBanHistoryItem.ModeratorId.Value,
+			ModeratorName:           parsedBanHistoryItem.ModeratorName,
+			ModeratorAvatar:         parsedBanHistoryItem.ModeratorAvatar,
+			ReasonsLimit:            parsedBanHistoryItem.ReasonsLimit.Value,
+			ReasonCount:             parsedBanHistoryItem.ReasonCount.Value,
+			ReasonTitle:             parsedBanHistoryItem.ReasonTitle,
+		}
+		dbBanHistoryItem := &models.PikabuUserBanHistoryItem{
+			PikabuId: banHistoryItem.PikabuId,
+		}
+		err := tx.Select(dbBanHistoryItem)
+		found := err != pg.ErrNoRows
+		if found && err != nil {
+			return nil, err
+		}
+		if found && !reflect.DeepEqual(banHistoryItem, dbBanHistoryItem) {
+			return nil, errors.New(fmt.Sprintf(
+				"ban history item with id %v has been changed. Old state %v, new state %v",
+				banHistoryItem.PikabuId,
+				dbBanHistoryItem,
+				banHistoryItem,
+			))
+		}
+		if !found {
+			err := tx.Insert(banHistoryItem)
+			if err != nil {
+				return nil, err
+			}
+		}
+		result = append(result, banHistoryItem.PikabuId)
+	}
+
+	return result, nil
 }
 
 func calculateNextUpdateTimestamp(

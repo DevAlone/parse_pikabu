@@ -56,7 +56,7 @@ type PikabuUserCommunity struct {
 	Id uint64
 
 	Name      string `sql:",notnull"`
-	Link      string `sql:",notnull"`
+	Link      string `sql:",notnull,unique"`
 	AvatarURL string `sql:",notnull"`
 }
 
