@@ -1,6 +1,7 @@
 package results_processor
 
 import (
+	"bitbucket.org/d3dev/parse_pikabu/logging"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/task_manager"
 	"errors"
@@ -14,7 +15,7 @@ import (
 
 var processUserProfileMutex = &sync.Mutex{}
 
-func processUserProfile(userProfile *pikago.UserProfile) error {
+func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago.UserProfile) error {
 	processUserProfileMutex.Lock()
 	defer processUserProfileMutex.Unlock()
 
@@ -49,7 +50,7 @@ func processUserProfile(userProfile *pikago.UserProfile) error {
 	}
 
 	// save results
-	err = saveUserProfile(tx, userProfile)
+	err = saveUserProfile(tx, parsingTimestamp, userProfile)
 	if err != nil {
 		return err
 	}
@@ -57,9 +58,7 @@ func processUserProfile(userProfile *pikago.UserProfile) error {
 	return tx.Commit()
 }
 
-func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
-	currentTimestamp := models.TimestampType(time.Now().Unix())
-
+func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfile *pikago.UserProfile) error {
 	awardIds, err := createAwardIdsArray(tx, userProfile.Awards)
 	if err != nil {
 		return err
@@ -94,8 +93,8 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		IsBanned:            userProfile.IsUserBanned,
 		IsPermanentlyBanned: userProfile.IsUserPermanentlyBanned,
 		// IsDeleted: false,
-		AddedTimestamp:      currentTimestamp,
-		LastUpdateTimestamp: currentTimestamp,
+		AddedTimestamp:      parsingTimestamp,
+		LastUpdateTimestamp: parsingTimestamp,
 		NextUpdateTimestamp: 0,
 	}
 	newUser.NextUpdateTimestamp = calculateNextUpdateTimestamp(tx, newUser, false)
@@ -111,6 +110,12 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		return err
 	}
 
+	if parsingTimestamp <= user.LastUpdateTimestamp {
+		// TODO: find a better way
+		logging.Log.Warning("skipping user %v because of old parsing result", user.Username)
+		return nil
+	}
+
 	wasDataChanged := false
 
 	err = processField(tx,
@@ -118,7 +123,7 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.Username,
 		"pikabu_user_username_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
@@ -129,7 +134,7 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.Gender,
 		"pikabu_user_gender_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
@@ -140,7 +145,7 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.Rating,
 		"pikabu_user_rating_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
@@ -151,7 +156,7 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.NumberOfComments,
 		"pikabu_user_number_of_comments_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
@@ -162,7 +167,7 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.NumberOfSubscribers,
 		"pikabu_user_number_of_subscribers_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
@@ -173,7 +178,7 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.NumberOfStories,
 		"pikabu_user_number_of_stories_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
@@ -184,7 +189,7 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.NumberOfHotStories,
 		"pikabu_user_number_of_hot_stories_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
@@ -195,7 +200,7 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.NumberOfPluses,
 		"pikabu_user_number_of_pluses_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
@@ -206,7 +211,7 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.NumberOfMinuses,
 		"pikabu_user_number_of_minuses_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
@@ -217,7 +222,7 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.SignupTimestamp,
 		"pikabu_user_signup_timestamp_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
@@ -228,7 +233,7 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.AvatarURL,
 		"pikabu_user_avatar_url_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
@@ -239,7 +244,7 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.ApprovedText,
 		"pikabu_user_approved_text_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
@@ -250,7 +255,7 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.Awards,
 		"pikabu_user_awards_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
@@ -261,7 +266,7 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.Communities,
 		"pikabu_user_communities_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
@@ -272,7 +277,7 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.BanHistory,
 		"pikabu_user_ban_history_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
@@ -283,7 +288,7 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.BanEndTimestamp,
 		"pikabu_user_ban_end_timestamp_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
@@ -294,7 +299,7 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.IsRatingHidden,
 		"pikabu_user_is_rating_hidden_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
@@ -305,7 +310,7 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.IsBanned,
 		"pikabu_user_is_banned_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
@@ -316,14 +321,14 @@ func saveUserProfile(tx *pg.Tx, userProfile *pikago.UserProfile) error {
 		&newUser.IsPermanentlyBanned,
 		"pikabu_user_is_permanently_banned_versions",
 		user,
-		currentTimestamp,
+		parsingTimestamp,
 		&wasDataChanged)
 	if err != nil {
 		return err
 	}
 
 	nextUpdateTimestamp := calculateNextUpdateTimestamp(tx, user, wasDataChanged)
-	user.LastUpdateTimestamp = currentTimestamp
+	user.LastUpdateTimestamp = parsingTimestamp
 	user.NextUpdateTimestamp = nextUpdateTimestamp
 
 	if wasDataChanged {
@@ -344,7 +349,7 @@ func processField(
 	parsedFieldPtrI interface{},
 	versionsTableName string,
 	user *models.PikabuUser,
-	currentTimestamp models.TimestampType,
+	parsingTimestamp models.TimestampType,
 	wasDataChanged *bool,
 ) error {
 	if reflect.DeepEqual(fieldPtrI, parsedFieldPtrI) {
@@ -388,7 +393,7 @@ func processField(
 			(timestamp, item_id, value)
 			VALUES (?, ?, ?)
 			ON CONFLICT(item_id, timestamp) DO NOTHING;
-	`, currentTimestamp, user.PikabuId, parsedFieldPtrI)
+	`, parsingTimestamp, user.PikabuId, parsedFieldPtrI)
 	if err != nil {
 		return err
 	}

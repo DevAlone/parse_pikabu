@@ -167,6 +167,10 @@ type UInt64FieldVersion struct {
 	FieldVersionBase
 	Value uint64 `sql:",notnull"`
 }
+type Float32FieldVersion struct {
+	FieldVersionBase
+	Value float32 `sql:",notnull"`
+}
 type StringFieldVersion struct {
 	FieldVersionBase
 	Value string `sql:",notnull"`

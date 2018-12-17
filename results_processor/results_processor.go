@@ -3,6 +3,7 @@ package results_processor
 import (
 	"bitbucket.org/d3dev/parse_pikabu/config"
 	"bitbucket.org/d3dev/parse_pikabu/logging"
+	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/streadway/amqp"
 	"gogsweb.2-47.ru/d3dev/pikago"
 	"time"
@@ -99,14 +100,17 @@ func processMessage(message amqp.Delivery) error {
 	switch message.RoutingKey {
 	case "user_profile":
 		var resp struct {
-			User *pikago.UserProfile `json:"user"`
+			ParsingTimestamp models.TimestampType `json:"parsing_timestamp"`
+			Data             struct {
+				User *pikago.UserProfile `json:"user"`
+			} `json:"data"`
 		}
 		err := pikago.JsonUnmarshal(message.Body, &resp)
 		if err != nil {
 			return err
 		}
 
-		err = processUserProfile(resp.User)
+		err = processUserProfile(resp.ParsingTimestamp, resp.Data.User)
 		if err != nil {
 			return err
 		}

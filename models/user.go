@@ -82,7 +82,7 @@ type PikabuUserBanHistoryItem struct {
 }
 
 type PikabuUserUsernameVersion struct{ StringFieldVersion }
-type PikabuUserRatingVersion struct{ Int32FieldVersion }
+type PikabuUserRatingVersion struct{ Float32FieldVersion }
 type PikabuUserGenderVersion struct{ StringFieldVersion }
 type PikabuUserNumberOfCommentsVersion struct{ UInt32FieldVersion }
 type PikabuUserNumberOfStoriesVersion struct{ UInt32FieldVersion }
