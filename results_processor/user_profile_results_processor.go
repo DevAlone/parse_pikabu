@@ -4,8 +4,8 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/logging"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/task_manager"
-	"errors"
 	"fmt"
+	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
 	"gogsweb.2-47.ru/d3dev/pikago"
 	"reflect"
@@ -331,10 +331,6 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 	user.LastUpdateTimestamp = parsingTimestamp
 	user.NextUpdateTimestamp = nextUpdateTimestamp
 
-	if wasDataChanged {
-		print("data was changed!\n")
-	}
-
 	err = tx.Update(user)
 	if err != nil {
 		return err
@@ -367,35 +363,66 @@ func processField(
 		return err
 	}
 
+	insertVersion := func(
+		timestamp models.TimestampType,
+		valuePtr interface{},
+		ignoreIfExists bool,
+	) error {
+		var err error
+		if versionsTableName == "pikabu_user_awards_versions" {
+			version := &models.PikabuUserAwardsVersion{
+				models.FieldVersionBase{
+					timestamp,
+					user.PikabuId,
+				},
+				*valuePtr.(*[]uint64),
+			}
+			if ignoreIfExists {
+				_, err = tx.Model(version).
+					OnConflict("DO NOTHING").
+					Insert(version)
+			} else {
+				err = tx.Insert(version)
+			}
+		} else {
+			queryPostfix := ""
+			if ignoreIfExists {
+				queryPostfix = "ON CONFLICT (timestamp, item_id) DO NOTHING"
+			}
+			_, err = tx.Exec(`
+				INSERT INTO `+versionsTableName+`
+				(timestamp, item_id, value)
+				VALUES (?, ?, ?)
+				`+queryPostfix+`;
+			`, timestamp, user.PikabuId, valuePtr)
+		}
+		return err
+	}
+
 	if count == 0 {
-		_, err := tx.Exec(`
-			INSERT INTO `+versionsTableName+`
-			(timestamp, item_id, value)
-			VALUES (?, ?, ?);
-		`, user.AddedTimestamp, user.PikabuId, fieldPtrI)
+		err := insertVersion(
+			user.AddedTimestamp,
+			fieldPtrI,
+			false)
 		if err != nil {
-			return err
+			return errors.New(err)
 		}
 	}
 
-	_, err = tx.Exec(`
-			INSERT INTO `+versionsTableName+`
-			(timestamp, item_id, value)
-			VALUES (?, ?, ?)
-			ON CONFLICT(item_id, timestamp) DO NOTHING;
-	`, user.LastUpdateTimestamp, user.PikabuId, fieldPtrI)
+	err = insertVersion(
+		user.LastUpdateTimestamp,
+		fieldPtrI,
+		true)
 	if err != nil {
-		return err
+		return errors.New(err)
 	}
 
-	_, err = tx.Exec(`
-			INSERT INTO `+versionsTableName+`
-			(timestamp, item_id, value)
-			VALUES (?, ?, ?)
-			ON CONFLICT(item_id, timestamp) DO NOTHING;
-	`, parsingTimestamp, user.PikabuId, parsedFieldPtrI)
+	err = insertVersion(
+		parsingTimestamp,
+		parsedFieldPtrI,
+		false)
 	if err != nil {
-		return err
+		return errors.New(err)
 	}
 
 	// TODO: refactor this shit
@@ -428,6 +455,11 @@ func processField(
 		*fieldPtr = *parsedFieldPtrI.(*models.TimestampType)
 	case *bool:
 		*fieldPtr = *parsedFieldPtrI.(*bool)
+	case *[]uint64:
+		*fieldPtr = []uint64{}
+		for _, item := range *parsedFieldPtrI.(*[]uint64) {
+			*fieldPtr = append(*fieldPtr, item)
+		}
 	default:
 		panic(fmt.Sprintf(
 			"processField(): bad type %v",

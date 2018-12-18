@@ -3,6 +3,7 @@ package parse_pikabu
 import (
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/results_processor"
+	"github.com/go-errors/errors"
 	"github.com/go-pg/pg/orm"
 	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"
@@ -11,10 +12,17 @@ import (
 	"time"
 )
 
+func handleError(err error) {
+	if err, ok := err.(*errors.Error); ok {
+		panic(err.ErrorStack())
+	}
+	panic(err)
+}
+
 func TestUserProfileParsing(t *testing.T) {
 	err := models.InitDb()
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 
 	// clear tables
@@ -24,14 +32,14 @@ func TestUserProfileParsing(t *testing.T) {
 			Cascade:  true,
 		})
 		if err != nil {
-			panic(err)
+			handleError(err)
 		}
 	}
 
 	// create again
 	err = models.InitDb()
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 
 	var wg sync.WaitGroup
@@ -41,7 +49,7 @@ func TestUserProfileParsing(t *testing.T) {
 	/*go func() {
 		err := server.Run()
 		if err != nil {
-			panic(err)
+			handleError(err)
 		}
 		wg.Done()
 	}()
@@ -50,7 +58,7 @@ func TestUserProfileParsing(t *testing.T) {
 	go func() {
 		err := task_manager.Run()
 		if err != nil {
-			panic(err)
+			handleError(err)
 		}
 		wg.Done()
 	}()*/
@@ -59,7 +67,7 @@ func TestUserProfileParsing(t *testing.T) {
 	go func() {
 		err := results_processor.Run()
 		if err != nil {
-			panic(err)
+			handleError(err)
 		}
 		wg.Done()
 	}()
@@ -82,7 +90,34 @@ func TestUserProfileParsing(t *testing.T) {
 			"signup_date": "1544846469",
 			"is_rating_ban": true,
 			"avatar": "https://cs8.pikabu.ru/avatars/2561/x2561615-512432259.png",
-			"awards": [],
+			"awards": [
+        {                                                                                    
+          "id": "287578",           
+          "user_id": "10080",
+          "award_id": "0",                                                                
+          "award_title": "Пятничное [Моё]",                                                  
+          "award_image": "https://cs10.pikabu.ru/post_img/2018/04/05/8/152293551235288152.png",
+          "story_id": "5983144",                                                             
+          "story_title": "Впихнуть невпихуемое ",
+          "date": "2018-06-25 11:43:55",
+          "is_hidden": "0",                                                              
+          "comment_id": null,                                                               
+          "link": "/story/vpikhnut_nevpikhuemoe_5983144"                                 
+        },                                                                                  
+        {                                                                   
+          "id": "269145",             
+          "user_id": "10080",                                                             
+          "award_id": "14",                                                                  
+          "award_title": "редактирование тегов в 100 и более постах",                     
+          "award_image": "https://cs.pikabu.ru/images/awards/2x/100_story_edits_tags.png",   
+          "story_id": "0",          
+          "story_title": "",
+          "date": "2018-05-28 17:00:12",
+          "is_hidden": "0",
+          "comment_id": null,
+          "link": "/edits"
+        }
+			],
 			"is_subscribed": false,
 			"is_ignored": false,
 			"note": null,
@@ -117,7 +152,7 @@ func TestUserProfileParsing(t *testing.T) {
 `,
 	))
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 
 	// TODO: wait for queue to become empty
@@ -128,7 +163,7 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 	err = models.Db.Select(user)
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 	assert.Equal(t, "Pisacavtor", user.Username)
 	assert.Equal(t, float32(-3.5), user.Rating)
@@ -141,14 +176,11 @@ func TestUserProfileParsing(t *testing.T) {
 	assert.Equal(t, models.TimestampType(1544846469), user.SignupTimestamp)
 	assert.Equal(t, true, user.IsRatingHidden)
 	assert.Equal(t, "https://cs8.pikabu.ru/avatars/2561/x2561615-512432259.png", user.AvatarURL)
-	// TODO: check awards
 	// assert.Equal(t, true, user.Awards)
 	assert.Equal(t, "approved User", user.ApprovedText)
-	// TODO: check communities
 	assert.Equal(t, int32(1001), user.NumberOfSubscribers)
 	assert.Equal(t, true, user.IsBanned)
 	assert.Equal(t, false, user.IsPermanentlyBanned)
-	// TODO: check public ban history
 	assert.Equal(t, models.TimestampType(1545459492), user.BanEndTimestamp)
 	assert.Equal(t, models.TimestampType(100), user.AddedTimestamp)
 	assert.Equal(t, models.TimestampType(100), user.LastUpdateTimestamp)
@@ -172,7 +204,47 @@ func TestUserProfileParsing(t *testing.T) {
 			"signup_date": "1544846469",
 			"is_rating_ban": false,
 			"avatar": "https://cs8.pikabu.ru/avatars/2561/x2561615-512432259.png",
-			"awards": [],
+			"awards": [
+        {                                                                                    
+          "id": "287578",           
+          "user_id": "10080",
+          "award_id": "0",                                                                
+          "award_title": "Пятничное [Моё]",                                                  
+          "award_image": "https://cs10.pikabu.ru/post_img/2018/04/05/8/152293551235288152.png",
+          "story_id": "5983144",                                                             
+          "story_title": "Впихнуть невпихуемое ",
+          "date": "2018-06-25 11:43:55",
+          "is_hidden": "0",                                                              
+          "comment_id": null,                                                               
+          "link": "/story/vpikhnut_nevpikhuemoe_5983144"                                 
+        },                                                                                  
+        {                                                                   
+          "id": "269145",             
+          "user_id": "10080",                                                             
+          "award_id": "14",                                                                  
+          "award_title": "редактирование тегов в 100 и более постах",                     
+          "award_image": "https://cs.pikabu.ru/images/awards/2x/100_story_edits_tags.png",   
+          "story_id": "0",          
+          "story_title": "",
+          "date": "2018-05-28 17:00:12",
+          "is_hidden": "0",
+          "comment_id": null,
+          "link": "/edits"
+        },
+		{
+          "id": "252211",
+          "user_id": "10080",
+          "award_id": "0",
+          "award_title": "Лучший вопрос на Прямой линии",
+          "award_image": "https://cs10.pikabu.ru/post_img/2018/04/23/6/152447447033039417.png",
+          "story_id": "4563678",
+          "story_title": "Прямая линия #7",
+          "date": "2018-05-02 21:23:49",
+          "is_hidden": "0",
+          "comment_id": null,
+          "link": "/story/pryamaya_liniya_7_4563678"
+        }
+			],
 			"is_subscribed": false,
 			"is_ignored": false,
 			"note": null,
@@ -207,7 +279,7 @@ func TestUserProfileParsing(t *testing.T) {
 `,
 	))
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 
 	// TODO: wait for queue to become empty
@@ -218,7 +290,7 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 	err = models.Db.Select(user)
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 	assert.Equal(t, "Pisacavtor1", user.Username)
 	assert.Equal(t, float32(10.5), user.Rating)
@@ -231,14 +303,11 @@ func TestUserProfileParsing(t *testing.T) {
 	assert.Equal(t, models.TimestampType(1544846469), user.SignupTimestamp)
 	assert.Equal(t, false, user.IsRatingHidden)
 	assert.Equal(t, "https://cs8.pikabu.ru/avatars/2561/x2561615-512432259.png", user.AvatarURL)
-	// TODO: check awards
 	// assert.Equal(t, true, user.Awards)
 	assert.Equal(t, "approved User", user.ApprovedText)
-	// TODO: check communities
 	assert.Equal(t, int32(1001), user.NumberOfSubscribers)
 	assert.Equal(t, true, user.IsBanned)
 	assert.Equal(t, false, user.IsPermanentlyBanned)
-	// TODO: check public ban history
 	assert.Equal(t, models.TimestampType(1545459492), user.BanEndTimestamp)
 	assert.Equal(t, models.TimestampType(100), user.AddedTimestamp)
 	assert.Equal(t, models.TimestampType(201), user.LastUpdateTimestamp)
@@ -296,7 +365,7 @@ func TestUserProfileParsing(t *testing.T) {
 `,
 	))
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 
 	// TODO: wait for queue to become empty
@@ -307,7 +376,7 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 	err = models.Db.Select(user)
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 	assert.Equal(t, "Pisacavtor", user.Username)
 	assert.Equal(t, float32(5), user.Rating)
@@ -320,14 +389,10 @@ func TestUserProfileParsing(t *testing.T) {
 	assert.Equal(t, models.TimestampType(1544846469), user.SignupTimestamp)
 	assert.Equal(t, false, user.IsRatingHidden)
 	assert.Equal(t, "https://cs8.pikabu.ru/avatars/2561/x2561615-512432259.png", user.AvatarURL)
-	// TODO: check awards
-	// assert.Equal(t, true, user.Awards)
 	assert.Equal(t, "approved User", user.ApprovedText)
-	// TODO: check communities
 	assert.Equal(t, int32(1001), user.NumberOfSubscribers)
 	assert.Equal(t, true, user.IsBanned)
 	assert.Equal(t, false, user.IsPermanentlyBanned)
-	// TODO: check public ban history
 	assert.Equal(t, models.TimestampType(100), user.BanEndTimestamp)
 	assert.Equal(t, models.TimestampType(100), user.AddedTimestamp)
 	assert.Equal(t, models.TimestampType(555), user.LastUpdateTimestamp)
@@ -385,7 +450,7 @@ func TestUserProfileParsing(t *testing.T) {
 `,
 	))
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 
 	// TODO: wait for queue to become empty
@@ -396,7 +461,7 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 	err = models.Db.Select(user)
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 	assert.Equal(t, "Pisacavtor", user.Username)
 	assert.Equal(t, float32(5), user.Rating)
@@ -409,14 +474,10 @@ func TestUserProfileParsing(t *testing.T) {
 	assert.Equal(t, models.TimestampType(1544846469), user.SignupTimestamp)
 	assert.Equal(t, false, user.IsRatingHidden)
 	assert.Equal(t, "https://cs8.pikabu.ru/avatars/2561/x2561615-512432259.png", user.AvatarURL)
-	// TODO: check awards
-	// assert.Equal(t, true, user.Awards)
 	assert.Equal(t, "approved User", user.ApprovedText)
-	// TODO: check communities
 	assert.Equal(t, int32(1001), user.NumberOfSubscribers)
 	assert.Equal(t, true, user.IsBanned)
 	assert.Equal(t, false, user.IsPermanentlyBanned)
-	// TODO: check public ban history
 	assert.Equal(t, models.TimestampType(100), user.BanEndTimestamp)
 	assert.Equal(t, models.TimestampType(100), user.AddedTimestamp)
 	assert.Equal(t, models.TimestampType(1000), user.LastUpdateTimestamp)
@@ -474,7 +535,7 @@ func TestUserProfileParsing(t *testing.T) {
 `,
 	))
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 
 	// TODO: wait for queue to become empty
@@ -485,7 +546,7 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 	err = models.Db.Select(user)
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 	assert.Equal(t, "Pisacavtor", user.Username)
 	assert.Equal(t, float32(5), user.Rating)
@@ -498,14 +559,10 @@ func TestUserProfileParsing(t *testing.T) {
 	assert.Equal(t, models.TimestampType(1544846469), user.SignupTimestamp)
 	assert.Equal(t, true, user.IsRatingHidden)
 	assert.Equal(t, "https://cs8.pikabu.ru/avatars/2561/x2561615-512432259.png", user.AvatarURL)
-	// TODO: check awards
-	// assert.Equal(t, true, user.Awards)
 	assert.Equal(t, "approved User", user.ApprovedText)
-	// TODO: check communities
 	assert.Equal(t, int32(1001), user.NumberOfSubscribers)
 	assert.Equal(t, true, user.IsBanned)
 	assert.Equal(t, false, user.IsPermanentlyBanned)
-	// TODO: check public ban history
 	assert.Equal(t, models.TimestampType(100), user.BanEndTimestamp)
 	assert.Equal(t, models.TimestampType(100), user.AddedTimestamp)
 	assert.Equal(t, models.TimestampType(1500), user.LastUpdateTimestamp)
@@ -516,10 +573,10 @@ func TestUserProfileParsing(t *testing.T) {
 		Order("timestamp").
 		Select()
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 
-	assert.Equal(t, usernameVersions, []models.PikabuUserUsernameVersion{
+	assert.Equal(t, []models.PikabuUserUsernameVersion{
 		{models.StringFieldVersion{
 			models.FieldVersionBase{
 				100,
@@ -538,7 +595,7 @@ func TestUserProfileParsing(t *testing.T) {
 				user.PikabuId,
 			},
 			"Pisacavtor"}},
-	})
+	}, usernameVersions)
 
 	ratingVersions := []models.PikabuUserRatingVersion{}
 	err = models.Db.Model(&ratingVersions).
@@ -546,10 +603,10 @@ func TestUserProfileParsing(t *testing.T) {
 		Order("timestamp").
 		Select()
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 
-	assert.Equal(t, ratingVersions, []models.PikabuUserRatingVersion{
+	assert.Equal(t, []models.PikabuUserRatingVersion{
 		{models.Float32FieldVersion{models.FieldVersionBase{
 			100, user.PikabuId,
 		}, -3.5}},
@@ -559,7 +616,7 @@ func TestUserProfileParsing(t *testing.T) {
 		{models.Float32FieldVersion{models.FieldVersionBase{
 			555, user.PikabuId,
 		}, 5}},
-	})
+	}, ratingVersions)
 
 	isRatingHiddenVersions := []models.PikabuUserIsRatingHiddenVersion{}
 	err = models.Db.Model(&isRatingHiddenVersions).
@@ -567,10 +624,10 @@ func TestUserProfileParsing(t *testing.T) {
 		Order("timestamp").
 		Select()
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 
-	assert.Equal(t, isRatingHiddenVersions, []models.PikabuUserIsRatingHiddenVersion{
+	assert.Equal(t, []models.PikabuUserIsRatingHiddenVersion{
 		{models.BoolFieldVersion{models.FieldVersionBase{
 			100, user.PikabuId,
 		}, true}},
@@ -583,7 +640,7 @@ func TestUserProfileParsing(t *testing.T) {
 		{models.BoolFieldVersion{models.FieldVersionBase{
 			1500, user.PikabuId,
 		}, true}},
-	})
+	}, isRatingHiddenVersions)
 
 	userBanEndTimeVersions := []models.PikabuUserBanEndTimestampVersion{}
 	err = models.Db.Model(&userBanEndTimeVersions).
@@ -591,10 +648,10 @@ func TestUserProfileParsing(t *testing.T) {
 		Order("timestamp").
 		Select()
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 
-	assert.Equal(t, userBanEndTimeVersions, []models.PikabuUserBanEndTimestampVersion{
+	assert.Equal(t, []models.PikabuUserBanEndTimestampVersion{
 		{models.TimestampTypeFieldVersion{models.FieldVersionBase{
 			100, user.PikabuId,
 		}, models.TimestampType(1545459492)}},
@@ -604,7 +661,33 @@ func TestUserProfileParsing(t *testing.T) {
 		{models.TimestampTypeFieldVersion{models.FieldVersionBase{
 			555, user.PikabuId,
 		}, models.TimestampType(100)}},
-	})
+	}, userBanEndTimeVersions)
+
+	// TODO: check awards
+	assert.Equal(t, []uint64{}, user.Awards)
+
+	awardVersions := []models.PikabuUserAwardsVersion{}
+	err = models.Db.Model(&awardVersions).
+		Where("item_id = ?", user.PikabuId).
+		Order("timestamp").
+		Select()
+	if err != nil {
+		handleError(err)
+	}
+
+	assert.Equal(t, []models.PikabuUserAwardsVersion{
+		{models.FieldVersionBase{
+			100, user.PikabuId,
+		}, []uint64{287578, 269145}},
+		{models.FieldVersionBase{
+			201, user.PikabuId,
+		}, []uint64{287578, 269145, 252211}},
+		{models.FieldVersionBase{
+			555, user.PikabuId,
+		}, []uint64{}},
+	}, awardVersions)
+	// TODO: check communities
+	// TODO: check public ban history
 
 	// TODO: test pikago.UserProfile serialization
 }
