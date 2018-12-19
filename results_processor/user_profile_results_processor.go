@@ -1,7 +1,7 @@
 package results_processor
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/logging"
+	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/task_manager"
 	"fmt"
@@ -59,15 +59,15 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 }
 
 func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfile *pikago.UserProfile) error {
-	awardIds, err := createAwardIdsArray(tx, userProfile.Awards)
+	awardIds, err := createAwardIdsArray(tx, userProfile.Awards, parsingTimestamp)
 	if err != nil {
 		return err
 	}
-	communityIds, err := createCommunityIdsArray(tx, userProfile.Communities)
+	communityIds, err := createCommunityIdsArray(tx, userProfile.Communities, parsingTimestamp)
 	if err != nil {
 		return err
 	}
-	banHistoryIds, err := createBanHistoryIdsArray(tx, userProfile.BanHistory)
+	banHistoryIds, err := createBanHistoryIdsArray(tx, userProfile.BanHistory, parsingTimestamp)
 	if err != nil {
 		return err
 	}
@@ -112,7 +112,7 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 
 	if parsingTimestamp <= user.LastUpdateTimestamp {
 		// TODO: find a better way
-		logging.Log.Warning("skipping user %v because of old parsing result", user.Username)
+		logger.Log.Warning("skipping user %v because of old parsing result", user.Username)
 		return nil
 	}
 
@@ -369,14 +369,38 @@ func processField(
 		ignoreIfExists bool,
 	) error {
 		var err error
-		if versionsTableName == "pikabu_user_awards_versions" {
-			version := &models.PikabuUserAwardsVersion{
-				models.FieldVersionBase{
-					timestamp,
-					user.PikabuId,
-				},
-				*valuePtr.(*[]uint64),
+		// TODO: refactor somehow.
+		// Need this shit because go-pg serialize slices as jsonb not as arrays by default
+		switch versionsTableName {
+		case "pikabu_user_awards_versions", "pikabu_user_communities_versions", "pikabu_user_ban_history_versions":
+			var version interface{}
+
+			switch versionsTableName {
+			case "pikabu_user_awards_versions":
+				version = &models.PikabuUserAwardsVersion{
+					FieldVersionBase: models.FieldVersionBase{
+						Timestamp: timestamp,
+						ItemId:    user.PikabuId,
+					},
+					Value: *valuePtr.(*[]uint64)}
+			case "pikabu_user_communities_versions":
+				version = &models.PikabuUserCommunitiesVersion{
+					FieldVersionBase: models.FieldVersionBase{
+						Timestamp: timestamp,
+						ItemId:    user.PikabuId,
+					},
+					Value: *valuePtr.(*[]uint64)}
+			case "pikabu_user_ban_history_versions":
+				version = &models.PikabuUserBanHistoryVersion{
+					FieldVersionBase: models.FieldVersionBase{
+						Timestamp: timestamp,
+						ItemId:    user.PikabuId,
+					},
+					Value: *valuePtr.(*[]uint64)}
+			default:
+				return errors.New("processField(): bad version table")
 			}
+
 			if ignoreIfExists {
 				_, err = tx.Model(version).
 					OnConflict("DO NOTHING").
@@ -384,7 +408,7 @@ func processField(
 			} else {
 				err = tx.Insert(version)
 			}
-		} else {
+		default:
 			queryPostfix := ""
 			if ignoreIfExists {
 				queryPostfix = "ON CONFLICT (timestamp, item_id) DO NOTHING"
@@ -473,12 +497,14 @@ func processField(
 func createAwardIdsArray(
 	tx *pg.Tx,
 	parsedAwards []pikago.UserProfileAward,
+	parsingTimestamp models.TimestampType,
 ) ([]uint64, error) {
 	result := []uint64{}
 
 	for _, parsedAward := range parsedAwards {
 		award := &models.PikabuUserAward{
 			PikabuId:      parsedAward.Id.Value,
+			Timestamp:     parsingTimestamp,
 			UserId:        parsedAward.UserId.Value,
 			AwardId:       parsedAward.AwardId.Value,
 			AwardTitle:    parsedAward.AwardTitle,
@@ -498,6 +524,10 @@ func createAwardIdsArray(
 		if found && err != nil {
 			return nil, err
 		}
+		if found {
+			// really bad workaround
+			award.Timestamp = awardFromDb.Timestamp
+		}
 		if found && !reflect.DeepEqual(award, awardFromDb) {
 			return nil, errors.New(fmt.Sprintf(
 				"award with id %v has been changed. Old state %v, new state %v",
@@ -506,6 +536,7 @@ func createAwardIdsArray(
 				award,
 			))
 		}
+		award.Timestamp = parsingTimestamp
 		if !found {
 			err := tx.Insert(award)
 			if err != nil {
@@ -520,11 +551,13 @@ func createAwardIdsArray(
 func createCommunityIdsArray(
 	tx *pg.Tx,
 	parsedCommunities []pikago.UserProfileCommunity,
+	parsingTimestamp models.TimestampType,
 ) ([]uint64, error) {
 	result := []uint64{}
 
 	for _, parsedCommunity := range parsedCommunities {
 		community := &models.PikabuUserCommunity{
+			Timestamp: parsingTimestamp,
 			Name:      parsedCommunity.Name,
 			Link:      parsedCommunity.Link,
 			AvatarURL: parsedCommunity.AvatarURL,
@@ -540,6 +573,7 @@ func createCommunityIdsArray(
 
 		if found {
 			community.Id = communityFromDb.Id
+			community.Timestamp = communityFromDb.Timestamp
 			if !reflect.DeepEqual(community, communityFromDb) {
 				return nil, errors.New(fmt.Sprintf(
 					"community with link %v has been changed. Old state %v, new state %v",
@@ -563,12 +597,14 @@ func createCommunityIdsArray(
 func createBanHistoryIdsArray(
 	tx *pg.Tx,
 	parsedBanHistoryItems []pikago.UserProfileBanHistory,
+	parsingTimestamp models.TimestampType,
 ) ([]uint64, error) {
 	result := []uint64{}
 
 	for _, parsedBanHistoryItem := range parsedBanHistoryItems {
 		banHistoryItem := &models.PikabuUserBanHistoryItem{
 			PikabuId:                parsedBanHistoryItem.Id.Value,
+			Timestamp:               parsingTimestamp,
 			BanStartTimestamp:       models.TimestampType(parsedBanHistoryItem.BanStartTimestamp.Value),
 			CommentId:               parsedBanHistoryItem.CommentId.Value,
 			CommentHtmlDeleteReason: parsedBanHistoryItem.CommentHtmlDeleteReason,
@@ -592,6 +628,9 @@ func createBanHistoryIdsArray(
 		if found && err != nil {
 			return nil, err
 		}
+		if found {
+			banHistoryItem.Timestamp = dbBanHistoryItem.Timestamp
+		}
 		if found && !reflect.DeepEqual(banHistoryItem, dbBanHistoryItem) {
 			return nil, errors.New(fmt.Sprintf(
 				"ban history item with id %v has been changed. Old state %v, new state %v",
@@ -600,6 +639,7 @@ func createBanHistoryIdsArray(
 				banHistoryItem,
 			))
 		}
+		banHistoryItem.Timestamp = parsingTimestamp
 		if !found {
 			err := tx.Insert(banHistoryItem)
 			if err != nil {

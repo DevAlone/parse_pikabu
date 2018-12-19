@@ -1,4 +1,4 @@
-package parse_pikabu
+package main
 
 import (
 	"bitbucket.org/d3dev/parse_pikabu/models"
@@ -93,7 +93,7 @@ func TestUserProfileParsing(t *testing.T) {
 			"awards": [
         {                                                                                    
           "id": "287578",           
-          "user_id": "10080",
+          "user_id": "2561615",
           "award_id": "0",                                                                
           "award_title": "Пятничное [Моё]",                                                  
           "award_image": "https://cs10.pikabu.ru/post_img/2018/04/05/8/152293551235288152.png",
@@ -106,7 +106,7 @@ func TestUserProfileParsing(t *testing.T) {
         },                                                                                  
         {                                                                   
           "id": "269145",             
-          "user_id": "10080",                                                             
+          "user_id": "2561615",                                                             
           "award_id": "14",                                                                  
           "award_title": "редактирование тегов в 100 и более постах",                     
           "award_image": "https://cs.pikabu.ru/images/awards/2x/100_story_edits_tags.png",   
@@ -207,7 +207,7 @@ func TestUserProfileParsing(t *testing.T) {
 			"awards": [
         {                                                                                    
           "id": "287578",           
-          "user_id": "10080",
+          "user_id": "2561615",
           "award_id": "0",                                                                
           "award_title": "Пятничное [Моё]",                                                  
           "award_image": "https://cs10.pikabu.ru/post_img/2018/04/05/8/152293551235288152.png",
@@ -220,7 +220,7 @@ func TestUserProfileParsing(t *testing.T) {
         },                                                                                  
         {                                                                   
           "id": "269145",             
-          "user_id": "10080",                                                             
+          "user_id": "2561615",                                                             
           "award_id": "14",                                                                  
           "award_title": "редактирование тегов в 100 и более постах",                     
           "award_image": "https://cs.pikabu.ru/images/awards/2x/100_story_edits_tags.png",   
@@ -233,7 +233,7 @@ func TestUserProfileParsing(t *testing.T) {
         },
 		{
           "id": "252211",
-          "user_id": "10080",
+          "user_id": "2561615",
           "award_id": "0",
           "award_title": "Лучший вопрос на Прямой линии",
           "award_image": "https://cs10.pikabu.ru/post_img/2018/04/23/6/152447447033039417.png",
@@ -505,7 +505,26 @@ func TestUserProfileParsing(t *testing.T) {
 			"is_ignored": false,
 			"note": null,
 			"approved": "approved User",
-			"communities": [],
+			"communities": [
+        {                                                                                                                                                                                       
+          "name": "Cynic Mansion",                                                                                                                                                              
+          "link": "cynicmansion",                                                                                                                                                               
+          "avatar": "https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png",                                                                                                      
+          "avatar_url": "https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png"                                                                                                   
+        },                
+        {                    
+          "name": "Пикабу головного мозга",
+          "link": "p_g_m",                 
+          "avatar": "https://cs7.pikabu.ru/images/community/1360/1538729487212641089.png",     
+          "avatar_url": "https://cs7.pikabu.ru/images/community/1360/1538729487212641089.png"
+        },                                       
+        {                               
+          "name": "Кофе мой друг",
+          "link": "Coffee",  
+          "avatar": "https://cs8.pikabu.ru/images/community/729/1493440472283550654.png",
+          "avatar_url": "https://cs8.pikabu.ru/images/community/729/1493440472283550654.png"
+        }
+			],
 			"subscribers_count": 1001,
 			"is_user_banned": true,
 			"is_user_fully_banned": false,
@@ -522,6 +541,23 @@ func TestUserProfileParsing(t *testing.T) {
 				"reason_id": "94",
 				"story_url": "https://pikabu.ru/story/3_chasa_pyitok_6354471",
 				"moderator_name": "depotato",
+				"moderator_avatar": "https://cs5.pikabu.ru/avatars/1836/s1836690-1399622318.png",
+				"reason_limit": null,
+				"reason_count": null,
+				"reason_title": null
+			  },
+			  {
+				"id": "151514",
+				"date": 1544854693,
+				"moderator_id": "1836691",
+				"comment_id": "15",
+				"comment_desc": "",
+				"story_id": "6354471",
+				"user_id": "2561615",
+				"reason": "Отсутствие пруфа или неподтверждённая/искажённая информация (вброс)",
+				"reason_id": "94",
+				"story_url": "https://pikabu.ru/story/3_chasa_pyitok_6354471",
+				"moderator_name": "nepotato",
 				"moderator_avatar": "https://cs5.pikabu.ru/avatars/1836/s1836690-1399622318.png",
 				"reason_limit": null,
 				"reason_count": null,
@@ -663,8 +699,62 @@ func TestUserProfileParsing(t *testing.T) {
 		}, models.TimestampType(100)}},
 	}, userBanEndTimeVersions)
 
-	// TODO: check awards
+	// check awards
 	assert.Equal(t, []uint64{}, user.Awards)
+
+	awards := []models.PikabuUserAward{}
+	err = models.Db.Model(&awards).
+		Where("user_id = ?", user.PikabuId).
+		Order("pikabu_id").
+		Select()
+	if err != nil {
+		handleError(err)
+	}
+
+	assert.Equal(t, []models.PikabuUserAward{
+		{
+			252211,
+			201,
+			2561615,
+			0,
+			"Лучший вопрос на Прямой линии",
+			"https://cs10.pikabu.ru/post_img/2018/04/23/6/152447447033039417.png",
+			4563678,
+			"Прямая линия #7",
+			"2018-05-02 21:23:49",
+			false,
+			0,
+			"/story/pryamaya_liniya_7_4563678",
+		},
+		{
+			269145,
+			100,
+			2561615,
+			14,
+			"редактирование тегов в 100 и более постах",
+			"https://cs.pikabu.ru/images/awards/2x/100_story_edits_tags.png",
+			0,
+			"",
+			"2018-05-28 17:00:12",
+			false,
+			0,
+			"/edits",
+		},
+		{
+			287578,
+			100,
+			2561615,
+			0,
+			"Пятничное [Моё]",
+			"https://cs10.pikabu.ru/post_img/2018/04/05/8/152293551235288152.png",
+			5983144,
+			"Впихнуть невпихуемое ",
+			"2018-06-25 11:43:55",
+			false,
+			0,
+			"/story/vpikhnut_nevpikhuemoe_5983144",
+		},
+	}, awards)
 
 	awardVersions := []models.PikabuUserAwardsVersion{}
 	err = models.Db.Model(&awardVersions).
@@ -686,8 +776,130 @@ func TestUserProfileParsing(t *testing.T) {
 			555, user.PikabuId,
 		}, []uint64{}},
 	}, awardVersions)
-	// TODO: check communities
-	// TODO: check public ban history
+
+	// check communities
+	communities := []models.PikabuUserCommunity{}
+	err = models.Db.Model(&communities).Select()
+	if err != nil {
+		handleError(err)
+	}
+
+	assert.Equal(t, []models.PikabuUserCommunity{
+		{
+			1,
+			1500,
+			"Cynic Mansion",
+			"cynicmansion",
+			"https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png",
+		},
+		{
+			2,
+			1500,
+			"Пикабу головного мозга",
+			"p_g_m",
+			"https://cs7.pikabu.ru/images/community/1360/1538729487212641089.png",
+		},
+		{
+			3,
+			1500,
+			"Кофе мой друг",
+			"Coffee",
+			"https://cs8.pikabu.ru/images/community/729/1493440472283550654.png",
+		},
+	}, communities)
+
+	communityVersions := []models.PikabuUserCommunitiesVersion{}
+	err = models.Db.Model(&communityVersions).
+		Where("item_id = ?", user.PikabuId).
+		Order("timestamp").
+		Select()
+	if err != nil {
+		handleError(err)
+	}
+
+	assert.Equal(t, []models.PikabuUserCommunitiesVersion{
+		{models.FieldVersionBase{
+			100, user.PikabuId},
+			[]uint64{}},
+		{models.FieldVersionBase{
+			1000, user.PikabuId},
+			[]uint64{}},
+		{models.FieldVersionBase{
+			1500, user.PikabuId},
+			[]uint64{1, 2, 3}},
+	}, communityVersions)
+
+	// check public ban history
+	banHistoryItems := []models.PikabuUserBanHistoryItem{}
+	err = models.Db.Model(&banHistoryItems).
+		Where("user_id = ?", user.PikabuId).
+		Order("timestamp").
+		Select()
+	if err != nil {
+		handleError(err)
+	}
+
+	assert.Equal(t, []models.PikabuUserBanHistoryItem{
+		{
+			151513,
+			100,
+			1544854692,
+			0,
+			"",
+			6354471,
+			2561615,
+			"Отсутствие пруфа или неподтверждённая/искажённая информация (вброс)",
+			94,
+			"https://pikabu.ru/story/3_chasa_pyitok_6354471",
+			1836690,
+			"depotato",
+			"https://cs5.pikabu.ru/avatars/1836/s1836690-1399622318.png",
+			0,
+			0,
+			"",
+		},
+		{
+			151514,
+			1500,
+			1544854693,
+			15,
+			"",
+			6354471,
+			2561615,
+			"Отсутствие пруфа или неподтверждённая/искажённая информация (вброс)",
+			94,
+			"https://pikabu.ru/story/3_chasa_pyitok_6354471",
+			1836691,
+			"nepotato",
+			"https://cs5.pikabu.ru/avatars/1836/s1836690-1399622318.png",
+			0,
+			0,
+			"",
+		},
+	}, banHistoryItems)
+
+	banHistoryItemVersions := []models.PikabuUserBanHistoryVersion{}
+	err = models.Db.Model(&banHistoryItemVersions).
+		Where("item_id = ?", user.PikabuId).
+		Select()
+	if err != nil {
+		handleError(err)
+	}
+
+	assert.Equal(t, []models.PikabuUserBanHistoryVersion{
+		{models.FieldVersionBase{
+			100,
+			user.PikabuId},
+			[]uint64{151513}},
+		{models.FieldVersionBase{
+			1000,
+			user.PikabuId},
+			[]uint64{151513}},
+		{models.FieldVersionBase{
+			1500,
+			user.PikabuId},
+			[]uint64{151513, 151514}},
+	}, banHistoryItemVersions)
 
 	// TODO: test pikago.UserProfile serialization
 }

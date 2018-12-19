@@ -36,7 +36,9 @@ type PikabuUser struct {
 
 type PikabuUserAward struct {
 	PikabuId uint64 `sql:",pk"`
-	UserId   uint64 `sql:",notnull"`
+
+	Timestamp TimestampType `sql:",notnull"`
+	UserId    uint64        `sql:",notnull"`
 	// TODO: figure out what the heck it is,
 	// l4rever has 0 in this field in one of his awards
 	AwardId       uint64 `sql:",notnull"`
@@ -55,14 +57,16 @@ type PikabuUserAward struct {
 type PikabuUserCommunity struct {
 	Id uint64
 
-	Name      string `sql:",notnull"`
-	Link      string `sql:",notnull,unique"`
-	AvatarURL string `sql:",notnull"`
+	Timestamp TimestampType `sql:",notnull"`
+	Name      string        `sql:",notnull"`
+	Link      string        `sql:",notnull,unique"`
+	AvatarURL string        `sql:",notnull"`
 }
 
 type PikabuUserBanHistoryItem struct {
 	PikabuId uint64 `sql:",pk"`
 
+	Timestamp         TimestampType `sql:",notnull"`
 	BanStartTimestamp TimestampType `sql:",notnull"`
 	// id of comment caused ban if there was such
 	CommentId               uint64 `sql:",notnull"`

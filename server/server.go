@@ -26,7 +26,7 @@ func Run() error {
 	// apiRouter.Use(middlewares.AuthMiddleware.MiddlewareFunc())
 	// apiRouter.Use()
 	{
-		apiRouter.GET("status", func(context *gin.Context) {
+		apiRouter.GET("get/status", func(context *gin.Context) {
 			context.JSON(http.StatusOK, map[string]interface{}{
 				"status": "ok",
 			})
@@ -42,12 +42,14 @@ func Run() error {
 		"parse_pikabu_authentication_middleware_",
 	))
 	{
-		parsersAPI.GET("parsers_status", func(context *gin.Context) {
+		parsersAPI.GET("get/parsers_status", func(context *gin.Context) {
 			context.JSON(http.StatusOK, map[string]interface{}{
 				"status": "ok",
 			})
 		})
-		parsersAPI.GET("tasks/any", api.GetAnyTask)
+		parsersAPI.GET("get/tasks/any", api.GetAnyTask)
+		parsersAPI.GET("take/parse_user_by_username_tasks/:username", api.TakeParseUserByUsernameTask)
+		parsersAPI.GET("take/parse_user_by_id_tasks/:id", api.TakeParseUserByIdTask)
 	}
 
 	return router.Run(config.Settings.ServerListeningAddress)

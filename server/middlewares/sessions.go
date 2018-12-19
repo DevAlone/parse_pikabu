@@ -2,7 +2,7 @@ package middlewares
 
 import (
 	. "bitbucket.org/d3dev/parse_pikabu/helpers"
-	"bitbucket.org/d3dev/parse_pikabu/logging"
+	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
 	"net/http"
@@ -29,7 +29,7 @@ func RestrictToGroupMiddleware(groupId GroupId, redisClient *redis.Client, redis
 			RespondWithError(http.StatusUnauthorized, "you're not allowed to see it", context)
 			return
 		} else if err != nil {
-			logging.Log.Error(err)
+			logger.Log.Error(err)
 			RespondWithError(http.StatusInternalServerError, "unable to get groups", context)
 			return
 		}

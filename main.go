@@ -1,61 +1,55 @@
-package parse_pikabu
+package main
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/config"
 	"bitbucket.org/d3dev/parse_pikabu/models"
-	"bitbucket.org/d3dev/parse_pikabu/results_processor"
-	"bitbucket.org/d3dev/parse_pikabu/server"
-	"bitbucket.org/d3dev/parse_pikabu/task_manager"
-	"flag"
-	"sync"
+	"bitbucket.org/d3dev/parse_pikabu/parser"
+	"fmt"
+	"github.com/go-pg/pg/orm"
+	"os"
 )
 
 func main() {
-	configFilePath := flag.String("config", "config.json", "config file")
 
-	if configFilePath == nil {
-		panic("configFilePath is nil")
-	}
-
-	err := config.UpdateSettingsFromFile(*configFilePath)
-	if err != nil {
-		panic(err)
-	}
-
-	err = models.InitDb()
-	if err != nil {
-		panic(err)
-	}
-
-	var wg sync.WaitGroup
-	wg.Add(3)
-
-	// start server
-	go func() {
-		err := server.Run()
+	if len(os.Args) < 2 {
+		_, err := os.Stderr.WriteString(fmt.Sprintf(`Please, specify a command.
+Available commands are: 
+- core
+- parser
+`))
 		if err != nil {
 			panic(err)
 		}
-		wg.Done()
-	}()
+		return
+	}
 
-	// start task manager
-	go func() {
-		err := task_manager.Run()
+	command := os.Args[1]
+	os.Args = os.Args[1:]
+
+	switch command {
+	case "core":
+		Main()
+	case "parser":
+		parser.Main()
+	case "clean_db":
+		err := models.InitDb()
 		if err != nil {
 			panic(err)
 		}
-		wg.Done()
-	}()
 
-	// start results processor
-	go func() {
-		err := results_processor.Run()
+		// clear tables
+		for _, table := range models.Tables {
+			err := models.Db.DropTable(table, &orm.DropTableOptions{
+				IfExists: true,
+				Cascade:  true,
+			})
+			if err != nil {
+				panic(err)
+			}
+		}
+	default:
+		_, err := os.Stderr.WriteString(fmt.Sprintf("Unknown command: %v", command))
 		if err != nil {
 			panic(err)
 		}
-		wg.Done()
-	}()
-
-	wg.Wait()
+	}
 }

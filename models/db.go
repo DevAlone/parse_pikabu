@@ -2,9 +2,8 @@ package models
 
 import (
 	"bitbucket.org/d3dev/parse_pikabu/config"
-	"bitbucket.org/d3dev/parse_pikabu/logging"
+	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"errors"
-	"fmt"
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
 	"strings"
@@ -21,19 +20,19 @@ type QueryHook struct{}
 func (this QueryHook) BeforeQuery(event *pg.QueryEvent) {}
 func (this QueryHook) AfterQuery(event *pg.QueryEvent) {
 	// TODO: make sure that it works
-	query, err := event.FormattedQuery()
+	/*query, err := event.FormattedQuery()
 	if err != nil {
-		logging.Log.Critical(err)
+		logger.Log.Critical(err)
 		return
-	}
+	}*/
 	if config.Settings.Debug {
-		// logging.Log.Debug(fmt.Sprintf("SQL: %s %s\n", time.Since(event.Time), query))
-		logging.Log.Debug(fmt.Sprintf("SQL: %s\n", query))
+		// logger.Log.Debug(fmt.Sprintf("SQL: %s %s\n", time.Since(event.Time), query))
+		// logger.Log.Debug(fmt.Sprintf("SQL: %s\n", query))
 	}
 }
 
 func InitDb() error {
-	logging.Log.Info("start initializing database")
+	logger.Log.Info("start initializing database")
 
 	// TODO:
 	/*&Community{},
@@ -66,7 +65,7 @@ func InitDb() error {
 
 	Db.AddQueryHook(QueryHook{})
 
-	logging.Log.Info("creating schema")
+	logger.Log.Info("creating schema")
 	err := createSchema()
 	if err != nil {
 		return err
@@ -78,7 +77,7 @@ func InitDb() error {
 			continue
 		}
 		query += ";"
-		logging.Log.Info("creating index:", query)
+		logger.Log.Info("creating index:", query)
 		_, err = Db.Exec(query)
 		if err != nil {
 			return err
@@ -89,7 +88,7 @@ func InitDb() error {
 }
 
 func createSchema() error {
-	logging.Log.Debugf("number of Tables is %d", len(Tables))
+	logger.Log.Debugf("number of Tables is %d", len(Tables))
 	for i, model := range Tables {
 		err := Db.CreateTable(model, &orm.CreateTableOptions{
 			IfNotExists:   true,
