@@ -29,13 +29,13 @@ func startListener() error {
 	logger.Log.Debug("connecting to amqp server...")
 	conn, err := amqp.Dial(config.Settings.AMQPAddress)
 	if err != nil {
-		return err
+		return errors.New(err)
 	}
 	defer conn.Close()
 
 	ch, err := conn.Channel()
 	if err != nil {
-		return err
+		return errors.New(err)
 	}
 	defer ch.Close()
 
@@ -49,7 +49,7 @@ func startListener() error {
 		nil,
 	)
 	if err != nil {
-		return err
+		return errors.New(err)
 	}
 
 	q, err := ch.QueueDeclare(
@@ -61,7 +61,7 @@ func startListener() error {
 		nil,
 	)
 	if err != nil {
-		return err
+		return errors.New(err)
 	}
 
 	err = ch.QueueBind(
@@ -72,7 +72,7 @@ func startListener() error {
 		nil,
 	)
 	if err != nil {
-		return err
+		return errors.New(err)
 	}
 
 	messages, err := ch.Consume(
@@ -85,7 +85,7 @@ func startListener() error {
 		nil,
 	)
 	if err != nil {
-		return err
+		return errors.New(err)
 	}
 
 	logger.Log.Debug("start waiting for parser results")
@@ -93,7 +93,7 @@ func startListener() error {
 		logger.Log.Debugf("got parser result: %v", string(message.Body))
 		err = processMessage(message)
 		if err != nil {
-			return err
+			return errors.New(err)
 		}
 	}
 	logger.Log.Debug("stop waiting for parser results")
@@ -104,21 +104,34 @@ func startListener() error {
 func processMessage(message amqp.Delivery) error {
 	switch message.RoutingKey {
 	case "user_profile":
-		var resp struct {
-			ParsingTimestamp models.TimestampType `json:"parsing_timestamp"`
-			ParserId         string               `json:"parser_id"`
-			Data             struct {
-				User *pikago.UserProfile `json:"user"`
-			} `json:"data"`
-		}
+		var resp models.ParserUserProfileResult
 		err := pikago.JsonUnmarshal(message.Body, &resp)
 		if err != nil {
-			return err
+			return errors.New(err)
 		}
 
-		err = processUserProfile(resp.ParsingTimestamp, resp.Data.User)
+		if len(resp.Results) < 1 {
+			return errors.Errorf("bad result: %v", resp)
+		}
+
+		err = processUserProfile(resp.ParsingTimestamp, resp.Results[0].User)
 		if err != nil {
-			return err
+			return errors.New(err)
+		}
+	case "communities_page":
+		var resp models.ParserCommunitiesPageResult
+		err := pikago.JsonUnmarshal(message.Body, &resp)
+		if err != nil {
+			return errors.New(err)
+		}
+
+		if len(resp.Results) < 1 {
+			return errors.Errorf("bad result: %v", resp)
+		}
+
+		err = processCommunitiesPages(resp.ParsingTimestamp, resp.Results)
+		if err != nil {
+			return errors.New(err)
 		}
 	default:
 		logger.Log.Warningf(

@@ -7,7 +7,10 @@ import (
 
 func Run() error {
 	for true {
-		if err := processUserTasks(); err != nil {
+		/*if err := processUserTasks(); err != nil {
+			return err
+		}*/
+		if err := processCommunityTasks(); err != nil {
 			return err
 		}
 

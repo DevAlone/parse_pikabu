@@ -1,12 +1,33 @@
 package main
 
 import (
+	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/parser"
+	"bitbucket.org/d3dev/parse_pikabu/server/middlewares"
 	"fmt"
+	"github.com/go-errors/errors"
 	"github.com/go-pg/pg/orm"
 	"os"
+	"strings"
 )
+
+func handleError(err error) {
+	if err == nil {
+		return
+	}
+	/*if e, ok := err.(*errors.Error); ok {
+		_, err := os.Stderr.WriteString(e.ErrorStack())
+		if err != nil {
+			panic(err)
+		}
+		_, err = os.Stderr.WriteString(e.Error())
+		if err != nil {
+			panic(err)
+		}
+	}*/
+	panic(err)
+}
 
 func main() {
 
@@ -15,10 +36,9 @@ func main() {
 Available commands are: 
 - core
 - parser
+- add_parser
 `))
-		if err != nil {
-			panic(err)
-		}
+		handleError(err)
 		return
 	}
 
@@ -32,9 +52,7 @@ Available commands are:
 		parser.Main()
 	case "clean_db":
 		err := models.InitDb()
-		if err != nil {
-			panic(err)
-		}
+		handleError(err)
 
 		// clear tables
 		for _, table := range models.Tables {
@@ -42,14 +60,22 @@ Available commands are:
 				IfExists: true,
 				Cascade:  true,
 			})
-			if err != nil {
-				panic(err)
-			}
+			handleError(err)
 		}
+	case "add_parser":
+		redisClient := helpers.GetRedisClient()
+		// parse_pikabu_server_authentication_middleware_session_group_
+		//
+		if len(os.Args) < 2 {
+			handleError(errors.New("too few arguments"))
+		}
+		key := "parse_pikabu_server_authentication_middleware_session_group_" + strings.TrimSpace(os.Args[1])
+		err := redisClient.Set(key, fmt.Sprint(middlewares.GROUP_PARSER), 0).Err()
+		handleError(err)
 	default:
 		_, err := os.Stderr.WriteString(fmt.Sprintf("Unknown command: %v", command))
 		if err != nil {
-			panic(err)
+			handleError(err)
 		}
 	}
 }

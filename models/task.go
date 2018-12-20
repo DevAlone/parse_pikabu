@@ -1,10 +1,15 @@
 package models
 
 type Task struct {
-	Id             uint64        `json:"-"`
+	Id             uint64        `json:"id"`
 	IsDone         bool          `sql:",notnull,default:false" json:"is_done"`
 	IsTaken        bool          `sql:",notnull,default:false" json:"is_taken"`
 	AddedTimestamp TimestampType `sql:",notnull" json:"added_timestamp"`
+}
+
+type SimpleTask struct {
+	Task
+	Name string `sql:",notnull"`
 }
 
 type ParseUserByUsernameTask struct {
@@ -19,6 +24,7 @@ type ParseUserByIdTask struct {
 
 func init() {
 	for _, table := range []interface{}{
+		&SimpleTask{},
 		&ParseUserByUsernameTask{},
 		&ParseUserByIdTask{},
 	} {

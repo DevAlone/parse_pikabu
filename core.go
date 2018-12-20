@@ -8,6 +8,7 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/server"
 	"bitbucket.org/d3dev/parse_pikabu/task_manager"
 	"flag"
+	"github.com/go-errors/errors"
 	"github.com/op/go-logging"
 	"os"
 	"sync"
@@ -16,7 +17,7 @@ import (
 func Main() {
 	file, err := os.OpenFile("logs/parse_pikabu.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 	// loggingBackend := logger.NewLogBackend(os.Stderr, "", 0)
 	loggingBackend := logging.NewLogBackend(file, "", 0)
@@ -28,17 +29,17 @@ func Main() {
 	configFilePath := flag.String("config", "config.json", "config file")
 
 	if configFilePath == nil {
-		panic("configFilePath is nil")
+		handleError(errors.New("configFilePath is nil"))
 	}
 
 	err = config.UpdateSettingsFromFile(*configFilePath)
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 
 	err = models.InitDb()
 	if err != nil {
-		panic(err)
+		handleError(err)
 	}
 
 	var wg sync.WaitGroup
@@ -48,7 +49,7 @@ func Main() {
 	go func() {
 		err := server.Run()
 		if err != nil {
-			panic(err)
+			handleError(err)
 		}
 		wg.Done()
 	}()
@@ -57,7 +58,7 @@ func Main() {
 	go func() {
 		err := task_manager.Run()
 		if err != nil {
-			panic(err)
+			handleError(err)
 		}
 		wg.Done()
 	}()
@@ -66,7 +67,7 @@ func Main() {
 	go func() {
 		err := results_processor.Run()
 		if err != nil {
-			panic(err)
+			handleError(err)
 		}
 		wg.Done()
 	}()

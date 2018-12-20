@@ -32,55 +32,31 @@ func GetAnyTask(c *gin.Context) {
 	})
 }
 
-func TakeParseUserByIdTask(c *gin.Context) {
+func TakeTask(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
+		print(c.Param("id"), "\n")
 		AnswerError(c, http.StatusBadRequest, "bad id")
 		return
 	}
-
-	task := models.ParseUserByIdTask{}
-	err = models.Db.Model(&task).Where("id = ?", id).Select()
-	if err == pg.ErrNoRows {
-		AnswerError(c, http.StatusNotFound, "")
-		return
-	} else if err != nil {
-		logger.Log.Error(err)
-		AnswerError(c, http.StatusInternalServerError, "")
+	tableName := c.Param("table_name")
+	switch tableName {
+	case "parse_user_by_id_tasks", "parse_user_by_username_tasks", "simple_tasks":
+	default:
+		AnswerError(c, http.StatusBadRequest, "bad table name")
 		return
 	}
-	task.IsTaken = true
-	err = models.Db.Update(&task)
+
+	_, err = models.Db.Exec(`
+		UPDATE `+tableName+` SET is_taken = true
+		WHERE id = ?
+	`, id)
 	if err != nil {
 		logger.Log.Error(err)
 		AnswerError(c, http.StatusInternalServerError, "")
 		return
 	}
-	c.JSON(http.StatusOK, map[string]string{
-		"status": "ok",
-	})
-}
 
-func TakeParseUserByUsernameTask(c *gin.Context) {
-	username := c.Param("username")
-
-	task := models.ParseUserByUsernameTask{}
-	err := models.Db.Model(&task).Where("username = ?", username).Select()
-	if err == pg.ErrNoRows {
-		AnswerError(c, http.StatusNotFound, "")
-		return
-	} else if err != nil {
-		logger.Log.Error(err)
-		AnswerError(c, http.StatusInternalServerError, "")
-		return
-	}
-	task.IsTaken = true
-	err = models.Db.Update(&task)
-	if err != nil {
-		logger.Log.Error(err)
-		AnswerError(c, http.StatusInternalServerError, "")
-		return
-	}
 	c.JSON(http.StatusOK, map[string]string{
 		"status": "ok",
 	})
@@ -106,6 +82,7 @@ func TryToGetTaskFromDb() (interface{}, error) {
 	tables := []helpers.Tuple{
 		{"parse_user_by_username_tasks", &models.ParseUserByUsernameTask{}},
 		{"parse_user_by_id_tasks", &models.ParseUserByIdTask{}},
+		{"simple_tasks", &models.SimpleTask{}},
 	}
 	rand.Shuffle(len(tables), func(i, j int) {
 		tables[i], tables[j] = tables[j], tables[i]

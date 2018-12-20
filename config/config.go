@@ -6,13 +6,15 @@ import (
 )
 
 var Settings struct {
-	Debug                      bool
-	Database                   map[string]string
-	ProxyProviderClientTimeout int
-	ProxyProviderBaseURL       string
-	Pikabu18BotToken           string
-	ServerListeningAddress     string
-	AMQPAddress                string
+	Debug                       bool
+	Database                    map[string]string
+	ProxyProviderClientTimeout  int
+	ProxyProviderBaseURL        string
+	Pikabu18BotToken            string
+	ServerListeningAddress      string
+	AMQPAddress                 string
+	MaximumTaskProcessingTime   int
+	CommunitiesProcessingPeriod int
 }
 
 func UpdateSettingsFromFile(filename string) error {
@@ -39,4 +41,5 @@ func init() {
 	Settings.Pikabu18BotToken = ""
 	Settings.ServerListeningAddress = "0.0.0.0:8080"
 	Settings.AMQPAddress = "amqp://guest:guest@localhost:5672/"
+	Settings.MaximumTaskProcessingTime = 60
 }

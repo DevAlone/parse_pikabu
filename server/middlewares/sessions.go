@@ -13,13 +13,13 @@ import (
 type GroupId int16
 
 const (
-	GROUP_PARSER GroupId = iota
+	GROUP_PARSER GroupId = 0
 )
 
 func RestrictToGroupMiddleware(groupId GroupId, redisClient *redis.Client, redisPrefix string) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		sessionId := strings.TrimSpace(context.GetHeader("Session-Id"))
-		if match, _ := regexp.MatchString("^[a-z0-9A-Z]{32,32}$", sessionId); !match {
+		if match, _ := regexp.MatchString("^[a-z0-9A-Z_]{32,32}$", sessionId); !match {
 			RespondWithError(http.StatusUnauthorized, "bad session id", context)
 			return
 		}

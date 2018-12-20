@@ -8,54 +8,59 @@ import (
 	"gogsweb.2-47.ru/d3dev/pikago"
 	"io/ioutil"
 	"net/http"
+	"time"
 )
 
 func (this *Parser) processTask(task interface{}) error {
 	switch t := task.(type) {
 	case models.ParseUserByIdTask:
-		fmt.Printf("parse user by id task %v\n", t)
-		resp, err := this.doAPIRequest(
-			"get",
-			"/take/parse_user_by_id_tasks/"+fmt.Sprint(t.PikabuId),
-			nil)
-		if err != nil {
+		logger.Log.Debugf("taking task to parse user by id %v", t)
+		if err := this.takeTask("parse_user_by_id_tasks", t.Id); err != nil {
 			return err
 		}
-		defer resp.Body.Close()
-		bytesResp, err := ioutil.ReadAll(resp.Body)
-		textResp := string(bytesResp)
-		if err != nil {
-			return err
-		}
-		if resp.StatusCode != http.StatusOK {
-			return errors.Errorf("unable to take task %v, error: %v", task, textResp)
-		}
+		// TODO: process
 	case models.ParseUserByUsernameTask:
-		fmt.Printf("parse user by username task %v\n", t)
 		logger.Log.Debugf("taking task to parse user by username %v", t)
-		resp, err := this.doAPIRequest(
-			"get",
-			"/take/parse_user_by_username_tasks/"+fmt.Sprint(t.Username),
-			nil)
+		if err := this.takeTask("parse_user_by_username_tasks", t.Id); err != nil {
+			return err
+		}
+		err := this.processParseUserByUsernameTask(t)
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
-		bytesResp, err := ioutil.ReadAll(resp.Body)
-		textResp := string(bytesResp)
-		if err != nil {
+	case models.SimpleTask:
+		logger.Log.Debugf("taking simple task %v", t)
+		if err := this.takeTask("simple_tasks", t.Id); err != nil {
 			return err
 		}
-		if resp.StatusCode != http.StatusOK {
-			return errors.Errorf("unable to take task %v, error: %s", task, textResp)
-		}
-		err = this.processParseUserByUsernameTask(t)
-		if err != nil {
-			return err
-		}
+		return this.processSimpleTask(t)
 	default:
-		print("bad task %v\n", t)
+		return errors.Errorf("bad task %v\n", t)
 	}
+	return nil
+}
+
+func (this *Parser) takeTask(
+	taskTableName string,
+	idField uint64,
+) error {
+	resp, err := this.doAPIRequest(
+		"get",
+		"/take/"+taskTableName+"/"+fmt.Sprint(idField),
+		nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	bytesResp, err := ioutil.ReadAll(resp.Body)
+	textResp := string(bytesResp)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return errors.Errorf("unable to take task %v, error: %s", taskTableName, textResp)
+	}
+
 	return nil
 }
 
@@ -70,5 +75,26 @@ func (this *Parser) processParseUserByUsernameTask(task models.ParseUserByUserna
 	}
 	res.User = userProfile
 
-	return this.PutResultToQueue(res)
+	return this.PutResultsToQueue("user_profile", res)
+}
+
+func (this *Parser) processSimpleTask(task models.SimpleTask) error {
+	results := []pikago.CommunitiesPage{}
+
+	page := 0
+	for true {
+		logger.Log.Debugf("sending request to get communities")
+		communitiesPage, err := this.pikagoClient.CommunitiesGet(page)
+		if err != nil {
+			return err
+		}
+		if len(communitiesPage.List) == 0 {
+			break
+		}
+		results = append(results, *communitiesPage)
+
+		page++
+		time.Sleep(time.Duration(this.Config.PikagoWaitBetweenProcessingPages) * time.Second)
+	}
+	return this.PutResultsToQueue("communities_page", results)
 }

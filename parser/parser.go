@@ -12,28 +12,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 )
 
-type ParserConfig struct {
-	ApiURL string
-}
-
 type NoTaskError struct{}
 
 func (this NoTaskError) Error() string { return "there is no any task" }
-
-func NewParserConfigFromFile(filepath string) (*ParserConfig, error) {
-	parserConfig := &ParserConfig{}
-	parserConfig.ApiURL = "http://localhost:8080/api/v1"
-
-	if len(filepath) > 0 {
-		// open file
-	}
-
-	return parserConfig, nil
-}
 
 type Parser struct {
 	Config       *ParserConfig
@@ -49,16 +35,17 @@ func NewParser() (*Parser, error) {
 		return nil, err
 	}
 	parser.httpClient = &http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: time.Duration(parser.Config.ApiTimeout) * time.Second,
 	}
 	proxyProvider, err := pikago.GetProxyPyProxyProvider(
-		"https://eivailohciihi4uquapach7abei9iesh.d3d.info/api/v1/",
-		60,
+		parser.Config.ProxyProviderAPIURL,
+		parser.Config.ProxyProviderTimeout,
 	)
 	if err != nil {
 		return nil, err
 	}
 	requestsSender, err := pikago.NewClientProxyRequestsSender(proxyProvider)
+	requestsSender.SetTimeout(parser.Config.PikagoTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -70,12 +57,12 @@ func NewParser() (*Parser, error) {
 	return parser, nil
 }
 
-func handleError(err error) {
+func (this *Parser) handleError(err error) {
 	if err == nil {
 		panic("trying to handle nil error\n")
 	} else if _, ok := err.(NoTaskError); ok {
 		logger.ParserLog.Debug("there is no task, waiting...")
-		time.Sleep(5 * time.Second)
+		time.Sleep(time.Duration(this.Config.WaitNoTaskSeconds) * time.Second)
 		return
 	}
 
@@ -85,23 +72,22 @@ func handleError(err error) {
 		logger.ParserLog.Error(err.Error())
 	}
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(time.Duration(this.Config.WaitAfterErrorSeconds) * time.Second)
 }
 
 func (this *Parser) Loop() {
 	for true {
 		task, err := this.pullTask()
 		if err != nil {
-			handleError(err)
+			this.handleError(err)
 			continue
 		}
 		// process task
 		err = this.processTask(task)
 		if err != nil {
-			handleError(err)
+			this.handleError(err)
 			continue
 		}
-		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -111,7 +97,7 @@ func (this *Parser) doAPIRequest(method string, url string, body io.Reader) (*ht
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Session-Id", "Hohpuu8oogoShaituNoh8iebaesiYaeh")
+	req.Header.Set("Session-Id", this.Config.ApiSessionId)
 	return this.httpClient.Do(req)
 }
 
@@ -120,15 +106,24 @@ func (this *Parser) pullTask() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode == http.StatusNotFound {
-		return nil, NoTaskError{}
-	}
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, errors.New(err)
 	}
+
+	if resp.StatusCode != http.StatusOK {
+		switch resp.StatusCode {
+		case http.StatusNotFound:
+			return nil, NoTaskError{}
+		case http.StatusUnauthorized:
+			return nil, errors.Errorf("Unauthorized: %v", string(body))
+		}
+
+		return nil, errors.Errorf("%v", string(body))
+	}
+
 	var task struct {
 		Name string           `json:"name"`
 		Data *json.RawMessage `json:"data"`
@@ -147,29 +142,39 @@ func (this *Parser) pullTask() (interface{}, error) {
 		res := models.ParseUserByUsernameTask{}
 		err = json.Unmarshal(*task.Data, &res)
 		return res, err
+	case "simple":
+		res := models.SimpleTask{}
+		err = json.Unmarshal(*task.Data, &res)
+		return res, err
 	}
 
 	return nil, errors.Errorf("bad task name: %v", task.Name)
 }
 
-func (this *Parser) PutResultToQueue(result interface{}) error {
+func (this *Parser) PutResultsToQueue(routingKey string, result interface{}) error {
+	numberOfResults := 0
+	resultType := reflect.TypeOf(result)
+	switch resultType.Kind() {
+	case reflect.Slice, reflect.Array:
+		numberOfResults = reflect.ValueOf(result).Len()
+	default:
+		result = []interface{}{result}
+		numberOfResults = 1
+	}
 	logger.ParserLog.Debugf("putting result to queue %v", result)
 
-	var jsonMessage struct {
-		ParsingTimestamp models.TimestampType `json:"parsing_timestamp"`
-		ParserId         string               `json:"parser_id"`
-		Data             interface{}          `json:"data"`
-	}
+	var jsonMessage models.ParserResult
 	jsonMessage.ParsingTimestamp = models.TimestampType(time.Now().Unix())
-	jsonMessage.ParserId = "d3dev/parser_id"
-	jsonMessage.Data = result
+	jsonMessage.ParserId = "d3dev/" + this.Config.ParserId
+	jsonMessage.NumberOfResults = numberOfResults
+	jsonMessage.Results = result
 
 	message, err := json.Marshal(jsonMessage)
 	if err != nil {
 		return err
 	}
 
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672")
+	conn, err := amqp.Dial(this.Config.AMQPAddress)
 	if err != nil {
 		return err
 	}
@@ -196,7 +201,7 @@ func (this *Parser) PutResultToQueue(result interface{}) error {
 
 	err = ch.Publish(
 		"parser_results",
-		"user_profile",
+		routingKey,
 		true,
 		false,
 		amqp.Publishing{

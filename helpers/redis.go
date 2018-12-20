@@ -24,3 +24,16 @@ func GetArrayOfIntsFromRedis(key string, redisClient *redis.Client) ([]int, erro
 
 	return result, nil
 }
+
+var redisClient *redis.Client
+
+func GetRedisClient() *redis.Client {
+	if redisClient == nil {
+		redisClient = redis.NewClient(&redis.Options{
+			Addr:     "localhost:6379",
+			Password: "",
+			DB:       1,
+		})
+	}
+	return redisClient
+}
