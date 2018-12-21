@@ -5,28 +5,28 @@ package models
 type PikabuUser struct {
 	PikabuId uint64 `sql:",pk"`
 
-	Username            string        `sql:",notnull"`
-	Gender              string        `sql:",notnull"`
-	Rating              float32       `sql:",notnull"`
-	NumberOfComments    int32         `sql:",notnull"`
-	NumberOfSubscribers int32         `sql:",notnull"`
-	NumberOfStories     int32         `sql:",notnull"`
-	NumberOfHotStories  int32         `sql:",notnull"`
-	NumberOfPluses      int32         `sql:",notnull"`
-	NumberOfMinuses     int32         `sql:",notnull"`
-	SignupTimestamp     TimestampType `sql:",notnull"`
-	AvatarURL           string        `sql:",notnull"`
-	ApprovedText        string        `sql:",notnull"`
-	Awards              []uint64      `sql:",notnull,array"`
-	Communities         []uint64      `sql:",notnull,array"`
-	BanHistory          []uint64      `sql:",notnull,array"`
-	BanEndTimestamp     TimestampType `sql:",notnull"`
-	IsRatingHidden      bool          `sql:",notnull"`
-	IsBanned            bool          `sql:",notnull"`
-	IsPermanentlyBanned bool          `sql:",notnull"`
+	Username            string        `sql:",notnull" gen_versions:""`
+	Gender              string        `sql:",notnull" gen_versions:""`
+	Rating              float32       `sql:",notnull" gen_versions:""`
+	NumberOfComments    int32         `sql:",notnull" gen_versions:""`
+	NumberOfSubscribers int32         `sql:",notnull" gen_versions:""`
+	NumberOfStories     int32         `sql:",notnull" gen_versions:""`
+	NumberOfHotStories  int32         `sql:",notnull" gen_versions:""`
+	NumberOfPluses      int32         `sql:",notnull" gen_versions:""`
+	NumberOfMinuses     int32         `sql:",notnull" gen_versions:""`
+	SignupTimestamp     TimestampType `sql:",notnull" gen_versions:""`
+	AvatarURL           string        `sql:",notnull" gen_versions:""`
+	ApprovedText        string        `sql:",notnull" gen_versions:""`
+	AwardIds            []uint64      `sql:",notnull,array" gen_versions:""`
+	CommunityIds        []uint64      `sql:",notnull,array" gen_versions:""`
+	BanHistoryItemIds   []uint64      `sql:",notnull,array" gen_versions:""`
+	BanEndTimestamp     TimestampType `sql:",notnull" gen_versions:""`
+	IsRatingHidden      bool          `sql:",notnull" gen_versions:""`
+	IsBanned            bool          `sql:",notnull" gen_versions:""`
+	IsPermanentlyBanned bool          `sql:",notnull" gen_versions:""`
 
 	// ?
-	IsDeleted bool `sql:",notnull,default:false"`
+	// IsDeleted bool `sql:",notnull,default:false"`
 
 	AddedTimestamp TimestampType `sql:",notnull"`
 	// PreviousUpdateTimestamp TimestampType `sql:",notnull, default:0"`
@@ -34,6 +34,7 @@ type PikabuUser struct {
 	NextUpdateTimestamp TimestampType `sql:",notnull,default:0"`
 }
 
+// TODO: condider generating versions for this struct
 type PikabuUserAward struct {
 	PikabuId uint64 `sql:",pk"`
 
@@ -85,62 +86,12 @@ type PikabuUserBanHistoryItem struct {
 	ReasonTitle  string `sql:",notnull"`
 }
 
-type PikabuUserUsernameVersion struct{ StringFieldVersion }
-type PikabuUserRatingVersion struct{ Float32FieldVersion }
-type PikabuUserGenderVersion struct{ StringFieldVersion }
-type PikabuUserNumberOfCommentsVersion struct{ UInt32FieldVersion }
-type PikabuUserNumberOfStoriesVersion struct{ UInt32FieldVersion }
-type PikabuUserNumberOfHotStoriesVersion struct{ UInt32FieldVersion }
-type PikabuUserNumberOfPlusesVersion struct{ UInt32FieldVersion }
-type PikabuUserNumberOfMinusesVersion struct{ UInt32FieldVersion }
-type PikabuUserSignupTimestampVersion struct{ TimestampTypeFieldVersion }
-type PikabuUserAvatarURLVersion struct{ StringFieldVersion }
-type PikabuUserAwardsVersion struct {
-	FieldVersionBase
-	Value []uint64 `sql:",notnull,array"`
-}
-type PikabuUserApprovedTextVersion struct{ StringFieldVersion }
-type PikabuUserCommunitiesVersion struct {
-	FieldVersionBase
-	Value []uint64 `sql:",notnull,array"`
-}
-type PikabuUserNumberOfSubscribersVersion struct{ UInt32FieldVersion }
-type PikabuUserBanHistoryVersion struct {
-	FieldVersionBase
-	Value []uint64 `sql:",notnull,array"`
-}
-type PikabuUserBanEndTimestampVersion struct{ TimestampTypeFieldVersion }
-type PikabuUserIsRatingHiddenVersion struct{ BoolFieldVersion }
-type PikabuUserIsBannedVersion struct{ BoolFieldVersion }
-type PikabuUserIsPermanentlyBannedVersion struct{ BoolFieldVersion }
-type PikabuUserIsDeletedVersion struct{ BoolFieldVersion }
-
 func init() {
 	for _, item := range []interface{}{
 		&PikabuUser{},
 		&PikabuUserAward{},
 		&PikabuUserCommunity{},
 		&PikabuUserBanHistoryItem{},
-		&PikabuUserUsernameVersion{},
-		&PikabuUserRatingVersion{},
-		&PikabuUserGenderVersion{},
-		&PikabuUserNumberOfCommentsVersion{},
-		&PikabuUserNumberOfStoriesVersion{},
-		&PikabuUserNumberOfHotStoriesVersion{},
-		&PikabuUserNumberOfPlusesVersion{},
-		&PikabuUserNumberOfMinusesVersion{},
-		&PikabuUserSignupTimestampVersion{},
-		&PikabuUserAvatarURLVersion{},
-		&PikabuUserAwardsVersion{},
-		&PikabuUserApprovedTextVersion{},
-		&PikabuUserCommunitiesVersion{},
-		&PikabuUserNumberOfSubscribersVersion{},
-		&PikabuUserBanHistoryVersion{},
-		&PikabuUserBanEndTimestampVersion{},
-		&PikabuUserIsRatingHiddenVersion{},
-		&PikabuUserIsBannedVersion{},
-		&PikabuUserIsPermanentlyBannedVersion{},
-		&PikabuUserIsDeletedVersion{},
 	} {
 		Tables = append(Tables, item)
 	}

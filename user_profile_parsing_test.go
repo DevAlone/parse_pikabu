@@ -1,26 +1,33 @@
 package main
 
 import (
+	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/results_processor"
-	"github.com/go-errors/errors"
 	"github.com/go-pg/pg/orm"
+	"github.com/op/go-logging"
 	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"
+	"os"
 	"sync"
 	"testing"
 	"time"
 )
 
-func handleError(err error) {
-	if err, ok := err.(*errors.Error); ok {
-		panic(err.ErrorStack())
-	}
-	panic(err)
-}
-
+// TODO: fix test
 func TestUserProfileParsing(t *testing.T) {
-	err := models.InitDb()
+	file, err := os.OpenFile("logs/parse_pikabu.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		handleError(err)
+	}
+	// loggingBackend := logger.NewLogBackend(os.Stderr, "", 0)
+	loggingBackend := logging.NewLogBackend(file, "", 0)
+	loggingBackendFormatter := logging.NewBackendFormatter(loggingBackend, logger.LogFormat)
+
+	logging.SetBackend(loggingBackend, loggingBackendFormatter)
+	logger.Log.Debug(`start test "user profile parsing"`)
+
+	err = models.InitDb()
 	if err != nil {
 		handleError(err)
 	}
@@ -75,7 +82,9 @@ func TestUserProfileParsing(t *testing.T) {
 	err = pushTaskToQueue([]byte(`
 {
 	"parsing_timestamp": 100,
-	"data": {
+	"parser_id": "d3dev/parser_id",
+	"number_of_results": 1,
+	"results": [{
 		"user": {
 			"current_user_id": 0,
 			"user_id": "2561615",
@@ -147,7 +156,7 @@ func TestUserProfileParsing(t *testing.T) {
 			],
 			"user_ban_time": 1545459492
 		}
-	}
+	}]
 }
 `,
 	))
@@ -176,7 +185,7 @@ func TestUserProfileParsing(t *testing.T) {
 	assert.Equal(t, models.TimestampType(1544846469), user.SignupTimestamp)
 	assert.Equal(t, true, user.IsRatingHidden)
 	assert.Equal(t, "https://cs8.pikabu.ru/avatars/2561/x2561615-512432259.png", user.AvatarURL)
-	// assert.Equal(t, true, user.Awards)
+	// assert.Equal(t, true, user.AwardIds)
 	assert.Equal(t, "approved User", user.ApprovedText)
 	assert.Equal(t, int32(1001), user.NumberOfSubscribers)
 	assert.Equal(t, true, user.IsBanned)
@@ -189,7 +198,9 @@ func TestUserProfileParsing(t *testing.T) {
 	err = pushTaskToQueue([]byte(`
 {
 	"parsing_timestamp": 201,
-	"data": {
+	"parser_id": "d3dev/parser_id",
+	"number_of_results": 1,
+	"results": [{
 		"user": {
 			"current_user_id": 0,
 			"user_id": "2561615",
@@ -274,7 +285,7 @@ func TestUserProfileParsing(t *testing.T) {
 			],
 			"user_ban_time": 1545459492
 		}
-	}
+	}]
 }
 `,
 	))
@@ -303,7 +314,7 @@ func TestUserProfileParsing(t *testing.T) {
 	assert.Equal(t, models.TimestampType(1544846469), user.SignupTimestamp)
 	assert.Equal(t, false, user.IsRatingHidden)
 	assert.Equal(t, "https://cs8.pikabu.ru/avatars/2561/x2561615-512432259.png", user.AvatarURL)
-	// assert.Equal(t, true, user.Awards)
+	// assert.Equal(t, true, user.AwardIds)
 	assert.Equal(t, "approved User", user.ApprovedText)
 	assert.Equal(t, int32(1001), user.NumberOfSubscribers)
 	assert.Equal(t, true, user.IsBanned)
@@ -315,7 +326,9 @@ func TestUserProfileParsing(t *testing.T) {
 	err = pushTaskToQueue([]byte(`
 {
 	"parsing_timestamp": 555,
-	"data": {
+	"parser_id": "d3dev/parser_id",
+	"number_of_results": 1,
+	"results": [{
 		"user": {
 			"current_user_id": 0,
 			"user_id": "2561615",
@@ -360,7 +373,7 @@ func TestUserProfileParsing(t *testing.T) {
 			],
 			"user_ban_time": 100
 		}
-	}
+	}]
 }
 `,
 	))
@@ -400,7 +413,9 @@ func TestUserProfileParsing(t *testing.T) {
 	err = pushTaskToQueue([]byte(`
 {
 	"parsing_timestamp": 1000,
-	"data": {
+	"parser_id": "d3dev/parser_id",
+	"number_of_results": 1,
+	"results": [{
 		"user": {
 			"current_user_id": 0,
 			"user_id": "2561615",
@@ -445,7 +460,7 @@ func TestUserProfileParsing(t *testing.T) {
 			],
 			"user_ban_time": 100
 		}
-	}
+	}]
 }
 `,
 	))
@@ -485,7 +500,9 @@ func TestUserProfileParsing(t *testing.T) {
 	err = pushTaskToQueue([]byte(`
 {
 	"parsing_timestamp": 1500,
-	"data": {
+	"parser_id": "d3dev/parser_id",
+	"number_of_results": 1,
+	"results": [{
 		"user": {
 			"current_user_id": 0,
 			"user_id": "2561615",
@@ -566,7 +583,7 @@ func TestUserProfileParsing(t *testing.T) {
 			],
 			"user_ban_time": 100
 		}
-	}
+	}]
 }
 `,
 	))
@@ -613,24 +630,21 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 
 	assert.Equal(t, []models.PikabuUserUsernameVersion{
-		{models.StringFieldVersion{
-			models.FieldVersionBase{
-				100,
-				user.PikabuId,
-			},
-			"Pisacavtor"}},
-		{models.StringFieldVersion{
-			models.FieldVersionBase{
-				201,
-				user.PikabuId,
-			},
-			"Pisacavtor1"}},
-		{models.StringFieldVersion{
-			models.FieldVersionBase{
-				555,
-				user.PikabuId,
-			},
-			"Pisacavtor"}},
+		{
+			Timestamp: 100,
+			ItemId:    user.PikabuId,
+			Value:     "Pisacavtor",
+		},
+		{
+			Timestamp: 201,
+			ItemId:    user.PikabuId,
+			Value:     "Pisacavtor1",
+		},
+		{
+			Timestamp: 555,
+			ItemId:    user.PikabuId,
+			Value:     "Pisacavtor",
+		},
 	}, usernameVersions)
 
 	ratingVersions := []models.PikabuUserRatingVersion{}
@@ -643,15 +657,9 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 
 	assert.Equal(t, []models.PikabuUserRatingVersion{
-		{models.Float32FieldVersion{models.FieldVersionBase{
-			100, user.PikabuId,
-		}, -3.5}},
-		{models.Float32FieldVersion{models.FieldVersionBase{
-			201, user.PikabuId,
-		}, 10.5}},
-		{models.Float32FieldVersion{models.FieldVersionBase{
-			555, user.PikabuId,
-		}, 5}},
+		{Timestamp: 100, ItemId: user.PikabuId, Value: -3.5},
+		{Timestamp: 201, ItemId: user.PikabuId, Value: 10.5},
+		{Timestamp: 555, ItemId: user.PikabuId, Value: 5},
 	}, ratingVersions)
 
 	isRatingHiddenVersions := []models.PikabuUserIsRatingHiddenVersion{}
@@ -664,18 +672,10 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 
 	assert.Equal(t, []models.PikabuUserIsRatingHiddenVersion{
-		{models.BoolFieldVersion{models.FieldVersionBase{
-			100, user.PikabuId,
-		}, true}},
-		{models.BoolFieldVersion{models.FieldVersionBase{
-			201, user.PikabuId,
-		}, false}},
-		{models.BoolFieldVersion{models.FieldVersionBase{
-			1000, user.PikabuId,
-		}, false}},
-		{models.BoolFieldVersion{models.FieldVersionBase{
-			1500, user.PikabuId,
-		}, true}},
+		{Timestamp: 100, ItemId: user.PikabuId, Value: true},
+		{Timestamp: 201, ItemId: user.PikabuId, Value: false},
+		{Timestamp: 1000, ItemId: user.PikabuId, Value: false},
+		{Timestamp: 1500, ItemId: user.PikabuId, Value: true},
 	}, isRatingHiddenVersions)
 
 	userBanEndTimeVersions := []models.PikabuUserBanEndTimestampVersion{}
@@ -688,19 +688,13 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 
 	assert.Equal(t, []models.PikabuUserBanEndTimestampVersion{
-		{models.TimestampTypeFieldVersion{models.FieldVersionBase{
-			100, user.PikabuId,
-		}, models.TimestampType(1545459492)}},
-		{models.TimestampTypeFieldVersion{models.FieldVersionBase{
-			201, user.PikabuId,
-		}, models.TimestampType(1545459492)}},
-		{models.TimestampTypeFieldVersion{models.FieldVersionBase{
-			555, user.PikabuId,
-		}, models.TimestampType(100)}},
+		{Timestamp: 100, ItemId: user.PikabuId, Value: 1545459492},
+		{Timestamp: 201, ItemId: user.PikabuId, Value: 1545459492},
+		{Timestamp: 555, ItemId: user.PikabuId, Value: 100},
 	}, userBanEndTimeVersions)
 
 	// check awards
-	assert.Equal(t, []uint64{}, user.Awards)
+	assert.Equal(t, []uint64{}, user.AwardIds)
 
 	awards := []models.PikabuUserAward{}
 	err = models.Db.Model(&awards).
@@ -756,7 +750,7 @@ func TestUserProfileParsing(t *testing.T) {
 		},
 	}, awards)
 
-	awardVersions := []models.PikabuUserAwardsVersion{}
+	awardVersions := []models.PikabuUserAwardIdsVersion{}
 	err = models.Db.Model(&awardVersions).
 		Where("item_id = ?", user.PikabuId).
 		Order("timestamp").
@@ -765,16 +759,10 @@ func TestUserProfileParsing(t *testing.T) {
 		handleError(err)
 	}
 
-	assert.Equal(t, []models.PikabuUserAwardsVersion{
-		{models.FieldVersionBase{
-			100, user.PikabuId,
-		}, []uint64{287578, 269145}},
-		{models.FieldVersionBase{
-			201, user.PikabuId,
-		}, []uint64{287578, 269145, 252211}},
-		{models.FieldVersionBase{
-			555, user.PikabuId,
-		}, []uint64{}},
+	assert.Equal(t, []models.PikabuUserAwardIdsVersion{
+		{Timestamp: 100, ItemId: user.PikabuId, Value: []uint64{287578, 269145}},
+		{Timestamp: 201, ItemId: user.PikabuId, Value: []uint64{287578, 269145, 252211}},
+		{Timestamp: 555, ItemId: user.PikabuId, Value: []uint64{}},
 	}, awardVersions)
 
 	// check communities
@@ -808,7 +796,7 @@ func TestUserProfileParsing(t *testing.T) {
 		},
 	}, communities)
 
-	communityVersions := []models.PikabuUserCommunitiesVersion{}
+	communityVersions := []models.PikabuUserCommunityIdsVersion{}
 	err = models.Db.Model(&communityVersions).
 		Where("item_id = ?", user.PikabuId).
 		Order("timestamp").
@@ -817,16 +805,10 @@ func TestUserProfileParsing(t *testing.T) {
 		handleError(err)
 	}
 
-	assert.Equal(t, []models.PikabuUserCommunitiesVersion{
-		{models.FieldVersionBase{
-			100, user.PikabuId},
-			[]uint64{}},
-		{models.FieldVersionBase{
-			1000, user.PikabuId},
-			[]uint64{}},
-		{models.FieldVersionBase{
-			1500, user.PikabuId},
-			[]uint64{1, 2, 3}},
+	assert.Equal(t, []models.PikabuUserCommunityIdsVersion{
+		{Timestamp: 100, ItemId: user.PikabuId, Value: []uint64{}},
+		{Timestamp: 1000, ItemId: user.PikabuId, Value: []uint64{}},
+		{Timestamp: 1500, ItemId: user.PikabuId, Value: []uint64{1, 2, 3}},
 	}, communityVersions)
 
 	// check public ban history
@@ -878,7 +860,7 @@ func TestUserProfileParsing(t *testing.T) {
 		},
 	}, banHistoryItems)
 
-	banHistoryItemVersions := []models.PikabuUserBanHistoryVersion{}
+	banHistoryItemVersions := []models.PikabuUserBanHistoryItemIdsVersion{}
 	err = models.Db.Model(&banHistoryItemVersions).
 		Where("item_id = ?", user.PikabuId).
 		Select()
@@ -886,19 +868,10 @@ func TestUserProfileParsing(t *testing.T) {
 		handleError(err)
 	}
 
-	assert.Equal(t, []models.PikabuUserBanHistoryVersion{
-		{models.FieldVersionBase{
-			100,
-			user.PikabuId},
-			[]uint64{151513}},
-		{models.FieldVersionBase{
-			1000,
-			user.PikabuId},
-			[]uint64{151513}},
-		{models.FieldVersionBase{
-			1500,
-			user.PikabuId},
-			[]uint64{151513, 151514}},
+	assert.Equal(t, []models.PikabuUserBanHistoryItemIdsVersion{
+		{Timestamp: 100, ItemId: user.PikabuId, Value: []uint64{151513}},
+		{Timestamp: 1000, ItemId: user.PikabuId, Value: []uint64{151513}},
+		{Timestamp: 1500, ItemId: user.PikabuId, Value: []uint64{151513, 151514}},
 	}, banHistoryItemVersions)
 
 	// TODO: test pikago.UserProfile serialization

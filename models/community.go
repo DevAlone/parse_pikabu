@@ -1,32 +1,30 @@
 package models
 
-// TODO: update structure
-
-type Community struct {
-	TableName   struct{} `sql:"communities_app_community"`
-	Id          uint64
-	UrlName     string
-	Name        string
-	Description string
-	// TODO: add history
-	AvatarURL           string
-	BackgroundImageURL  string
-	SubscribersCount    int32
-	StoriesCount        int32
-	LastUpdateTimestamp int64
-}
-
-type CommunityCountersEntry struct {
-	TableName struct{} `sql:"communities_app_communitycountersentry"`
-
-	Id               uint64
-	Timestamp        int64
-	CommunityId      uint64
-	SubscribersCount int32
-	StoriesCount     int32
+type PikabuCommunity struct {
+	PikabuId            uint64   `sql:"pk"`
+	Name                string   `sql:",notnull" gen_versions:""`
+	LinkName            string   `sql:",notnull" gen_versions:""`
+	URL                 string   `sql:",notnull" gen_versions:""`
+	AvatarURL           string   `sql:",notnull" gen_versions:""`
+	BackgroundImageURL  string   `sql:",notnull" gen_versions:""`
+	Tags                []string `sql:",notnull,array" gen_versions:""`
+	NumberOfStories     int32    `sql:",notnull" gen_versions:""`
+	NumberOfSubscribers int32    `sql:",notnull" gen_versions:""`
+	// TODO: consider generating diff version for this field
+	Description  string   `sql:",notnull" gen_versions:""`
+	Rules        string   `sql:",notnull" gen_versions:""`
+	Restrictions string   `sql:",notnull" gen_versions:""`
+	AdminId      uint64   `sql:",notnull" gen_versions:""`
+	ModeratorIds []uint64 `sql:",notnull" gen_versions:""`
 }
 
 func init() {
+	for _, item := range []interface{}{
+		&PikabuCommunity{},
+	} {
+		Tables = append(Tables, item)
+	}
+
 	/*
 		addIndex("communities_app_community", "url_name", "hash")
 		addUniqueIndex("communities_app_community", "url_name", "")

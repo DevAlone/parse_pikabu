@@ -85,9 +85,9 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 		SignupTimestamp:     models.TimestampType(userProfile.SignupTimestamp.Value),
 		AvatarURL:           userProfile.AvatarURL,
 		ApprovedText:        userProfile.Approved,
-		Awards:              awardIds,
-		Communities:         communityIds,
-		BanHistory:          banHistoryIds,
+		AwardIds:            awardIds,
+		CommunityIds:        communityIds,
+		BanHistoryItemIds:   banHistoryIds,
 		BanEndTimestamp:     models.TimestampType(userProfile.BanEndTimestamp.Value),
 		IsRatingHidden:      userProfile.IsRatingBanned,
 		IsBanned:            userProfile.IsUserBanned,
@@ -251,8 +251,8 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 	}
 
 	err = processField(tx,
-		&user.Awards,
-		&newUser.Awards,
+		&user.AwardIds,
+		&newUser.AwardIds,
 		"pikabu_user_awards_versions",
 		user,
 		parsingTimestamp,
@@ -262,8 +262,8 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 	}
 
 	err = processField(tx,
-		&user.Communities,
-		&newUser.Communities,
+		&user.CommunityIds,
+		&newUser.CommunityIds,
 		"pikabu_user_communities_versions",
 		user,
 		parsingTimestamp,
@@ -273,8 +273,8 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 	}
 
 	err = processField(tx,
-		&user.BanHistory,
-		&newUser.BanHistory,
+		&user.BanHistoryItemIds,
+		&newUser.BanHistoryItemIds,
 		"pikabu_user_ban_history_versions",
 		user,
 		parsingTimestamp,
@@ -377,26 +377,20 @@ func processField(
 
 			switch versionsTableName {
 			case "pikabu_user_awards_versions":
-				version = &models.PikabuUserAwardsVersion{
-					FieldVersionBase: models.FieldVersionBase{
-						Timestamp: timestamp,
-						ItemId:    user.PikabuId,
-					},
-					Value: *valuePtr.(*[]uint64)}
+				version = &models.PikabuUserAwardIdsVersion{
+					Timestamp: timestamp,
+					ItemId:    user.PikabuId,
+					Value:     *valuePtr.(*[]uint64)}
 			case "pikabu_user_communities_versions":
-				version = &models.PikabuUserCommunitiesVersion{
-					FieldVersionBase: models.FieldVersionBase{
-						Timestamp: timestamp,
-						ItemId:    user.PikabuId,
-					},
-					Value: *valuePtr.(*[]uint64)}
+				version = &models.PikabuUserCommunityIdsVersion{
+					Timestamp: timestamp,
+					ItemId:    user.PikabuId,
+					Value:     *valuePtr.(*[]uint64)}
 			case "pikabu_user_ban_history_versions":
-				version = &models.PikabuUserBanHistoryVersion{
-					FieldVersionBase: models.FieldVersionBase{
-						Timestamp: timestamp,
-						ItemId:    user.PikabuId,
-					},
-					Value: *valuePtr.(*[]uint64)}
+				version = &models.PikabuUserBanHistoryItemIdsVersion{
+					Timestamp: timestamp,
+					ItemId:    user.PikabuId,
+					Value:     *valuePtr.(*[]uint64)}
 			default:
 				return errors.New("processField(): bad version table")
 			}

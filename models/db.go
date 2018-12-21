@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+//go:generate bash -c "cd ..; go run models_versions_fields.generator.go; go fmt models/models.generated.go"
+
 type TimestampType int32
 
 var Db *pg.DB
@@ -33,28 +35,6 @@ func (this QueryHook) AfterQuery(event *pg.QueryEvent) {
 
 func InitDb() error {
 	logger.Log.Info("start initializing database")
-
-	// TODO:
-	/*&Community{},
-	&CommunityCountersEntry{},
-
-	&Image{},
-
-	&Comment{},
-	&CommentImagesVersion{},
-	&CommentParentIdVersion{},
-	&CommentCreatingTimestampVersion{},
-	&CommentRatingVersion{},
-	&CommentStoryIdVersion{},
-	&CommentUserIdVersion{},
-	&CommentAuthorUsernameVersion{},
-	&CommentIsHiddenVersion{},
-	&CommentIsDeletedVersion{},
-	&CommentIsAuthorCommunityModeratorVersion{},
-	&CommentIsAuthorPikabuTeamVersion{},
-	&CommentTextVersion{},
-
-	&StatisticsUsersInQueueCount{},*/
 
 	dbConfig := config.Settings.Database
 	Db = pg.Connect(&pg.Options{
