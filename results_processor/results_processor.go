@@ -4,9 +4,11 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/config"
 	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
+	"fmt"
 	"github.com/go-errors/errors"
 	"github.com/streadway/amqp"
 	"gogsweb.2-47.ru/d3dev/pikago"
+	"reflect"
 	"time"
 )
 
@@ -142,4 +144,43 @@ func processMessage(message amqp.Delivery) error {
 	}
 
 	return nil
+}
+
+func processModelFieldsVersions(oldModelPtr interface{}, newModelPtr interface{}) (bool, error) {
+	wasDataChanged := false
+
+	oldType := reflect.TypeOf(oldModelPtr)
+	newType := reflect.TypeOf(newModelPtr)
+	if oldType != newType {
+		return false, errors.New("types should be equal")
+	}
+
+	oldModel := reflect.ValueOf(oldModelPtr).Elem().Interface()
+	newModel := reflect.ValueOf(newModelPtr).Elem().Interface()
+
+	oldModelVal := reflect.ValueOf(oldModel)
+	newModelVal := reflect.ValueOf(newModel)
+
+	oldModelType := reflect.TypeOf(oldModel)
+
+	for i := 0; i < oldModelType.NumField(); i++ {
+		fieldType := oldModelType.Field(i)
+
+		_, isVersionedField := fieldType.Tag.Lookup("gen_versions")
+		if !isVersionedField {
+			continue
+		}
+		fmt.Printf("found versioned field %v\n", fieldType)
+
+		oldField := oldModelVal.FieldByName(fieldType.Name)
+		newField := newModelVal.FieldByName(fieldType.Name)
+
+		if reflect.DeepEqual(oldField.Interface(), newField.Interface()) {
+			continue
+		}
+		fmt.Printf("fields aren't equal %v, %v\n", oldField, newField)
+		// TODO: complete
+	}
+
+	return wasDataChanged, nil
 }

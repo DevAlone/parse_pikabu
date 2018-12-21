@@ -116,9 +116,12 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 		return nil
 	}
 
-	wasDataChanged := false
+	wasDataChanged, err := processModelFieldsVersions(user, newUser)
+	if err != nil {
+		return err
+	}
 
-	err = processField(tx,
+	/*err = processField(tx,
 		&user.Username,
 		&newUser.Username,
 		"pikabu_user_username_versions",
@@ -325,7 +328,7 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 		&wasDataChanged)
 	if err != nil {
 		return err
-	}
+	}*/
 
 	nextUpdateTimestamp := calculateNextUpdateTimestamp(tx, user, wasDataChanged)
 	user.LastUpdateTimestamp = parsingTimestamp
@@ -333,7 +336,7 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 
 	err = tx.Update(user)
 	if err != nil {
-		return err
+		return errors.New(err)
 	}
 
 	return nil
