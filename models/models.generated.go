@@ -1,7 +1,7 @@
 package models
 
 // generated code, do not touch!
-// generated at timestamp 2018-12-21 19:51:32.629609812 &#43;0000 UTC m=&#43;0.003748290
+// generated at timestamp 2018-12-22 18:38:07.784908096 &#43;0000 UTC m=&#43;0.003866077
 
 type PikabuCommunityNameVersion struct {
 	ItemId    uint64        `sql:",pk,notnull"`
@@ -193,6 +193,41 @@ type PikabuUserIsPermanentlyBannedVersion struct {
 	ItemId    uint64        `sql:",pk,notnull"`
 	Timestamp TimestampType `sql:",pk,notnull"`
 	Value     bool          `sql:",notnull"`
+}
+
+var FieldsVersionTablesMap = map[string]interface{}{
+	"PikabuCommunityNameVersion":                &PikabuCommunityNameVersion{},
+	"PikabuCommunityLinkNameVersion":            &PikabuCommunityLinkNameVersion{},
+	"PikabuCommunityURLVersion":                 &PikabuCommunityURLVersion{},
+	"PikabuCommunityAvatarURLVersion":           &PikabuCommunityAvatarURLVersion{},
+	"PikabuCommunityBackgroundImageURLVersion":  &PikabuCommunityBackgroundImageURLVersion{},
+	"PikabuCommunityTagsVersion":                &PikabuCommunityTagsVersion{},
+	"PikabuCommunityNumberOfStoriesVersion":     &PikabuCommunityNumberOfStoriesVersion{},
+	"PikabuCommunityNumberOfSubscribersVersion": &PikabuCommunityNumberOfSubscribersVersion{},
+	"PikabuCommunityDescriptionVersion":         &PikabuCommunityDescriptionVersion{},
+	"PikabuCommunityRulesVersion":               &PikabuCommunityRulesVersion{},
+	"PikabuCommunityRestrictionsVersion":        &PikabuCommunityRestrictionsVersion{},
+	"PikabuCommunityAdminIdVersion":             &PikabuCommunityAdminIdVersion{},
+	"PikabuCommunityModeratorIdsVersion":        &PikabuCommunityModeratorIdsVersion{},
+	"PikabuUserUsernameVersion":                 &PikabuUserUsernameVersion{},
+	"PikabuUserGenderVersion":                   &PikabuUserGenderVersion{},
+	"PikabuUserRatingVersion":                   &PikabuUserRatingVersion{},
+	"PikabuUserNumberOfCommentsVersion":         &PikabuUserNumberOfCommentsVersion{},
+	"PikabuUserNumberOfSubscribersVersion":      &PikabuUserNumberOfSubscribersVersion{},
+	"PikabuUserNumberOfStoriesVersion":          &PikabuUserNumberOfStoriesVersion{},
+	"PikabuUserNumberOfHotStoriesVersion":       &PikabuUserNumberOfHotStoriesVersion{},
+	"PikabuUserNumberOfPlusesVersion":           &PikabuUserNumberOfPlusesVersion{},
+	"PikabuUserNumberOfMinusesVersion":          &PikabuUserNumberOfMinusesVersion{},
+	"PikabuUserSignupTimestampVersion":          &PikabuUserSignupTimestampVersion{},
+	"PikabuUserAvatarURLVersion":                &PikabuUserAvatarURLVersion{},
+	"PikabuUserApprovedTextVersion":             &PikabuUserApprovedTextVersion{},
+	"PikabuUserAwardIdsVersion":                 &PikabuUserAwardIdsVersion{},
+	"PikabuUserCommunityIdsVersion":             &PikabuUserCommunityIdsVersion{},
+	"PikabuUserBanHistoryItemIdsVersion":        &PikabuUserBanHistoryItemIdsVersion{},
+	"PikabuUserBanEndTimestampVersion":          &PikabuUserBanEndTimestampVersion{},
+	"PikabuUserIsRatingHiddenVersion":           &PikabuUserIsRatingHiddenVersion{},
+	"PikabuUserIsBannedVersion":                 &PikabuUserIsBannedVersion{},
+	"PikabuUserIsPermanentlyBannedVersion":      &PikabuUserIsPermanentlyBannedVersion{},
 }
 
 func init() {

@@ -4,8 +4,8 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/config"
 	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
-	"fmt"
 	"github.com/go-errors/errors"
+	"github.com/go-pg/pg"
 	"github.com/streadway/amqp"
 	"gogsweb.2-47.ru/d3dev/pikago"
 	"reflect"
@@ -95,7 +95,7 @@ func startListener() error {
 		logger.Log.Debugf("got parser result: %v", string(message.Body))
 		err = processMessage(message)
 		if err != nil {
-			return errors.New(err)
+			return err
 		}
 	}
 	logger.Log.Debug("stop waiting for parser results")
@@ -118,7 +118,7 @@ func processMessage(message amqp.Delivery) error {
 
 		err = processUserProfile(resp.ParsingTimestamp, resp.Results[0].User)
 		if err != nil {
-			return errors.New(err)
+			return err
 		}
 	case "communities_page":
 		var resp models.ParserCommunitiesPageResult
@@ -146,22 +146,32 @@ func processMessage(message amqp.Delivery) error {
 	return nil
 }
 
-func processModelFieldsVersions(oldModelPtr interface{}, newModelPtr interface{}) (bool, error) {
+func processModelFieldsVersions(
+	tx *pg.Tx,
+	oldModelPtr interface{},
+	newModelPtr interface{},
+	parsingTimestamp models.TimestampType,
+) (bool, error) {
 	wasDataChanged := false
 
-	oldType := reflect.TypeOf(oldModelPtr)
-	newType := reflect.TypeOf(newModelPtr)
-	if oldType != newType {
+	if reflect.TypeOf(oldModelPtr) != reflect.TypeOf(newModelPtr) {
 		return false, errors.New("types should be equal")
 	}
 
-	oldModel := reflect.ValueOf(oldModelPtr).Elem().Interface()
-	newModel := reflect.ValueOf(newModelPtr).Elem().Interface()
+	oldModel := reflect.ValueOf(oldModelPtr).Elem()
+	newModel := reflect.ValueOf(newModelPtr).Elem()
 
-	oldModelVal := reflect.ValueOf(oldModel)
-	newModelVal := reflect.ValueOf(newModel)
+	oldId := oldModel.FieldByName("PikabuId").Uint()
+	newId := newModel.FieldByName("PikabuId").Uint()
 
-	oldModelType := reflect.TypeOf(oldModel)
+	if oldId != newId {
+		return false, errors.New("ids should be equal")
+	}
+
+	addedTimestamp := models.TimestampType(oldModel.FieldByName("AddedTimestamp").Int())
+	lastUpdateTimestamp := models.TimestampType(oldModel.FieldByName("LastUpdateTimestamp").Int())
+
+	oldModelType := reflect.TypeOf(oldModel.Interface())
 
 	for i := 0; i < oldModelType.NumField(); i++ {
 		fieldType := oldModelType.Field(i)
@@ -170,16 +180,73 @@ func processModelFieldsVersions(oldModelPtr interface{}, newModelPtr interface{}
 		if !isVersionedField {
 			continue
 		}
-		fmt.Printf("found versioned field %v\n", fieldType)
 
-		oldField := oldModelVal.FieldByName(fieldType.Name)
-		newField := newModelVal.FieldByName(fieldType.Name)
+		oldField := oldModel.FieldByName(fieldType.Name)
+		newField := newModel.FieldByName(fieldType.Name)
 
 		if reflect.DeepEqual(oldField.Interface(), newField.Interface()) {
 			continue
 		}
-		fmt.Printf("fields aren't equal %v, %v\n", oldField, newField)
-		// TODO: complete
+		wasDataChanged = true
+
+		// generate versions
+		versionTable := models.FieldsVersionTablesMap[oldModelType.Name()+fieldType.Name+"Version"]
+
+		insertVersion := func(
+			timestamp models.TimestampType,
+			value reflect.Value,
+			ignoreIfExists bool,
+		) error {
+			e := reflect.ValueOf(versionTable).Elem()
+			e.FieldByName("ItemId").SetUint(oldId)
+			e.FieldByName("Timestamp").Set(reflect.ValueOf(timestamp))
+			e.FieldByName("Value").Set(value)
+
+			var err error
+			if ignoreIfExists {
+				_, err = tx.Model(versionTable).
+					OnConflict("DO NOTHING").
+					Insert(versionTable)
+			} else {
+				err = tx.Insert(versionTable)
+			}
+
+			return err
+		}
+
+		count, err := tx.Model(versionTable).Where("item_id = ?", oldId).Count()
+		if err != nil {
+			return false, errors.New(err)
+		}
+
+		if count == 0 {
+			err := insertVersion(
+				addedTimestamp,
+				oldField,
+				false)
+			if err != nil {
+				return false, err
+			}
+		}
+
+		err = insertVersion(
+			lastUpdateTimestamp,
+			oldField,
+			true)
+		if err != nil {
+			return false, err
+		}
+
+		err = insertVersion(
+			parsingTimestamp,
+			newField,
+			false)
+		if err != nil {
+			return false, err
+		}
+
+		// set the field
+		oldField.Set(newField)
 	}
 
 	return wasDataChanged, nil

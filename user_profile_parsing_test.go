@@ -164,8 +164,7 @@ func TestUserProfileParsing(t *testing.T) {
 		handleError(err)
 	}
 
-	// TODO: wait for queue to become empty
-	time.Sleep(1 * time.Second)
+	waitForQueueEmpty()
 
 	user := &models.PikabuUser{
 		PikabuId: 2561615,
@@ -293,8 +292,7 @@ func TestUserProfileParsing(t *testing.T) {
 		handleError(err)
 	}
 
-	// TODO: wait for queue to become empty
-	time.Sleep(1 * time.Second)
+	waitForQueueEmpty()
 
 	user = &models.PikabuUser{
 		PikabuId: 2561615,
@@ -381,8 +379,7 @@ func TestUserProfileParsing(t *testing.T) {
 		handleError(err)
 	}
 
-	// TODO: wait for queue to become empty
-	time.Sleep(1 * time.Second)
+	waitForQueueEmpty()
 
 	user = &models.PikabuUser{
 		PikabuId: 2561615,
@@ -468,8 +465,7 @@ func TestUserProfileParsing(t *testing.T) {
 		handleError(err)
 	}
 
-	// TODO: wait for queue to become empty
-	time.Sleep(1 * time.Second)
+	waitForQueueEmpty()
 
 	user = &models.PikabuUser{
 		PikabuId: 2561615,
@@ -591,8 +587,7 @@ func TestUserProfileParsing(t *testing.T) {
 		handleError(err)
 	}
 
-	// TODO: wait for queue to become empty
-	time.Sleep(1 * time.Second)
+	waitForQueueEmpty()
 
 	user = &models.PikabuUser{
 		PikabuId: 2561615,
@@ -915,4 +910,47 @@ func pushTaskToQueue(message []byte) error {
 		},
 	)
 	return err
+}
+
+func waitForQueueEmpty() {
+	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672")
+	if err != nil {
+		handleError(err)
+	}
+	defer conn.Close()
+
+	ch, err := conn.Channel()
+	if err != nil {
+		handleError(err)
+	}
+	defer ch.Close()
+
+	err = ch.ExchangeDeclare(
+		"parser_results",
+		"fanout",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		handleError(err)
+	}
+
+	q, err := ch.QueueDeclare(
+		"bitbucket.org/d3dev/parse_pikabu",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		handleError(err)
+	}
+	for q.Messages > 0 {
+		time.Sleep(1 * time.Second)
+	}
+	time.Sleep(2 * time.Second)
 }

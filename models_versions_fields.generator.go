@@ -46,6 +46,19 @@ func main() {
 		}
 	}
 
+	fieldsVersionTablesMapCode := `
+var FieldsVersionTablesMap = map[string]interface{}{
+`
+	for _, tableName := range generatedTablesNames {
+		fieldsVersionTablesMapCode += `"` + tableName + `": &` + tableName + "{},\n"
+	}
+
+	fieldsVersionTablesMapCode += `}
+`
+
+	_, err = f.WriteString(fieldsVersionTablesMapCode)
+	handleErr(err)
+
 	// generate init
 	_, err = f.WriteString(getInit(generatedTablesNames))
 	handleErr(err)

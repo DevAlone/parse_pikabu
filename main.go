@@ -26,6 +26,13 @@ func handleError(err error) {
 			panic(err)
 		}
 	}*/
+
+	if e, ok := err.(*errors.Error); ok {
+		_, er := os.Stderr.WriteString(e.ErrorStack())
+		if er != nil {
+			panic(er)
+		}
+	}
 	panic(err)
 }
 
