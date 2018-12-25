@@ -8,12 +8,23 @@ import (
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
 	"gogsweb.2-47.ru/d3dev/pikago"
-	"reflect"
 	"sync"
 	"time"
 )
 
 var processUserProfileMutex = &sync.Mutex{}
+
+func processUserProfiles(parsingTimestamp models.TimestampType, userProfiles []pikago.UserProfile) error {
+	for _, userProfile := range userProfiles {
+		// TODO: make it concurrent
+		err := processUserProfile(parsingTimestamp, &userProfile)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago.UserProfile) error {
 	processUserProfileMutex.Lock()
@@ -105,19 +116,20 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 	err = tx.Select(user)
 
 	if err == pg.ErrNoRows {
-		return tx.Insert(newUser)
+		err := tx.Insert(newUser)
+		if err != nil {
+			return errors.New(err)
+		}
+		return nil
 	} else if err != nil {
 		return err
 	}
 
-	if parsingTimestamp <= user.LastUpdateTimestamp {
-		// TODO: find a better way
+	wasDataChanged, err := processModelFieldsVersions(tx, user, newUser, parsingTimestamp)
+	if _, ok := err.(OldParserResultError); ok {
 		logger.Log.Warning("skipping user %v because of old parsing result", user.Username)
 		return nil
-	}
-
-	wasDataChanged, err := processModelFieldsVersions(tx, user, newUser, parsingTimestamp)
-	if err != nil {
+	} else if err != nil {
 		return err
 	}
 
@@ -142,41 +154,45 @@ func createAwardIdsArray(
 
 	for _, parsedAward := range parsedAwards {
 		award := &models.PikabuUserAward{
-			PikabuId:      parsedAward.Id.Value,
-			Timestamp:     parsingTimestamp,
-			UserId:        parsedAward.UserId.Value,
-			AwardId:       parsedAward.AwardId.Value,
-			AwardTitle:    parsedAward.AwardTitle,
-			AwardImageURL: parsedAward.AwardImageURL,
-			StoryId:       parsedAward.StoryId.Value,
-			StoryTitle:    parsedAward.StoryTitle,
-			IssuingDate:   parsedAward.IssuingDate,
-			IsHidden:      parsedAward.IsHidden.Value != 0,
-			CommentId:     parsedAward.CommentId.Value,
-			Link:          parsedAward.Link,
+			PikabuId:            parsedAward.Id.Value,
+			AddedTimestamp:      parsingTimestamp,
+			UserId:              parsedAward.UserId.Value,
+			AwardId:             parsedAward.AwardId.Value,
+			AwardTitle:          parsedAward.AwardTitle,
+			AwardImageURL:       parsedAward.AwardImageURL,
+			StoryId:             parsedAward.StoryId.Value,
+			StoryTitle:          parsedAward.StoryTitle,
+			IssuingDate:         parsedAward.IssuingDate,
+			IsHidden:            parsedAward.IsHidden.Value != 0,
+			CommentId:           parsedAward.CommentId.Value,
+			Link:                parsedAward.Link,
+			LastUpdateTimestamp: parsingTimestamp,
 		}
 		awardFromDb := &models.PikabuUserAward{
 			PikabuId: parsedAward.Id.Value,
 		}
 		err := tx.Select(awardFromDb)
-		found := err != pg.ErrNoRows
-		if found && err != nil {
+		if err != pg.ErrNoRows && err != nil {
 			return nil, err
 		}
+
+		found := err != pg.ErrNoRows
+
 		if found {
-			// really bad workaround
-			award.Timestamp = awardFromDb.Timestamp
-		}
-		if found && !reflect.DeepEqual(award, awardFromDb) {
-			return nil, errors.New(fmt.Sprintf(
-				"award with id %v has been changed. Old state %v, new state %v",
-				parsedAward.Id.Value,
-				awardFromDb,
-				award,
-			))
-		}
-		award.Timestamp = parsingTimestamp
-		if !found {
+			_, err := processModelFieldsVersions(tx, awardFromDb, award, parsingTimestamp)
+			if _, ok := err.(OldParserResultError); ok {
+				logger.Log.Warning("skipping item %v because of old parsing result", award)
+			} else {
+				if err != nil {
+					return nil, err
+				}
+				awardFromDb.LastUpdateTimestamp = parsingTimestamp
+				err = tx.Update(awardFromDb)
+				if err != nil {
+					return nil, errors.New(err)
+				}
+			}
+		} else {
 			err := tx.Insert(award)
 			if err != nil {
 				return nil, err
@@ -193,33 +209,29 @@ func createCommunityIdsArray(
 	parsingTimestamp models.TimestampType,
 ) ([]uint64, error) {
 	result := []uint64{}
-
 	for _, parsedCommunity := range parsedCommunities {
 		community := &models.PikabuUserCommunity{
-			Timestamp: parsingTimestamp,
-			Name:      parsedCommunity.Name,
-			Link:      parsedCommunity.Link,
-			AvatarURL: parsedCommunity.AvatarURL,
+			Name:                parsedCommunity.Name,
+			Link:                parsedCommunity.Link,
+			AvatarURL:           parsedCommunity.AvatarURL,
+			AddedTimestamp:      parsingTimestamp,
+			LastUpdateTimestamp: parsingTimestamp,
 		}
 		communityFromDb := &models.PikabuUserCommunity{}
 		err := tx.Model(communityFromDb).
 			Where("link = ?", parsedCommunity.Link).
 			Select()
-		found := err != pg.ErrNoRows
-		if found && err != nil {
+		if err != pg.ErrNoRows && err != nil {
 			return nil, err
 		}
 
+		found := err != pg.ErrNoRows
 		if found {
 			community.Id = communityFromDb.Id
-			community.Timestamp = communityFromDb.Timestamp
-			if !reflect.DeepEqual(community, communityFromDb) {
-				return nil, errors.New(fmt.Sprintf(
-					"community with link %v has been changed. Old state %v, new state %v",
-					community.Link,
-					communityFromDb,
-					community,
-				))
+			community.AddedTimestamp = communityFromDb.AddedTimestamp
+			err := tx.Update(community)
+			if err != nil {
+				return nil, errors.New(err)
 			}
 		} else {
 			_, err := tx.Model(community).Returning("*").Insert()
@@ -239,11 +251,9 @@ func createBanHistoryIdsArray(
 	parsingTimestamp models.TimestampType,
 ) ([]uint64, error) {
 	result := []uint64{}
-
 	for _, parsedBanHistoryItem := range parsedBanHistoryItems {
 		banHistoryItem := &models.PikabuUserBanHistoryItem{
 			PikabuId:                parsedBanHistoryItem.Id.Value,
-			Timestamp:               parsingTimestamp,
 			BanStartTimestamp:       models.TimestampType(parsedBanHistoryItem.BanStartTimestamp.Value),
 			CommentId:               parsedBanHistoryItem.CommentId.Value,
 			CommentHtmlDeleteReason: parsedBanHistoryItem.CommentHtmlDeleteReason,
@@ -258,28 +268,34 @@ func createBanHistoryIdsArray(
 			ReasonsLimit:            parsedBanHistoryItem.ReasonsLimit.Value,
 			ReasonCount:             parsedBanHistoryItem.ReasonCount.Value,
 			ReasonTitle:             parsedBanHistoryItem.ReasonTitle,
+
+			AddedTimestamp:      parsingTimestamp,
+			LastUpdateTimestamp: parsingTimestamp,
 		}
 		dbBanHistoryItem := &models.PikabuUserBanHistoryItem{
 			PikabuId: banHistoryItem.PikabuId,
 		}
 		err := tx.Select(dbBanHistoryItem)
-		found := err != pg.ErrNoRows
-		if found && err != nil {
+		if err != pg.ErrNoRows && err != nil {
 			return nil, err
 		}
+
+		found := err != pg.ErrNoRows
 		if found {
-			banHistoryItem.Timestamp = dbBanHistoryItem.Timestamp
-		}
-		if found && !reflect.DeepEqual(banHistoryItem, dbBanHistoryItem) {
-			return nil, errors.New(fmt.Sprintf(
-				"ban history item with id %v has been changed. Old state %v, new state %v",
-				banHistoryItem.PikabuId,
-				dbBanHistoryItem,
-				banHistoryItem,
-			))
-		}
-		banHistoryItem.Timestamp = parsingTimestamp
-		if !found {
+			_, err := processModelFieldsVersions(tx, dbBanHistoryItem, banHistoryItem, parsingTimestamp)
+			if _, ok := err.(OldParserResultError); ok {
+				logger.Log.Warning("skipping item %v because of old parsing result", banHistoryItem)
+			} else {
+				if err != nil {
+					return nil, err
+				}
+				dbBanHistoryItem.LastUpdateTimestamp = parsingTimestamp
+				err = tx.Update(dbBanHistoryItem)
+				if err != nil {
+					return nil, errors.New(err)
+				}
+			}
+		} else {
 			err := tx.Insert(banHistoryItem)
 			if err != nil {
 				return nil, err

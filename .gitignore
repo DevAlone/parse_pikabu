@@ -1,4 +1,4 @@
 .db.user.state
 .idea/
-config.json
+*.config.json
 parse_pikabu

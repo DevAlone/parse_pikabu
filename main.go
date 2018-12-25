@@ -43,6 +43,7 @@ func main() {
 Available commands are: 
 - core
 - parser
+- clean_db
 - add_parser
 `))
 		handleError(err)

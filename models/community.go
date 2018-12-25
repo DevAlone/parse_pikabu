@@ -1,7 +1,7 @@
 package models
 
 type PikabuCommunity struct {
-	PikabuId            uint64   `sql:"pk"`
+	PikabuId            uint64   `sql:",pk"`
 	Name                string   `sql:",notnull" gen_versions:""`
 	LinkName            string   `sql:",notnull" gen_versions:""`
 	URL                 string   `sql:",notnull" gen_versions:""`
@@ -16,6 +16,9 @@ type PikabuCommunity struct {
 	Restrictions string   `sql:",notnull" gen_versions:""`
 	AdminId      uint64   `sql:",notnull" gen_versions:""`
 	ModeratorIds []uint64 `sql:",notnull" gen_versions:""`
+
+	AddedTimestamp      TimestampType `sql:",notnull"`
+	LastUpdateTimestamp TimestampType `sql:",notnull"`
 }
 
 func init() {

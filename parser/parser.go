@@ -4,6 +4,7 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"encoding/json"
+	"fmt"
 	"github.com/go-errors/errors"
 	"github.com/op/go-logging"
 	"github.com/streadway/amqp"
@@ -14,6 +15,7 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -27,13 +29,10 @@ type Parser struct {
 	pikagoClient *pikago.Client
 }
 
-func NewParser() (*Parser, error) {
+func NewParser(config *ParserConfig) (*Parser, error) {
 	parser := &Parser{}
 	var err error
-	parser.Config, err = NewParserConfigFromFile("")
-	if err != nil {
-		return nil, err
-	}
+	parser.Config = config
 	parser.httpClient = &http.Client{
 		Timeout: time.Duration(parser.Config.ApiTimeout) * time.Second,
 	}
@@ -217,20 +216,43 @@ func (this *Parser) PutResultsToQueue(routingKey string, result interface{}) err
 
 func Main() {
 	file, err := os.OpenFile("logs/parser.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		panic(err)
-	}
+	panicOnError(err)
 	// loggingBackend := logger.NewLogBackend(os.Stderr, "", 0)
 	loggingBackend := logging.NewLogBackend(file, "", 0)
 	loggingBackendFormatter := logging.NewBackendFormatter(loggingBackend, logger.LogFormat)
 
 	logging.SetBackend(loggingBackend, loggingBackendFormatter)
 	logger.ParserLog.Debug("app started")
-	// TODO: pass config here
 
-	parser, err := NewParser()
-	if err != nil {
-		panic(err)
+	parsersConfig, err := NewParsersConfigFromFile("parsers.config.json")
+	panicOnError(err)
+
+	var wg sync.WaitGroup
+
+	for _, parserConfig := range parsersConfig.Configs {
+		// var configs
+		for i := uint(0); i < parserConfig.NumberOfInstances; i++ {
+			var config ParserConfig
+			config = parserConfig
+			if i != 0 {
+				config.ParserId += "_copy_" + fmt.Sprint(i+1)
+			}
+			parser, err := NewParser(&config)
+			if err != nil {
+				panicOnError(err)
+			}
+			wg.Add(1)
+			go parser.Loop()
+		}
 	}
-	parser.Loop()
+
+	wg.Wait()
+}
+
+func panicOnError(err error) {
+	if err == nil {
+		return
+	}
+
+	panic(err)
 }

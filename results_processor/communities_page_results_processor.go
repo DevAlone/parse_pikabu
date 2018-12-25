@@ -3,6 +3,7 @@ package results_processor
 import (
 	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
 	"gogsweb.2-47.ru/d3dev/pikago"
 	"sync"
@@ -21,10 +22,11 @@ func processCommunitiesPages(parsingTimestamp models.TimestampType, communitiesP
 	defer tx.Rollback()
 
 	// TODO: process
+	// TODO: process deleted communities
 	logger.Log.Debugf("processing community pages. number of pages is %v", len(communitiesPages))
 	for _, communitiesPage := range communitiesPages {
 		for _, community := range communitiesPage.List {
-			err := processCommunity(tx, &community)
+			err := processCommunity(parsingTimestamp, tx, &community)
 			if err != nil {
 				return err
 			}
@@ -34,7 +36,66 @@ func processCommunitiesPages(parsingTimestamp models.TimestampType, communitiesP
 	return tx.Commit()
 }
 
-func processCommunity(tx *pg.Tx, community *pikago.Community) error {
-	// TODO: implement
+func processCommunity(
+	parsingTimestamp models.TimestampType,
+	tx *pg.Tx, parsedCommunity *pikago.Community,
+) error {
+	moderatorIds := []uint64{}
+	for _, moderator := range parsedCommunity.CommunityModerators {
+		moderatorIds = append(moderatorIds, moderator.Id.Value)
+	}
+
+	newCommunity := &models.PikabuCommunity{
+		PikabuId:            parsedCommunity.Id.Value,
+		Name:                parsedCommunity.Name,
+		LinkName:            parsedCommunity.Link,
+		URL:                 parsedCommunity.URL,
+		AvatarURL:           parsedCommunity.AvatarURL,
+		BackgroundImageURL:  parsedCommunity.BackgroundImageURL,
+		Tags:                parsedCommunity.Tags,
+		NumberOfStories:     int32(parsedCommunity.NumberOfStories.Value),
+		NumberOfSubscribers: int32(parsedCommunity.NumberOfSubscribers.Value),
+		Description:         parsedCommunity.Description,
+		Rules:               parsedCommunity.Rules,
+		Restrictions:        parsedCommunity.Restrictions,
+		AdminId:             parsedCommunity.CommunityAdmin.Id.Value,
+		ModeratorIds:        moderatorIds,
+		AddedTimestamp:      parsingTimestamp,
+		LastUpdateTimestamp: parsingTimestamp,
+	}
+
+	community := &models.PikabuCommunity{
+		PikabuId: newCommunity.PikabuId,
+	}
+
+	err := tx.Select(community)
+	if err == pg.ErrNoRows {
+		err := tx.Insert(newCommunity)
+		if err != nil {
+			return errors.New(err)
+		}
+		return nil
+	} else if err != nil {
+		return errors.New(err)
+	}
+
+	if parsingTimestamp <= community.LastUpdateTimestamp {
+		// TODO: find a better way
+		logger.Log.Warning("skipping community %v because of old parsing result", community.LinkName)
+		return nil
+	}
+
+	_, err = processModelFieldsVersions(tx, community, newCommunity, parsingTimestamp)
+	if err != nil {
+		return err
+	}
+
+	community.LastUpdateTimestamp = parsingTimestamp
+
+	err = tx.Update(community)
+	if err != nil {
+		return errors.New(err)
+	}
+
 	return nil
 }

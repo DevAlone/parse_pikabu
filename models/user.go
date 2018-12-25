@@ -28,62 +28,67 @@ type PikabuUser struct {
 	// ?
 	// IsDeleted bool `sql:",notnull,default:false"`
 
-	AddedTimestamp TimestampType `sql:",notnull"`
-	// PreviousUpdateTimestamp TimestampType `sql:",notnull, default:0"`
-	LastUpdateTimestamp TimestampType `sql:",notnull,default:0"`
-	NextUpdateTimestamp TimestampType `sql:",notnull,default:0"`
+	AddedTimestamp      TimestampType `sql:",notnull"`
+	LastUpdateTimestamp TimestampType `sql:",notnull"`
+	NextUpdateTimestamp TimestampType `sql:",notnull"`
 }
 
 // TODO: condider generating versions for this struct
 type PikabuUserAward struct {
 	PikabuId uint64 `sql:",pk"`
 
-	Timestamp TimestampType `sql:",notnull"`
-	UserId    uint64        `sql:",notnull"`
+	UserId uint64 `sql:",notnull" gen_versions:""`
 	// TODO: figure out what the heck it is,
 	// l4rever has 0 in this field in one of his awards
-	AwardId       uint64 `sql:",notnull"`
-	AwardTitle    string `sql:",notnull"`
-	AwardImageURL string `sql:",notnull"`
-	StoryId       uint64 `sql:",notnull"`
-	StoryTitle    string `sql:",notnull"`
-	IssuingDate   string `sql:",notnull"`
+	AwardId       uint64 `sql:",notnull" gen_versions:""`
+	AwardTitle    string `sql:",notnull" gen_versions:""`
+	AwardImageURL string `sql:",notnull" gen_versions:""`
+	StoryId       uint64 `sql:",notnull" gen_versions:""`
+	StoryTitle    string `sql:",notnull" gen_versions:""`
+	IssuingDate   string `sql:",notnull" gen_versions:""`
 	// TODO: replace to bool?
-	IsHidden  bool   `sql:",notnull"`
-	CommentId uint64 `sql:",notnull"`
+	IsHidden  bool   `sql:",notnull" gen_versions:""`
+	CommentId uint64 `sql:",notnull" gen_versions:""`
 	// link to reason of award whether it was comment, story or anything else
-	Link string `sql:",notnull"`
+	Link string `sql:",notnull" gen_versions:""`
+
+	AddedTimestamp      TimestampType `sql:",notnull"`
+	LastUpdateTimestamp TimestampType `sql:",notnull"`
 }
 
 type PikabuUserCommunity struct {
 	Id uint64
 
-	Timestamp TimestampType `sql:",notnull"`
-	Name      string        `sql:",notnull"`
-	Link      string        `sql:",notnull,unique"`
-	AvatarURL string        `sql:",notnull"`
+	Name      string `sql:",notnull"`
+	Link      string `sql:",notnull,unique"`
+	AvatarURL string `sql:",notnull"`
+
+	AddedTimestamp      TimestampType `sql:",notnull"`
+	LastUpdateTimestamp TimestampType `sql:",notnull"`
 }
 
 type PikabuUserBanHistoryItem struct {
 	PikabuId uint64 `sql:",pk"`
 
-	Timestamp         TimestampType `sql:",notnull"`
-	BanStartTimestamp TimestampType `sql:",notnull"`
+	BanStartTimestamp TimestampType `sql:",notnull" gen_versions:""`
 	// id of comment caused ban if there was such
-	CommentId               uint64 `sql:",notnull"`
-	CommentHtmlDeleteReason string `sql:",notnull"`
-	StoryId                 uint64 `sql:",notnull"`
-	UserId                  uint64 `sql:",notnull"`
-	BanReason               string `sql:",notnull"`
-	BanReasonId             uint64 `sql:",notnull"`
-	StoryURL                string `sql:",notnull"`
-	ModeratorId             uint64 `sql:",notnull"`
-	ModeratorName           string `sql:",notnull"`
-	ModeratorAvatar         string `sql:",notnull"`
+	CommentId               uint64 `sql:",notnull" gen_versions:""`
+	CommentHtmlDeleteReason string `sql:",notnull" gen_versions:""`
+	StoryId                 uint64 `sql:",notnull" gen_versions:""`
+	UserId                  uint64 `sql:",notnull" gen_versions:""`
+	BanReason               string `sql:",notnull" gen_versions:""`
+	BanReasonId             uint64 `sql:",notnull" gen_versions:""`
+	StoryURL                string `sql:",notnull" gen_versions:""`
+	ModeratorId             uint64 `sql:",notnull" gen_versions:""`
+	ModeratorName           string `sql:",notnull" gen_versions:""`
+	ModeratorAvatar         string `sql:",notnull" gen_versions:""`
 	// TODO: figure out what it means
-	ReasonsLimit uint64 `sql:",notnull"`
-	ReasonCount  uint64 `sql:",notnull"`
-	ReasonTitle  string `sql:",notnull"`
+	ReasonsLimit uint64 `sql:",notnull" gen_versions:""`
+	ReasonCount  uint64 `sql:",notnull" gen_versions:""`
+	ReasonTitle  string `sql:",notnull" gen_versions:""`
+
+	AddedTimestamp      TimestampType `sql:",notnull"`
+	LastUpdateTimestamp TimestampType `sql:",notnull"`
 }
 
 func init() {

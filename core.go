@@ -26,7 +26,7 @@ func Main() {
 	logging.SetBackend(loggingBackend, loggingBackendFormatter)
 	logger.Log.Debug("app started")
 
-	configFilePath := flag.String("config", "config.json", "config file")
+	configFilePath := flag.String("config", "core.config.json", "config file")
 
 	if configFilePath == nil {
 		handleError(errors.New("configFilePath is nil"))

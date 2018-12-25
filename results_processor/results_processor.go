@@ -146,6 +146,10 @@ func processMessage(message amqp.Delivery) error {
 	return nil
 }
 
+type OldParserResultError struct{}
+
+func (this OldParserResultError) Error() string { return "old parser result error" }
+
 func processModelFieldsVersions(
 	tx *pg.Tx,
 	oldModelPtr interface{},
@@ -170,6 +174,11 @@ func processModelFieldsVersions(
 
 	addedTimestamp := models.TimestampType(oldModel.FieldByName("AddedTimestamp").Int())
 	lastUpdateTimestamp := models.TimestampType(oldModel.FieldByName("LastUpdateTimestamp").Int())
+
+	if parsingTimestamp <= lastUpdateTimestamp {
+		// TODO: find a better way
+		return false, OldParserResultError{}
+	}
 
 	oldModelType := reflect.TypeOf(oldModel.Interface())
 
@@ -246,6 +255,9 @@ func processModelFieldsVersions(
 		}
 
 		// set the field
+		if !oldField.CanSet() {
+			panic(errors.Errorf("field %v from model %v cannot be set", oldField, oldModel))
+		}
 		oldField.Set(newField)
 	}
 

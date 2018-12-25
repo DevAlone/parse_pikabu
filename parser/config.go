@@ -1,7 +1,16 @@
 package parser
 
+import (
+	"encoding/json"
+	"os"
+)
+
 type ParserConfig struct {
-	ParserId                         string
+	ParserId string
+	// by default 1, can be used in config to
+	// define multiple parsers with the same behavior
+	// parser_id will be suffixed with number of copy
+	NumberOfInstances                uint
 	ApiURL                           string
 	ApiTimeout                       int
 	ApiSessionId                     string
@@ -14,20 +23,15 @@ type ParserConfig struct {
 	AMQPAddress                      string
 }
 
-func NewParserConfigFromFile(filename string) (*ParserConfig, error) {
-	/*file, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&ParserConfig)
+type ParsersConfig struct {
+	Configs []ParserConfig
+}
 
-	return err*/
-	// TODO: complete
+func NewParserConfigFromString(configData string) (*ParserConfig, error) {
 	config := &ParserConfig{}
 
 	config.ParserId = "unique_parser_id"
+	config.NumberOfInstances = 1
 	config.ApiURL = "http://localhost:8080/api/v1"
 	config.ProxyProviderAPIURL = "https://eivailohciihi4uquapach7abei9iesh.d3d.info/api/v1/"
 	config.ProxyProviderTimeout = 60
@@ -39,5 +43,22 @@ func NewParserConfigFromFile(filename string) (*ParserConfig, error) {
 	config.ApiSessionId = "parser_oogoShaituNoh8iebaesiYaeh"
 	config.AMQPAddress = "amqp://guest:guest@localhost:5672"
 
-	return config, nil
+	err := json.Unmarshal([]byte(configData), config)
+
+	return config, err
+}
+
+func NewParsersConfigFromFile(filename string) (*ParsersConfig, error) {
+	parsersConfig := &ParsersConfig{}
+
+	file, err := os.Open("parsers.config.json")
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(parsersConfig)
+
+	return parsersConfig, nil
 }
