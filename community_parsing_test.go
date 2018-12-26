@@ -261,4 +261,15 @@ func TestCommunityParsing(t *testing.T) {
 		{ItemId: 1, Timestamp: 1, Value: []uint64{1000, 1001, 1002}},
 		{ItemId: 1, Timestamp: 2, Value: []uint64{1000, 1001, 1002, 1003}},
 	}, moderatorIdsVersions)
+
+	// clear tables
+	for _, table := range models.Tables {
+		err := models.Db.DropTable(table, &orm.DropTableOptions{
+			IfExists: true,
+			Cascade:  true,
+		})
+		if err != nil {
+			handleError(err)
+		}
+	}
 }

@@ -871,9 +871,298 @@ func TestUserProfileParsing(t *testing.T) {
 		{Timestamp: 1500, ItemId: user.PikabuId, Value: []uint64{151513, 151514}},
 	}, banHistoryItemVersions)
 
+	err = pushTaskToQueue("user_profile", []byte(`
+{
+	"parsing_timestamp": 1501,
+	"parser_id": "d3dev/parser_id",
+	"number_of_results": 1,
+	"results": [{
+		"user": {
+			"current_user_id": 0,
+			"user_id": "2561615",
+			"user_name": "Pisacavtor",
+			"rating": "5.5",
+			"gender": "6",
+			"comments_count": 9,
+			"stories_count": 2,
+			"stories_hot_count": "1",
+			"pluses_count": 5,
+			"minuses_count": 9,
+			"signup_date": "1544846469",
+			"is_rating_ban": true,
+			"avatar": "https://cs8.pikabu.ru/avatars/2561/x2561615-512432259.png",
+			"awards": [],
+			"is_subscribed": false,
+			"is_ignored": false,
+			"note": null,
+			"approved": "approved User",
+			"communities": [
+        {                                                                                                                                                                                       
+          "name": "Cynic Mansion",                                                                                                                                                              
+          "link": "cynicmansion",                                                                                                                                                               
+          "avatar": "https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png",                                                                                                      
+          "avatar_url": "https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png"                                                                                                   
+        },                
+        {                    
+          "name": "Пикабу головного мозга",
+          "link": "p_g_m",                 
+          "avatar": "https://cs7.pikabu.ru/images/community/1360/1538729487212641089.png",     
+          "avatar_url": "https://cs7.pikabu.ru/images/community/1360/1538729487212641089.png"
+        },                                       
+        {                               
+          "name": "Кофе мой друг",
+          "link": "Coffee",  
+          "avatar": "https://cs8.pikabu.ru/images/community/729/1493440472283550654.png",
+          "avatar_url": "https://cs8.pikabu.ru/images/community/729/1493440472283550654.png"
+        }
+			],
+			"subscribers_count": 1001,
+			"is_user_banned": true,
+			"is_user_fully_banned": false,
+			"public_ban_history": [
+			  {
+				"id": "151513",
+				"date": 1544854692,
+				"moderator_id": "1836690",
+				"comment_id": "0",
+				"comment_desc": "",
+				"story_id": "6354471",
+				"user_id": "2561615",
+				"reason": "Отсутствие пруфа или неподтверждённая/искажённая информация (вброс)",
+				"reason_id": "94",
+				"story_url": "https://pikabu.ru/story/3_chasa_pyitok_6354471",
+				"moderator_name": "depotato",
+				"moderator_avatar": "https://cs5.pikabu.ru/avatars/1836/s1836690-1399622318.png",
+				"reason_limit": null,
+				"reason_count": null,
+				"reason_title": null
+			  },
+			  {
+				"id": "151514",
+				"date": 1544854693,
+				"moderator_id": "1836691",
+				"comment_id": "15",
+				"comment_desc": "",
+				"story_id": "6354471",
+				"user_id": "2561615",
+				"reason": "Отсутствие пруфа или неподтверждённая/искажённая информация (вброс)",
+				"reason_id": "94",
+				"story_url": "https://pikabu.ru/story/3_chasa_pyitok_6354471",
+				"moderator_name": "nepotato",
+				"moderator_avatar": "https://cs5.pikabu.ru/avatars/1836/s1836690-1399622318.png",
+				"reason_limit": null,
+				"reason_count": null,
+				"reason_title": null
+			  }
+			],
+			"user_ban_time": 100
+		}
+	}]
+}
+`,
+	))
+	if err != nil {
+		handleError(err)
+	}
+
+	waitForQueueEmpty()
+
+	user = &models.PikabuUser{
+		PikabuId: 2561615,
+	}
+	err = models.Db.Select(user)
+	if err != nil {
+		handleError(err)
+	}
+	assert.Equal(t, "Pisacavtor", user.Username)
+	assert.Equal(t, float32(5.5), user.Rating)
+	assert.Equal(t, "6", user.Gender)
+	assert.Equal(t, int32(9), user.NumberOfComments)
+	assert.Equal(t, int32(2), user.NumberOfStories)
+	assert.Equal(t, int32(1), user.NumberOfHotStories)
+	assert.Equal(t, int32(5), user.NumberOfPluses)
+	assert.Equal(t, int32(9), user.NumberOfMinuses)
+	assert.Equal(t, models.TimestampType(1544846469), user.SignupTimestamp)
+	assert.Equal(t, true, user.IsRatingHidden)
+	assert.Equal(t, "https://cs8.pikabu.ru/avatars/2561/x2561615-512432259.png", user.AvatarURL)
+	assert.Equal(t, "approved User", user.ApprovedText)
+	assert.Equal(t, int32(1001), user.NumberOfSubscribers)
+	assert.Equal(t, true, user.IsBanned)
+	assert.Equal(t, false, user.IsPermanentlyBanned)
+	assert.Equal(t, models.TimestampType(100), user.BanEndTimestamp)
+	assert.Equal(t, models.TimestampType(100), user.AddedTimestamp)
+	assert.Equal(t, models.TimestampType(1501), user.LastUpdateTimestamp)
+
+	ratingVersions = []models.PikabuUserRatingVersion{}
+	err = models.Db.Model(&ratingVersions).
+		Where("item_id = ?", user.PikabuId).
+		Order("timestamp").
+		Select()
+	if err != nil {
+		handleError(err)
+	}
+
+	assert.Equal(t, []models.PikabuUserRatingVersion{
+		{Timestamp: 100, ItemId: user.PikabuId, Value: -3.5},
+		{Timestamp: 201, ItemId: user.PikabuId, Value: 10.5},
+		{Timestamp: 555, ItemId: user.PikabuId, Value: 5},
+		{Timestamp: 1500, ItemId: user.PikabuId, Value: 5},
+		{Timestamp: 1501, ItemId: user.PikabuId, Value: 5.5},
+	}, ratingVersions)
+
+	err = pushTaskToQueue("user_profile", []byte(`
+{
+	"parsing_timestamp": 1502,
+	"parser_id": "d3dev/parser_id",
+	"number_of_results": 1,
+	"results": [{
+		"user": {
+			"current_user_id": 0,
+			"user_id": "2561615",
+			"user_name": "Pisacavtor",
+			"rating": "4.5",
+			"gender": "6",
+			"comments_count": 9,
+			"stories_count": 2,
+			"stories_hot_count": "1",
+			"pluses_count": 5,
+			"minuses_count": 9,
+			"signup_date": "1544846469",
+			"is_rating_ban": true,
+			"avatar": "https://cs8.pikabu.ru/avatars/2561/x2561615-512432259.png",
+			"awards": [],
+			"is_subscribed": false,
+			"is_ignored": false,
+			"note": null,
+			"approved": "approved User",
+			"communities": [
+        {                                                                                                                                                                                       
+          "name": "Cynic Mansion",                                                                                                                                                              
+          "link": "cynicmansion",                                                                                                                                                               
+          "avatar": "https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png",                                                                                                      
+          "avatar_url": "https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png"                                                                                                   
+        },                
+        {                    
+          "name": "Пикабу головного мозга",
+          "link": "p_g_m",                 
+          "avatar": "https://cs7.pikabu.ru/images/community/1360/1538729487212641089.png",     
+          "avatar_url": "https://cs7.pikabu.ru/images/community/1360/1538729487212641089.png"
+        },                                       
+        {                               
+          "name": "Кофе мой друг",
+          "link": "Coffee",  
+          "avatar": "https://cs8.pikabu.ru/images/community/729/1493440472283550654.png",
+          "avatar_url": "https://cs8.pikabu.ru/images/community/729/1493440472283550654.png"
+        }
+			],
+			"subscribers_count": 1001,
+			"is_user_banned": true,
+			"is_user_fully_banned": false,
+			"public_ban_history": [
+			  {
+				"id": "151513",
+				"date": 1544854692,
+				"moderator_id": "1836690",
+				"comment_id": "0",
+				"comment_desc": "",
+				"story_id": "6354471",
+				"user_id": "2561615",
+				"reason": "Отсутствие пруфа или неподтверждённая/искажённая информация (вброс)",
+				"reason_id": "94",
+				"story_url": "https://pikabu.ru/story/3_chasa_pyitok_6354471",
+				"moderator_name": "depotato",
+				"moderator_avatar": "https://cs5.pikabu.ru/avatars/1836/s1836690-1399622318.png",
+				"reason_limit": null,
+				"reason_count": null,
+				"reason_title": null
+			  },
+			  {
+				"id": "151514",
+				"date": 1544854693,
+				"moderator_id": "1836691",
+				"comment_id": "15",
+				"comment_desc": "",
+				"story_id": "6354471",
+				"user_id": "2561615",
+				"reason": "Отсутствие пруфа или неподтверждённая/искажённая информация (вброс)",
+				"reason_id": "94",
+				"story_url": "https://pikabu.ru/story/3_chasa_pyitok_6354471",
+				"moderator_name": "nepotato",
+				"moderator_avatar": "https://cs5.pikabu.ru/avatars/1836/s1836690-1399622318.png",
+				"reason_limit": null,
+				"reason_count": null,
+				"reason_title": null
+			  }
+			],
+			"user_ban_time": 100
+		}
+	}]
+}
+`,
+	))
+	if err != nil {
+		handleError(err)
+	}
+
+	waitForQueueEmpty()
+
+	user = &models.PikabuUser{
+		PikabuId: 2561615,
+	}
+	err = models.Db.Select(user)
+	if err != nil {
+		handleError(err)
+	}
+	assert.Equal(t, "Pisacavtor", user.Username)
+	assert.Equal(t, float32(4.5), user.Rating)
+	assert.Equal(t, "6", user.Gender)
+	assert.Equal(t, int32(9), user.NumberOfComments)
+	assert.Equal(t, int32(2), user.NumberOfStories)
+	assert.Equal(t, int32(1), user.NumberOfHotStories)
+	assert.Equal(t, int32(5), user.NumberOfPluses)
+	assert.Equal(t, int32(9), user.NumberOfMinuses)
+	assert.Equal(t, models.TimestampType(1544846469), user.SignupTimestamp)
+	assert.Equal(t, true, user.IsRatingHidden)
+	assert.Equal(t, "https://cs8.pikabu.ru/avatars/2561/x2561615-512432259.png", user.AvatarURL)
+	assert.Equal(t, "approved User", user.ApprovedText)
+	assert.Equal(t, int32(1001), user.NumberOfSubscribers)
+	assert.Equal(t, true, user.IsBanned)
+	assert.Equal(t, false, user.IsPermanentlyBanned)
+	assert.Equal(t, models.TimestampType(100), user.BanEndTimestamp)
+	assert.Equal(t, models.TimestampType(100), user.AddedTimestamp)
+	assert.Equal(t, models.TimestampType(1502), user.LastUpdateTimestamp)
+
+	ratingVersions = []models.PikabuUserRatingVersion{}
+	err = models.Db.Model(&ratingVersions).
+		Where("item_id = ?", user.PikabuId).
+		Order("timestamp").
+		Select()
+	if err != nil {
+		handleError(err)
+	}
+
+	assert.Equal(t, []models.PikabuUserRatingVersion{
+		{Timestamp: 100, ItemId: user.PikabuId, Value: -3.5},
+		{Timestamp: 201, ItemId: user.PikabuId, Value: 10.5},
+		{Timestamp: 555, ItemId: user.PikabuId, Value: 5},
+		{Timestamp: 1500, ItemId: user.PikabuId, Value: 5},
+		{Timestamp: 1501, ItemId: user.PikabuId, Value: 5.5},
+		{Timestamp: 1502, ItemId: user.PikabuId, Value: 4.5},
+	}, ratingVersions)
 	// TODO: check pikabu user ban history items versions
 
 	// TODO: test pikago.UserProfile serialization
+
+	// clear tables
+	for _, table := range models.Tables {
+		err := models.Db.DropTable(table, &orm.DropTableOptions{
+			IfExists: true,
+			Cascade:  true,
+		})
+		if err != nil {
+			handleError(err)
+		}
+	}
 }
 
 func pushTaskToQueue(key string, message []byte) error {

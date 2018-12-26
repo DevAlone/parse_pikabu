@@ -79,6 +79,18 @@ func TaskToResult(taskName string, taskData interface{}) interface{} {
 }
 
 func TryToGetTaskFromDb() (interface{}, error) {
+	//result := &models.ParseUserByUsernameTask{}
+	//err := models.Db.Model(result).
+	//	Where("username = ?", "admin").
+	//	Limit(1).
+	//	Select(result)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//return TaskToResult("parse_user_by_username_tasks", result), nil
+	// TODO: fix back
+
 	tables := []helpers.Tuple{
 		{"parse_user_by_username_tasks", &models.ParseUserByUsernameTask{}},
 		{"parse_user_by_id_tasks", &models.ParseUserByIdTask{}},

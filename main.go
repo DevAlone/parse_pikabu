@@ -37,7 +37,6 @@ func handleError(err error) {
 }
 
 func main() {
-
 	if len(os.Args) < 2 {
 		_, err := os.Stderr.WriteString(fmt.Sprintf(`Please, specify a command.
 Available commands are: 

@@ -235,14 +235,18 @@ func Main() {
 			var config ParserConfig
 			config = parserConfig
 			if i != 0 {
-				config.ParserId += "_copy_" + fmt.Sprint(i+1)
+				config.ParserId += "_copy_" + fmt.Sprint(i)
 			}
+
 			parser, err := NewParser(&config)
 			if err != nil {
 				panicOnError(err)
 			}
 			wg.Add(1)
-			go parser.Loop()
+			go func() {
+				parser.Loop()
+				wg.Done()
+			}()
 		}
 	}
 
@@ -252,6 +256,9 @@ func Main() {
 func panicOnError(err error) {
 	if err == nil {
 		return
+	}
+	if e, ok := err.(*errors.Error); ok {
+		_, _ = os.Stderr.WriteString(e.ErrorStack())
 	}
 
 	panic(err)

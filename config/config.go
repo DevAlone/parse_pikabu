@@ -42,4 +42,5 @@ func init() {
 	Settings.ServerListeningAddress = "0.0.0.0:8080"
 	Settings.AMQPAddress = "amqp://guest:guest@localhost:5672/"
 	Settings.MaximumTaskProcessingTime = 60
+	Settings.CommunitiesProcessingPeriod = 3600
 }

@@ -43,6 +43,7 @@ func processUserTasks() error {
 		}
 	}
 
+	// init db
 	for _, username := range []string{
 		"admin",
 		"l4rever",

@@ -21,6 +21,15 @@ func processCommunitiesPages(parsingTimestamp models.TimestampType, communitiesP
 	}
 	defer tx.Rollback()
 
+	_, err = tx.Model().Exec(`
+		UPDATE simple_tasks
+		SET is_done = true
+		WHERE name = 'parse_communities'
+	`)
+	if err != nil {
+		return err
+	}
+
 	// TODO: process
 	// TODO: process deleted communities
 	logger.Log.Debugf("processing community pages. number of pages is %v", len(communitiesPages))

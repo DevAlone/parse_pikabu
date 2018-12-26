@@ -4,10 +4,13 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/config"
 	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
+	"encoding/json"
+	"fmt"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
 	"github.com/streadway/amqp"
 	"gogsweb.2-47.ru/d3dev/pikago"
+	"os"
 	"reflect"
 	"time"
 )
@@ -104,6 +107,8 @@ func startListener() error {
 }
 
 func processMessage(message amqp.Delivery) error {
+	// TODO: check if result is from the future
+
 	switch message.RoutingKey {
 	case "user_profile":
 		var resp models.ParserUserProfileResult
@@ -116,7 +121,12 @@ func processMessage(message amqp.Delivery) error {
 			return errors.Errorf("bad result: %v", resp)
 		}
 
-		err = processUserProfile(resp.ParsingTimestamp, resp.Results[0].User)
+		userProfiles := []*pikago.UserProfile{}
+		for _, result := range resp.Results {
+			userProfiles = append(userProfiles, result.User)
+		}
+
+		err = processUserProfiles(resp.ParsingTimestamp, userProfiles)
 		if err != nil {
 			return err
 		}
@@ -196,6 +206,37 @@ func processModelFieldsVersions(
 		if reflect.DeepEqual(oldField.Interface(), newField.Interface()) {
 			continue
 		}
+
+		writeToFile := func(str string) {
+			f, err := os.Create("tmp.log")
+			if err != nil {
+				panic(err)
+			}
+			defer f.Close()
+
+			_, err = f.WriteString(str + "\n")
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		oldModelBytes, err := json.Marshal(oldModelPtr)
+		if err != nil {
+			panic(err)
+		}
+		newModelBytes, err := json.Marshal(newModelPtr)
+		if err != nil {
+			panic(err)
+		}
+		writeToFile(fmt.Sprintf(
+			"Not Equal! %v != %v. Models: %v != %v. Parsing timestamp: %v",
+			oldField.Interface(),
+			newField.Interface(),
+			string(oldModelBytes),
+			string(newModelBytes),
+			parsingTimestamp,
+		))
+
 		wasDataChanged = true
 
 		// generate versions

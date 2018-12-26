@@ -14,10 +14,10 @@ import (
 
 var processUserProfileMutex = &sync.Mutex{}
 
-func processUserProfiles(parsingTimestamp models.TimestampType, userProfiles []pikago.UserProfile) error {
+func processUserProfiles(parsingTimestamp models.TimestampType, userProfiles []*pikago.UserProfile) error {
 	for _, userProfile := range userProfiles {
 		// TODO: make it concurrent
-		err := processUserProfile(parsingTimestamp, &userProfile)
+		err := processUserProfile(parsingTimestamp, userProfile)
 		if err != nil {
 			return err
 		}

@@ -2,7 +2,8 @@ package parser
 
 import (
 	"encoding/json"
-	"os"
+	"github.com/go-errors/errors"
+	"io/ioutil"
 )
 
 type ParserConfig struct {
@@ -27,38 +28,55 @@ type ParsersConfig struct {
 	Configs []ParserConfig
 }
 
-func NewParserConfigFromString(configData string) (*ParserConfig, error) {
+func NewParserConfigFromBytes(configData []byte) (*ParserConfig, error) {
 	config := &ParserConfig{}
 
 	config.ParserId = "unique_parser_id"
 	config.NumberOfInstances = 1
 	config.ApiURL = "http://localhost:8080/api/v1"
-	config.ProxyProviderAPIURL = "https://eivailohciihi4uquapach7abei9iesh.d3d.info/api/v1/"
+	config.ProxyProviderAPIURL = "https://eivailohciihi4uquapach7abei9iesh.d3d.info/api/v2/"
 	config.ProxyProviderTimeout = 60
 	config.PikagoTimeout = 5
 	config.PikagoWaitBetweenProcessingPages = 1
 	config.ApiTimeout = 60
-	config.WaitAfterErrorSeconds = 5
-	config.WaitNoTaskSeconds = 2
+	config.WaitAfterErrorSeconds = 10
+	config.WaitNoTaskSeconds = 5
 	config.ApiSessionId = "parser_oogoShaituNoh8iebaesiYaeh"
 	config.AMQPAddress = "amqp://guest:guest@localhost:5672"
 
 	err := json.Unmarshal([]byte(configData), config)
+	if err != nil {
+		return nil, errors.New(err)
+	}
 
-	return config, err
+	return config, nil
 }
 
 func NewParsersConfigFromFile(filename string) (*ParsersConfig, error) {
-	parsersConfig := &ParsersConfig{}
+	// parsersConfig := &ParsersConfig{}
+	var jsonData struct {
+		Configs []json.RawMessage
+	}
 
-	file, err := os.Open("parsers.config.json")
+	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
 
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(parsersConfig)
+	err = json.Unmarshal(data, &jsonData)
 
-	return parsersConfig, nil
+	parsersConfig := &ParsersConfig{}
+	for _, item := range jsonData.Configs {
+		bytes, err := item.MarshalJSON()
+		if err != nil {
+			return nil, err
+		}
+		config, err := NewParserConfigFromBytes(bytes)
+		if err != nil {
+			return nil, err
+		}
+		parsersConfig.Configs = append(parsersConfig.Configs, *config)
+	}
+
+	return parsersConfig, err
 }
