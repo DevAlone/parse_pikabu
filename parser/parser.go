@@ -76,17 +76,25 @@ func (this *Parser) handleError(err error) {
 
 func (this *Parser) Loop() {
 	for true {
-		task, err := this.pullTask()
-		if err != nil {
-			this.handleError(err)
-			continue
-		}
-		// process task
-		err = this.processTask(task)
-		if err != nil {
-			this.handleError(err)
-			continue
-		}
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					this.handleError(errors.Errorf("panic: %v", r))
+				}
+			}()
+
+			task, err := this.pullTask()
+			if err != nil {
+				this.handleError(err)
+				return
+			}
+			// process task
+			err = this.processTask(task)
+			if err != nil {
+				this.handleError(err)
+				return
+			}
+		}()
 	}
 }
 

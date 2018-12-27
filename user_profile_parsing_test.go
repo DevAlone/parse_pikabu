@@ -7,12 +7,12 @@ import (
 	"github.com/go-pg/pg/orm"
 	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 )
 
-// TODO: fix test
 func TestUserProfileParsing(t *testing.T) {
 	logger.Log.Debug(`start test "user profile parsing"`)
 
@@ -145,7 +145,7 @@ func TestUserProfileParsing(t *testing.T) {
 		handleError(err)
 	}
 	assert.Equal(t, "Pisacavtor", user.Username)
-	assert.Equal(t, float32(-3.5), user.Rating)
+	assert.Equal(t, int32(-3), user.Rating)
 	assert.Equal(t, "6", user.Gender)
 	assert.Equal(t, int32(3), user.NumberOfComments)
 	assert.Equal(t, int32(2), user.NumberOfStories)
@@ -273,7 +273,7 @@ func TestUserProfileParsing(t *testing.T) {
 		handleError(err)
 	}
 	assert.Equal(t, "Pisacavtor1", user.Username)
-	assert.Equal(t, float32(10.5), user.Rating)
+	assert.Equal(t, int32(10), user.Rating)
 	assert.Equal(t, "6", user.Gender)
 	assert.Equal(t, int32(9), user.NumberOfComments)
 	assert.Equal(t, int32(2), user.NumberOfStories)
@@ -360,7 +360,7 @@ func TestUserProfileParsing(t *testing.T) {
 		handleError(err)
 	}
 	assert.Equal(t, "Pisacavtor", user.Username)
-	assert.Equal(t, float32(5), user.Rating)
+	assert.Equal(t, int32(5), user.Rating)
 	assert.Equal(t, "6", user.Gender)
 	assert.Equal(t, int32(9), user.NumberOfComments)
 	assert.Equal(t, int32(2), user.NumberOfStories)
@@ -446,7 +446,7 @@ func TestUserProfileParsing(t *testing.T) {
 		handleError(err)
 	}
 	assert.Equal(t, "Pisacavtor", user.Username)
-	assert.Equal(t, float32(5), user.Rating)
+	assert.Equal(t, int32(5), user.Rating)
 	assert.Equal(t, "6", user.Gender)
 	assert.Equal(t, int32(9), user.NumberOfComments)
 	assert.Equal(t, int32(2), user.NumberOfStories)
@@ -568,7 +568,7 @@ func TestUserProfileParsing(t *testing.T) {
 		handleError(err)
 	}
 	assert.Equal(t, "Pisacavtor", user.Username)
-	assert.Equal(t, float32(5), user.Rating)
+	assert.Equal(t, int32(5), user.Rating)
 	assert.Equal(t, "6", user.Gender)
 	assert.Equal(t, int32(9), user.NumberOfComments)
 	assert.Equal(t, int32(2), user.NumberOfStories)
@@ -623,8 +623,8 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 
 	assert.Equal(t, []models.PikabuUserRatingVersion{
-		{Timestamp: 100, ItemId: user.PikabuId, Value: -3.5},
-		{Timestamp: 201, ItemId: user.PikabuId, Value: 10.5},
+		{Timestamp: 100, ItemId: user.PikabuId, Value: -3},
+		{Timestamp: 201, ItemId: user.PikabuId, Value: 10},
 		{Timestamp: 555, ItemId: user.PikabuId, Value: 5},
 	}, ratingVersions)
 
@@ -975,7 +975,7 @@ func TestUserProfileParsing(t *testing.T) {
 		handleError(err)
 	}
 	assert.Equal(t, "Pisacavtor", user.Username)
-	assert.Equal(t, float32(5.5), user.Rating)
+	assert.Equal(t, int32(5), user.Rating)
 	assert.Equal(t, "6", user.Gender)
 	assert.Equal(t, int32(9), user.NumberOfComments)
 	assert.Equal(t, int32(2), user.NumberOfStories)
@@ -1003,11 +1003,9 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 
 	assert.Equal(t, []models.PikabuUserRatingVersion{
-		{Timestamp: 100, ItemId: user.PikabuId, Value: -3.5},
-		{Timestamp: 201, ItemId: user.PikabuId, Value: 10.5},
+		{Timestamp: 100, ItemId: user.PikabuId, Value: -3},
+		{Timestamp: 201, ItemId: user.PikabuId, Value: 10},
 		{Timestamp: 555, ItemId: user.PikabuId, Value: 5},
-		{Timestamp: 1500, ItemId: user.PikabuId, Value: 5},
-		{Timestamp: 1501, ItemId: user.PikabuId, Value: 5.5},
 	}, ratingVersions)
 
 	err = pushTaskToQueue("user_profile", []byte(`
@@ -1114,7 +1112,7 @@ func TestUserProfileParsing(t *testing.T) {
 		handleError(err)
 	}
 	assert.Equal(t, "Pisacavtor", user.Username)
-	assert.Equal(t, float32(4.5), user.Rating)
+	assert.Equal(t, int32(4), user.Rating)
 	assert.Equal(t, "6", user.Gender)
 	assert.Equal(t, int32(9), user.NumberOfComments)
 	assert.Equal(t, int32(2), user.NumberOfStories)
@@ -1142,12 +1140,11 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 
 	assert.Equal(t, []models.PikabuUserRatingVersion{
-		{Timestamp: 100, ItemId: user.PikabuId, Value: -3.5},
-		{Timestamp: 201, ItemId: user.PikabuId, Value: 10.5},
+		{Timestamp: 100, ItemId: user.PikabuId, Value: -3},
+		{Timestamp: 201, ItemId: user.PikabuId, Value: 10},
 		{Timestamp: 555, ItemId: user.PikabuId, Value: 5},
-		{Timestamp: 1500, ItemId: user.PikabuId, Value: 5},
-		{Timestamp: 1501, ItemId: user.PikabuId, Value: 5.5},
-		{Timestamp: 1502, ItemId: user.PikabuId, Value: 4.5},
+		{Timestamp: 1501, ItemId: user.PikabuId, Value: 5},
+		{Timestamp: 1502, ItemId: user.PikabuId, Value: 4},
 	}, ratingVersions)
 	// TODO: check pikabu user ban history items versions
 
@@ -1246,4 +1243,117 @@ func waitForQueueEmpty() {
 		time.Sleep(1 * time.Second)
 	}
 	time.Sleep(2 * time.Second)
+}
+
+func TestConcurrentUserProfileParsing(t *testing.T) {
+	logger.Log.Debug(`start test "concurrent user profile parsing"`)
+
+	err := models.InitDb()
+	if err != nil {
+		handleError(err)
+	}
+
+	// clear tables
+	for _, table := range models.Tables {
+		err := models.Db.DropTable(table, &orm.DropTableOptions{
+			IfExists: true,
+			Cascade:  true,
+		})
+		if err != nil {
+			handleError(err)
+		}
+	}
+
+	// create again
+	err = models.InitDb()
+	if err != nil {
+		handleError(err)
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	// start results processor
+	go func() {
+		err := results_processor.Run()
+		if err != nil {
+			handleError(err)
+		}
+		wg.Done()
+	}()
+	data := `
+{"parsing_timestamp":1545920253,"parser_id":"d3dev/test_proxy_parser_copy_95","number_of_results":1,"results":[{"user":{"current_user_id":0,"user_id":297508,"user_name":"moderator","rating":120951.5,"gender":0,"comments_count":73338,"stories_count":0,"stories_hot_count":0,"pluses_count":192,"minuses_count":383,"signup_date":1367078405,"is_rating_ban":true,"avatar":"https://cs6.pikabu.ru/avatars/297/x297508-739228827.png","awards":[{"id":249466,"user_id":297508,"award_id":13,"award_title":"5 лет на Пикабу","award_image":"https://cs.pikabu.ru/images/awards/2x/5_let_pikabushnik.png","story_id":0,"story_title":"","date":"2018-04-27 20:00:21","is_hidden":0,"comment_id":0,"link":""},{"id":1746,"user_id":297508,"award_id":8,"award_title":"более 1000 подписчиков","award_image":"https://cs.pikabu.ru/images/awards/2x/1000_subs.png","story_id":0,"story_title":"","date":"2015-07-05 06:00:06","is_hidden":0,"comment_id":0,"link":""}],"is_subscribed":false,"is_ignored":false,"note":"","approved":"Команда Пикабу","communities":[{"name":"Фейки","link":"fakes","avatar":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png","avatar_url":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png"},{"name":"Вопросы по модерации","link":"moderator","avatar":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png","avatar_url":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png"},{"name":"Баяны","link":"reposts","avatar":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png","avatar_url":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png"}],"subscribers_count":5511,"is_user_banned":false,"is_user_fully_banned":false,"public_ban_history":[],"user_ban_time":-62169993079}}]}
+{"parsing_timestamp":1545920253,"parser_id":"d3dev/test_proxy_parser_copy_149","number_of_results":1,"results":[{"user":{"current_user_id":0,"user_id":297508,"user_name":"moderator","rating":120951.5,"gender":0,"comments_count":73338,"stories_count":0,"stories_hot_count":0,"pluses_count":192,"minuses_count":383,"signup_date":1367078405,"is_rating_ban":true,"avatar":"https://cs6.pikabu.ru/avatars/297/x297508-739228827.png","awards":[{"id":249466,"user_id":297508,"award_id":13,"award_title":"5 лет на Пикабу","award_image":"https://cs.pikabu.ru/images/awards/2x/5_let_pikabushnik.png","story_id":0,"story_title":"","date":"2018-04-27 20:00:21","is_hidden":0,"comment_id":0,"link":""},{"id":1746,"user_id":297508,"award_id":8,"award_title":"более 1000 подписчиков","award_image":"https://cs.pikabu.ru/images/awards/2x/1000_subs.png","story_id":0,"story_title":"","date":"2015-07-05 06:00:06","is_hidden":0,"comment_id":0,"link":""}],"is_subscribed":false,"is_ignored":false,"note":"","approved":"Команда Пикабу","communities":[{"name":"Фейки","link":"fakes","avatar":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png","avatar_url":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png"},{"name":"Вопросы по модерации","link":"moderator","avatar":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png","avatar_url":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png"},{"name":"Баяны","link":"reposts","avatar":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png","avatar_url":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png"}],"subscribers_count":5511,"is_user_banned":false,"is_user_fully_banned":false,"public_ban_history":[],"user_ban_time":-62169993079}}]}
+{"parsing_timestamp":1545920253,"parser_id":"d3dev/test_proxy_parser_copy_42","number_of_results":1,"results":[{"user":{"current_user_id":0,"user_id":297508,"user_name":"moderator","rating":120951.5,"gender":0,"comments_count":73338,"stories_count":0,"stories_hot_count":0,"pluses_count":192,"minuses_count":383,"signup_date":1367078405,"is_rating_ban":true,"avatar":"https://cs6.pikabu.ru/avatars/297/x297508-739228827.png","awards":[{"id":249466,"user_id":297508,"award_id":13,"award_title":"5 лет на Пикабу","award_image":"https://cs.pikabu.ru/images/awards/2x/5_let_pikabushnik.png","story_id":0,"story_title":"","date":"2018-04-27 20:00:21","is_hidden":0,"comment_id":0,"link":""},{"id":1746,"user_id":297508,"award_id":8,"award_title":"более 1000 подписчиков","award_image":"https://cs.pikabu.ru/images/awards/2x/1000_subs.png","story_id":0,"story_title":"","date":"2015-07-05 06:00:06","is_hidden":0,"comment_id":0,"link":""}],"is_subscribed":false,"is_ignored":false,"note":"","approved":"Команда Пикабу","communities":[{"name":"Фейки","link":"fakes","avatar":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png","avatar_url":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png"},{"name":"Вопросы по модерации","link":"moderator","avatar":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png","avatar_url":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png"},{"name":"Баяны","link":"reposts","avatar":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png","avatar_url":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png"}],"subscribers_count":5511,"is_user_banned":false,"is_user_fully_banned":false,"public_ban_history":[],"user_ban_time":-62169993079}}]}
+{"parsing_timestamp":1545920253,"parser_id":"d3dev/test_proxy_parser_copy_56","number_of_results":1,"results":[{"user":{"current_user_id":0,"user_id":297508,"user_name":"moderator","rating":120951.5,"gender":0,"comments_count":73338,"stories_count":0,"stories_hot_count":0,"pluses_count":192,"minuses_count":383,"signup_date":1367078405,"is_rating_ban":true,"avatar":"https://cs6.pikabu.ru/avatars/297/x297508-739228827.png","awards":[{"id":249466,"user_id":297508,"award_id":13,"award_title":"5 лет на Пикабу","award_image":"https://cs.pikabu.ru/images/awards/2x/5_let_pikabushnik.png","story_id":0,"story_title":"","date":"2018-04-27 20:00:21","is_hidden":0,"comment_id":0,"link":""},{"id":1746,"user_id":297508,"award_id":8,"award_title":"более 1000 подписчиков","award_image":"https://cs.pikabu.ru/images/awards/2x/1000_subs.png","story_id":0,"story_title":"","date":"2015-07-05 06:00:06","is_hidden":0,"comment_id":0,"link":""}],"is_subscribed":false,"is_ignored":false,"note":"","approved":"Команда Пикабу","communities":[{"name":"Фейки","link":"fakes","avatar":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png","avatar_url":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png"},{"name":"Вопросы по модерации","link":"moderator","avatar":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png","avatar_url":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png"},{"name":"Баяны","link":"reposts","avatar":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png","avatar_url":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png"}],"subscribers_count":5511,"is_user_banned":false,"is_user_fully_banned":false,"public_ban_history":[],"user_ban_time":-62169993079}}]}
+{"parsing_timestamp":1545920253,"parser_id":"d3dev/test_proxy_parser_copy_111","number_of_results":1,"results":[{"user":{"current_user_id":0,"user_id":297508,"user_name":"moderator","rating":120951.5,"gender":0,"comments_count":73338,"stories_count":0,"stories_hot_count":0,"pluses_count":192,"minuses_count":383,"signup_date":1367078405,"is_rating_ban":true,"avatar":"https://cs6.pikabu.ru/avatars/297/x297508-739228827.png","awards":[{"id":249466,"user_id":297508,"award_id":13,"award_title":"5 лет на Пикабу","award_image":"https://cs.pikabu.ru/images/awards/2x/5_let_pikabushnik.png","story_id":0,"story_title":"","date":"2018-04-27 20:00:21","is_hidden":0,"comment_id":0,"link":""},{"id":1746,"user_id":297508,"award_id":8,"award_title":"более 1000 подписчиков","award_image":"https://cs.pikabu.ru/images/awards/2x/1000_subs.png","story_id":0,"story_title":"","date":"2015-07-05 06:00:06","is_hidden":0,"comment_id":0,"link":""}],"is_subscribed":false,"is_ignored":false,"note":"","approved":"Команда Пикабу","communities":[{"name":"Фейки","link":"fakes","avatar":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png","avatar_url":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png"},{"name":"Вопросы по модерации","link":"moderator","avatar":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png","avatar_url":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png"},{"name":"Баяны","link":"reposts","avatar":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png","avatar_url":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png"}],"subscribers_count":5511,"is_user_banned":false,"is_user_fully_banned":false,"public_ban_history":[],"user_ban_time":-62169993079}}]}
+{"parsing_timestamp":1545920255,"parser_id":"d3dev/test_proxy_parser_copy_89","number_of_results":1,"results":[{"user":{"current_user_id":0,"user_id":297508,"user_name":"moderator","rating":120951.5,"gender":0,"comments_count":73338,"stories_count":0,"stories_hot_count":0,"pluses_count":192,"minuses_count":383,"signup_date":1367078405,"is_rating_ban":true,"avatar":"https://cs6.pikabu.ru/avatars/297/x297508-739228827.png","awards":[{"id":249466,"user_id":297508,"award_id":13,"award_title":"5 лет на Пикабу","award_image":"https://cs.pikabu.ru/images/awards/2x/5_let_pikabushnik.png","story_id":0,"story_title":"","date":"2018-04-27 20:00:21","is_hidden":0,"comment_id":0,"link":""},{"id":1746,"user_id":297508,"award_id":8,"award_title":"более 1000 подписчиков","award_image":"https://cs.pikabu.ru/images/awards/2x/1000_subs.png","story_id":0,"story_title":"","date":"2015-07-05 06:00:06","is_hidden":0,"comment_id":0,"link":""}],"is_subscribed":false,"is_ignored":false,"note":"","approved":"Команда Пикабу","communities":[{"name":"Фейки","link":"fakes","avatar":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png","avatar_url":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png"},{"name":"Вопросы по модерации","link":"moderator","avatar":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png","avatar_url":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png"},{"name":"Баяны","link":"reposts","avatar":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png","avatar_url":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png"}],"subscribers_count":5511,"is_user_banned":false,"is_user_fully_banned":false,"public_ban_history":[],"user_ban_time":-62169993079}}]}
+{"parsing_timestamp":1545920256,"parser_id":"d3dev/test_proxy_parser_copy_28","number_of_results":1,"results":[{"user":{"current_user_id":0,"user_id":297508,"user_name":"moderator","rating":120951.5,"gender":0,"comments_count":73338,"stories_count":0,"stories_hot_count":0,"pluses_count":192,"minuses_count":383,"signup_date":1367078405,"is_rating_ban":true,"avatar":"https://cs6.pikabu.ru/avatars/297/x297508-739228827.png","awards":[{"id":249466,"user_id":297508,"award_id":13,"award_title":"5 лет на Пикабу","award_image":"https://cs.pikabu.ru/images/awards/2x/5_let_pikabushnik.png","story_id":0,"story_title":"","date":"2018-04-27 20:00:21","is_hidden":0,"comment_id":0,"link":""},{"id":1746,"user_id":297508,"award_id":8,"award_title":"более 1000 подписчиков","award_image":"https://cs.pikabu.ru/images/awards/2x/1000_subs.png","story_id":0,"story_title":"","date":"2015-07-05 06:00:06","is_hidden":0,"comment_id":0,"link":""}],"is_subscribed":false,"is_ignored":false,"note":"","approved":"Команда Пикабу","communities":[{"name":"Фейки","link":"fakes","avatar":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png","avatar_url":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png"},{"name":"Вопросы по модерации","link":"moderator","avatar":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png","avatar_url":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png"},{"name":"Баяны","link":"reposts","avatar":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png","avatar_url":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png"}],"subscribers_count":5511,"is_user_banned":false,"is_user_fully_banned":false,"public_ban_history":[],"user_ban_time":-62169993079}}]}
+{"parsing_timestamp":1545920256,"parser_id":"d3dev/test_proxy_parser_copy_9","number_of_results":1,"results":[{"user":{"current_user_id":0,"user_id":297508,"user_name":"moderator","rating":120951.5,"gender":0,"comments_count":73338,"stories_count":0,"stories_hot_count":0,"pluses_count":192,"minuses_count":383,"signup_date":1367078405,"is_rating_ban":true,"avatar":"https://cs6.pikabu.ru/avatars/297/x297508-739228827.png","awards":[{"id":249466,"user_id":297508,"award_id":13,"award_title":"5 лет на Пикабу","award_image":"https://cs.pikabu.ru/images/awards/2x/5_let_pikabushnik.png","story_id":0,"story_title":"","date":"2018-04-27 20:00:21","is_hidden":0,"comment_id":0,"link":""},{"id":1746,"user_id":297508,"award_id":8,"award_title":"более 1000 подписчиков","award_image":"https://cs.pikabu.ru/images/awards/2x/1000_subs.png","story_id":0,"story_title":"","date":"2015-07-05 06:00:06","is_hidden":0,"comment_id":0,"link":""}],"is_subscribed":false,"is_ignored":false,"note":"","approved":"Команда Пикабу","communities":[{"name":"Фейки","link":"fakes","avatar":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png","avatar_url":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png"},{"name":"Вопросы по модерации","link":"moderator","avatar":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png","avatar_url":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png"},{"name":"Баяны","link":"reposts","avatar":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png","avatar_url":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png"}],"subscribers_count":5511,"is_user_banned":false,"is_user_fully_banned":false,"public_ban_history":[],"user_ban_time":-62169993079}}]}
+{"parsing_timestamp":1545920256,"parser_id":"d3dev/test_proxy_parser_copy_45","number_of_results":1,"results":[{"user":{"current_user_id":0,"user_id":297508,"user_name":"moderator","rating":120951.5,"gender":0,"comments_count":73338,"stories_count":0,"stories_hot_count":0,"pluses_count":192,"minuses_count":383,"signup_date":1367078405,"is_rating_ban":true,"avatar":"https://cs6.pikabu.ru/avatars/297/x297508-739228827.png","awards":[{"id":249466,"user_id":297508,"award_id":13,"award_title":"5 лет на Пикабу","award_image":"https://cs.pikabu.ru/images/awards/2x/5_let_pikabushnik.png","story_id":0,"story_title":"","date":"2018-04-27 20:00:21","is_hidden":0,"comment_id":0,"link":""},{"id":1746,"user_id":297508,"award_id":8,"award_title":"более 1000 подписчиков","award_image":"https://cs.pikabu.ru/images/awards/2x/1000_subs.png","story_id":0,"story_title":"","date":"2015-07-05 06:00:06","is_hidden":0,"comment_id":0,"link":""}],"is_subscribed":false,"is_ignored":false,"note":"","approved":"Команда Пикабу","communities":[{"name":"Фейки","link":"fakes","avatar":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png","avatar_url":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png"},{"name":"Вопросы по модерации","link":"moderator","avatar":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png","avatar_url":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png"},{"name":"Баяны","link":"reposts","avatar":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png","avatar_url":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png"}],"subscribers_count":5511,"is_user_banned":false,"is_user_fully_banned":false,"public_ban_history":[],"user_ban_time":-62169993079}}]}
+{"parsing_timestamp":1545920256,"parser_id":"d3dev/test_proxy_parser_copy_100","number_of_results":1,"results":[{"user":{"current_user_id":0,"user_id":297508,"user_name":"moderator","rating":120951.5,"gender":0,"comments_count":73338,"stories_count":0,"stories_hot_count":0,"pluses_count":192,"minuses_count":383,"signup_date":1367078405,"is_rating_ban":true,"avatar":"https://cs6.pikabu.ru/avatars/297/x297508-739228827.png","awards":[{"id":249466,"user_id":297508,"award_id":13,"award_title":"5 лет на Пикабу","award_image":"https://cs.pikabu.ru/images/awards/2x/5_let_pikabushnik.png","story_id":0,"story_title":"","date":"2018-04-27 20:00:21","is_hidden":0,"comment_id":0,"link":""},{"id":1746,"user_id":297508,"award_id":8,"award_title":"более 1000 подписчиков","award_image":"https://cs.pikabu.ru/images/awards/2x/1000_subs.png","story_id":0,"story_title":"","date":"2015-07-05 06:00:06","is_hidden":0,"comment_id":0,"link":""}],"is_subscribed":false,"is_ignored":false,"note":"","approved":"Команда Пикабу","communities":[{"name":"Фейки","link":"fakes","avatar":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png","avatar_url":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png"},{"name":"Вопросы по модерации","link":"moderator","avatar":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png","avatar_url":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png"},{"name":"Баяны","link":"reposts","avatar":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png","avatar_url":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png"}],"subscribers_count":5511,"is_user_banned":false,"is_user_fully_banned":false,"public_ban_history":[],"user_ban_time":-62169993079}}]}
+{"parsing_timestamp":1545920260,"parser_id":"d3dev/test_proxy_parser_copy_40","number_of_results":1,"results":[{"user":{"current_user_id":0,"user_id":297508,"user_name":"moderator","rating":120951.5,"gender":0,"comments_count":73338,"stories_count":0,"stories_hot_count":0,"pluses_count":192,"minuses_count":383,"signup_date":1367078405,"is_rating_ban":true,"avatar":"https://cs6.pikabu.ru/avatars/297/x297508-739228827.png","awards":[{"id":249466,"user_id":297508,"award_id":13,"award_title":"5 лет на Пикабу","award_image":"https://cs.pikabu.ru/images/awards/2x/5_let_pikabushnik.png","story_id":0,"story_title":"","date":"2018-04-27 20:00:21","is_hidden":0,"comment_id":0,"link":""},{"id":1746,"user_id":297508,"award_id":8,"award_title":"более 1000 подписчиков","award_image":"https://cs.pikabu.ru/images/awards/2x/1000_subs.png","story_id":0,"story_title":"","date":"2015-07-05 06:00:06","is_hidden":0,"comment_id":0,"link":""}],"is_subscribed":false,"is_ignored":false,"note":"","approved":"Команда Пикабу","communities":[{"name":"Фейки","link":"fakes","avatar":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png","avatar_url":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png"},{"name":"Вопросы по модерации","link":"moderator","avatar":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png","avatar_url":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png"},{"name":"Баяны","link":"reposts","avatar":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png","avatar_url":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png"}],"subscribers_count":5511,"is_user_banned":false,"is_user_fully_banned":false,"public_ban_history":[],"user_ban_time":-62169993079}}]}
+{"parsing_timestamp":1545920260,"parser_id":"d3dev/test_proxy_parser_copy_115","number_of_results":1,"results":[{"user":{"current_user_id":0,"user_id":297508,"user_name":"moderator","rating":120951.5,"gender":0,"comments_count":73338,"stories_count":0,"stories_hot_count":0,"pluses_count":192,"minuses_count":383,"signup_date":1367078405,"is_rating_ban":true,"avatar":"https://cs6.pikabu.ru/avatars/297/x297508-739228827.png","awards":[{"id":249466,"user_id":297508,"award_id":13,"award_title":"5 лет на Пикабу","award_image":"https://cs.pikabu.ru/images/awards/2x/5_let_pikabushnik.png","story_id":0,"story_title":"","date":"2018-04-27 20:00:21","is_hidden":0,"comment_id":0,"link":""},{"id":1746,"user_id":297508,"award_id":8,"award_title":"более 1000 подписчиков","award_image":"https://cs.pikabu.ru/images/awards/2x/1000_subs.png","story_id":0,"story_title":"","date":"2015-07-05 06:00:06","is_hidden":0,"comment_id":0,"link":""}],"is_subscribed":false,"is_ignored":false,"note":"","approved":"Команда Пикабу","communities":[{"name":"Фейки","link":"fakes","avatar":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png","avatar_url":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png"},{"name":"Вопросы по модерации","link":"moderator","avatar":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png","avatar_url":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png"},{"name":"Баяны","link":"reposts","avatar":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png","avatar_url":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png"}],"subscribers_count":5511,"is_user_banned":false,"is_user_fully_banned":false,"public_ban_history":[],"user_ban_time":-62169993079}}]}
+{"parsing_timestamp":1545920261,"parser_id":"d3dev/test_proxy_parser_copy_70","number_of_results":1,"results":[{"user":{"current_user_id":0,"user_id":297508,"user_name":"moderator","rating":120951.5,"gender":0,"comments_count":73338,"stories_count":0,"stories_hot_count":0,"pluses_count":192,"minuses_count":383,"signup_date":1367078405,"is_rating_ban":true,"avatar":"https://cs6.pikabu.ru/avatars/297/x297508-739228827.png","awards":[{"id":249466,"user_id":297508,"award_id":13,"award_title":"5 лет на Пикабу","award_image":"https://cs.pikabu.ru/images/awards/2x/5_let_pikabushnik.png","story_id":0,"story_title":"","date":"2018-04-27 20:00:21","is_hidden":0,"comment_id":0,"link":""},{"id":1746,"user_id":297508,"award_id":8,"award_title":"более 1000 подписчиков","award_image":"https://cs.pikabu.ru/images/awards/2x/1000_subs.png","story_id":0,"story_title":"","date":"2015-07-05 06:00:06","is_hidden":0,"comment_id":0,"link":""}],"is_subscribed":false,"is_ignored":false,"note":"","approved":"Команда Пикабу","communities":[{"name":"Фейки","link":"fakes","avatar":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png","avatar_url":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png"},{"name":"Вопросы по модерации","link":"moderator","avatar":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png","avatar_url":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png"},{"name":"Баяны","link":"reposts","avatar":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png","avatar_url":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png"}],"subscribers_count":5511,"is_user_banned":false,"is_user_fully_banned":false,"public_ban_history":[],"user_ban_time":-62169993079}}]}
+`
+	for _, item := range strings.Split(data, "\n") {
+		item = strings.TrimSpace(item)
+		if len(item) == 0 {
+			continue
+		}
+		err = pushTaskToQueue("user_profile", []byte(item))
+		if err != nil {
+			handleError(err)
+		}
+	}
+
+	waitForQueueEmpty()
+	time.Sleep(5 * time.Second)
+
+	user := &models.PikabuUser{
+		PikabuId: 297508,
+	}
+	err = models.Db.Select(user)
+	if err != nil {
+		handleError(err)
+	}
+	assert.Equal(t, "moderator", user.Username)
+	assert.Equal(t, int32(120951), user.Rating)
+	assert.Equal(t, "0", user.Gender)
+	assert.Equal(t, int32(73338), user.NumberOfComments)
+	assert.Equal(t, int32(0), user.NumberOfStories)
+	assert.Equal(t, int32(0), user.NumberOfHotStories)
+	assert.Equal(t, int32(192), user.NumberOfPluses)
+	assert.Equal(t, int32(383), user.NumberOfMinuses)
+	assert.Equal(t, models.TimestampType(1367078405), user.SignupTimestamp)
+	assert.Equal(t, true, user.IsRatingHidden)
+	assert.Equal(t, "https://cs6.pikabu.ru/avatars/297/x297508-739228827.png", user.AvatarURL)
+	// assert.Equal(t, true, user.AwardIds)
+	assert.Equal(t, "Команда Пикабу", user.ApprovedText)
+	assert.Equal(t, int32(5511), user.NumberOfSubscribers)
+	assert.Equal(t, false, user.IsBanned)
+	assert.Equal(t, false, user.IsPermanentlyBanned)
+	assert.Equal(t, models.TimestampType(-62169993079), user.BanEndTimestamp)
+	assert.Equal(t, models.TimestampType(1545920253), user.AddedTimestamp)
+	assert.Equal(t, models.TimestampType(1545920261), user.LastUpdateTimestamp)
+
+	ratingVersions := []models.PikabuUserRatingVersion{}
+	err = models.Db.Model(&ratingVersions).
+		Where("item_id = ?", user.PikabuId).
+		Order("timestamp").
+		Select()
+	handleError(err)
+
+	assert.Equal(t, []models.PikabuUserRatingVersion{}, ratingVersions)
+
+	// clear tables
+	for _, table := range models.Tables {
+		err := models.Db.DropTable(table, &orm.DropTableOptions{
+			IfExists: true,
+			Cascade:  true,
+		})
+		if err != nil {
+			handleError(err)
+		}
+	}
 }

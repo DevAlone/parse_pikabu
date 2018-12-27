@@ -1,7 +1,7 @@
 package models
 
 // generated code, do not touch!
-// generated at timestamp 2018-12-24 19:27:56.775710664 &#43;0000 UTC m=&#43;0.003865634
+// generated at timestamp 2018-12-27 15:25:58.832324558 &#43;0000 UTC m=&#43;0.004078418
 
 type PikabuCommunityNameVersion struct {
 	ItemId    uint64        `sql:",pk,notnull"`
@@ -96,7 +96,7 @@ type PikabuUserGenderVersion struct {
 type PikabuUserRatingVersion struct {
 	ItemId    uint64        `sql:",pk,notnull"`
 	Timestamp TimestampType `sql:",pk,notnull"`
-	Value     float32       `sql:",notnull"`
+	Value     int32         `sql:",notnull"`
 }
 
 type PikabuUserNumberOfCommentsVersion struct {

@@ -5,14 +5,22 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/gin-gonic/gin"
+	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
 	"math/rand"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 )
 
+var getAnyTaskMutex = &sync.Mutex{}
+
 func GetAnyTask(c *gin.Context) {
+	getAnyTaskMutex.Lock()
+	defer getAnyTaskMutex.Unlock()
+
 	taskData, err := TryToGetTaskFromDb()
 	if err != nil {
 		panic(err)
@@ -79,18 +87,6 @@ func TaskToResult(taskName string, taskData interface{}) interface{} {
 }
 
 func TryToGetTaskFromDb() (interface{}, error) {
-	//result := &models.ParseUserByUsernameTask{}
-	//err := models.Db.Model(result).
-	//	Where("username = ?", "admin").
-	//	Limit(1).
-	//	Select(result)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//return TaskToResult("parse_user_by_username_tasks", result), nil
-	// TODO: fix back
-
 	tables := []helpers.Tuple{
 		{"parse_user_by_username_tasks", &models.ParseUserByUsernameTask{}},
 		{"parse_user_by_id_tasks", &models.ParseUserByIdTask{}},
@@ -113,6 +109,12 @@ func TryToGetTaskFromDb() (interface{}, error) {
 			continue
 		} else if err != nil {
 			return nil, err
+		}
+
+		reflect.ValueOf(result).Elem().FieldByName("IsTaken").SetBool(true)
+		err = models.Db.Update(result)
+		if err != nil {
+			return nil, errors.New(err)
 		}
 
 		return TaskToResult(table.Left.(string), result), nil

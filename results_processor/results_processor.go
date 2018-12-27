@@ -4,8 +4,6 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/config"
 	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
-	"encoding/json"
-	"fmt"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
 	"github.com/streadway/amqp"
@@ -108,6 +106,23 @@ func startListener() error {
 
 func processMessage(message amqp.Delivery) error {
 	// TODO: check if result is from the future
+	writeToFile := func(str string) {
+		f, err := os.OpenFile("results.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+
+		_, err = f.WriteString(str + "\n")
+		if err != nil {
+			panic(err)
+		}
+		err = f.Sync()
+		if err != nil {
+			panic(err)
+		}
+	}
+	writeToFile(string(message.Body))
 
 	switch message.RoutingKey {
 	case "user_profile":
@@ -206,36 +221,6 @@ func processModelFieldsVersions(
 		if reflect.DeepEqual(oldField.Interface(), newField.Interface()) {
 			continue
 		}
-
-		writeToFile := func(str string) {
-			f, err := os.Create("tmp.log")
-			if err != nil {
-				panic(err)
-			}
-			defer f.Close()
-
-			_, err = f.WriteString(str + "\n")
-			if err != nil {
-				panic(err)
-			}
-		}
-
-		oldModelBytes, err := json.Marshal(oldModelPtr)
-		if err != nil {
-			panic(err)
-		}
-		newModelBytes, err := json.Marshal(newModelPtr)
-		if err != nil {
-			panic(err)
-		}
-		writeToFile(fmt.Sprintf(
-			"Not Equal! %v != %v. Models: %v != %v. Parsing timestamp: %v",
-			oldField.Interface(),
-			newField.Interface(),
-			string(oldModelBytes),
-			string(newModelBytes),
-			parsingTimestamp,
-		))
 
 		wasDataChanged = true
 

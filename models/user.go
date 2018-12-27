@@ -7,7 +7,7 @@ type PikabuUser struct {
 
 	Username            string        `sql:",notnull" gen_versions:""`
 	Gender              string        `sql:",notnull" gen_versions:""`
-	Rating              float32       `sql:",notnull" gen_versions:""`
+	Rating              int32         `sql:",notnull" gen_versions:""`
 	NumberOfComments    int32         `sql:",notnull" gen_versions:""`
 	NumberOfSubscribers int32         `sql:",notnull" gen_versions:""`
 	NumberOfStories     int32         `sql:",notnull" gen_versions:""`

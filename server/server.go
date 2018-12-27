@@ -46,7 +46,7 @@ func Run() error {
 			})
 		})
 		parsersAPI.GET("get/tasks/any", api.GetAnyTask)
-		parsersAPI.GET("take/:table_name/:id", api.TakeTask)
+		// parsersAPI.GET("take/:table_name/:id", api.TakeTask)
 	}
 
 	return router.Run(config.Settings.ServerListeningAddress)

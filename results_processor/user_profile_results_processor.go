@@ -86,7 +86,7 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 		PikabuId:            userProfile.UserId.Value,
 		Username:            userProfile.Username,
 		Gender:              fmt.Sprint(userProfile.Gender.Value),
-		Rating:              userProfile.Rating.Value,
+		Rating:              int32(userProfile.Rating.Value),
 		NumberOfComments:    int32(userProfile.CommentsCount.Value),
 		NumberOfSubscribers: int32(userProfile.SubscribersCount.Value),
 		NumberOfStories:     int32(userProfile.StoriesCount.Value),

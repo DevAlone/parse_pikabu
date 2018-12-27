@@ -11,7 +11,7 @@ import (
 
 //go:generate bash -c "cd ..; go run models_versions_fields.generator.go; go fmt models/models.generated.go"
 
-type TimestampType int32
+type TimestampType int64
 
 var Db *pg.DB
 var Tables []interface{}
