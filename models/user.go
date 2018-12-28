@@ -3,34 +3,34 @@ package models
 // TODO: update structure
 
 type PikabuUser struct {
-	PikabuId uint64 `sql:",pk"`
+	PikabuId uint64 `sql:",pk" json:"pikabu_id"`
 
-	Username            string        `sql:",notnull" gen_versions:""`
-	Gender              string        `sql:",notnull" gen_versions:""`
-	Rating              int32         `sql:",notnull" gen_versions:""`
-	NumberOfComments    int32         `sql:",notnull" gen_versions:""`
-	NumberOfSubscribers int32         `sql:",notnull" gen_versions:""`
-	NumberOfStories     int32         `sql:",notnull" gen_versions:""`
-	NumberOfHotStories  int32         `sql:",notnull" gen_versions:""`
-	NumberOfPluses      int32         `sql:",notnull" gen_versions:""`
-	NumberOfMinuses     int32         `sql:",notnull" gen_versions:""`
-	SignupTimestamp     TimestampType `sql:",notnull" gen_versions:""`
-	AvatarURL           string        `sql:",notnull" gen_versions:""`
-	ApprovedText        string        `sql:",notnull" gen_versions:""`
-	AwardIds            []uint64      `sql:",notnull,array" gen_versions:""`
-	CommunityIds        []uint64      `sql:",notnull,array" gen_versions:""`
-	BanHistoryItemIds   []uint64      `sql:",notnull,array" gen_versions:""`
-	BanEndTimestamp     TimestampType `sql:",notnull" gen_versions:""`
-	IsRatingHidden      bool          `sql:",notnull" gen_versions:""`
-	IsBanned            bool          `sql:",notnull" gen_versions:""`
-	IsPermanentlyBanned bool          `sql:",notnull" gen_versions:""`
+	Username            string        `sql:",notnull" gen_versions:"" json:"username" api:"ordering"`
+	Gender              string        `sql:",notnull" gen_versions:"" json:"gender" api:"ordering"`
+	Rating              int32         `sql:",notnull" gen_versions:"" json:"rating"`
+	NumberOfComments    int32         `sql:",notnull" gen_versions:"" json:"number_of_comments"`
+	NumberOfSubscribers int32         `sql:",notnull" gen_versions:"" json:"number_of_subscribers"`
+	NumberOfStories     int32         `sql:",notnull" gen_versions:"" json:"number_of_stories"`
+	NumberOfHotStories  int32         `sql:",notnull" gen_versions:"" json:"number_of_hot_stories"`
+	NumberOfPluses      int32         `sql:",notnull" gen_versions:"" json:"number_of_pluses"`
+	NumberOfMinuses     int32         `sql:",notnull" gen_versions:"" json:"number_of_minusses"`
+	SignupTimestamp     TimestampType `sql:",notnull" gen_versions:"" json:"signup_timestamp"`
+	AvatarURL           string        `sql:",notnull" gen_versions:"" json:"avatar_url"`
+	ApprovedText        string        `sql:",notnull" gen_versions:"" json:"approved_text"`
+	AwardIds            []uint64      `sql:",notnull,array" gen_versions:"" json:"award_ids"`
+	CommunityIds        []uint64      `sql:",notnull,array" gen_versions:"" json:"community_ids"`
+	BanHistoryItemIds   []uint64      `sql:",notnull,array" gen_versions:"" json:"ban_history_item_ids"`
+	BanEndTimestamp     TimestampType `sql:",notnull" gen_versions:"" json:"ban_end_timestamp"`
+	IsRatingHidden      bool          `sql:",notnull" gen_versions:"" json:"is_rating_hidden"`
+	IsBanned            bool          `sql:",notnull" gen_versions:"" json:"is_banned"`
+	IsPermanentlyBanned bool          `sql:",notnull" gen_versions:"" json:"is_permanently_banned"`
 
 	// ?
 	// IsDeleted bool `sql:",notnull,default:false"`
 
-	AddedTimestamp      TimestampType `sql:",notnull"`
-	LastUpdateTimestamp TimestampType `sql:",notnull"`
-	NextUpdateTimestamp TimestampType `sql:",notnull"`
+	AddedTimestamp      TimestampType `sql:",notnull" json:"added_timestamp"`
+	LastUpdateTimestamp TimestampType `sql:",notnull" json:"last_update_timestamp"`
+	NextUpdateTimestamp TimestampType `sql:",notnull" json:"next_update_timestamp"`
 }
 
 // TODO: condider generating versions for this struct

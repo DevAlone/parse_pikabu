@@ -8,7 +8,6 @@ import (
 	"github.com/go-pg/pg"
 	"github.com/streadway/amqp"
 	"gogsweb.2-47.ru/d3dev/pikago"
-	"os"
 	"reflect"
 	"time"
 )
@@ -105,24 +104,7 @@ func startListener() error {
 }
 
 func processMessage(message amqp.Delivery) error {
-	// TODO: check if result is from the future
-	writeToFile := func(str string) {
-		f, err := os.OpenFile("results.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
-		if err != nil {
-			panic(err)
-		}
-		defer f.Close()
-
-		_, err = f.WriteString(str + "\n")
-		if err != nil {
-			panic(err)
-		}
-		err = f.Sync()
-		if err != nil {
-			panic(err)
-		}
-	}
-	writeToFile(string(message.Body))
+	logger.Log.Debugf("got message: %v", string(message.Body))
 
 	switch message.RoutingKey {
 	case "user_profile":

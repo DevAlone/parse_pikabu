@@ -10,12 +10,11 @@ type PikabuCommunity struct {
 	Tags                []string `sql:",notnull,array" gen_versions:""`
 	NumberOfStories     int32    `sql:",notnull" gen_versions:""`
 	NumberOfSubscribers int32    `sql:",notnull" gen_versions:""`
-	// TODO: consider generating diff version for this field
-	Description  string   `sql:",notnull" gen_versions:""`
-	Rules        string   `sql:",notnull" gen_versions:""`
-	Restrictions string   `sql:",notnull" gen_versions:""`
-	AdminId      uint64   `sql:",notnull" gen_versions:""`
-	ModeratorIds []uint64 `sql:",notnull" gen_versions:""`
+	Description         string   `sql:",notnull" gen_versions:""`
+	Rules               string   `sql:",notnull" gen_versions:""`
+	Restrictions        string   `sql:",notnull" gen_versions:""`
+	AdminId             uint64   `sql:",notnull" gen_versions:""`
+	ModeratorIds        []uint64 `sql:",notnull" gen_versions:""`
 
 	AddedTimestamp      TimestampType `sql:",notnull"`
 	LastUpdateTimestamp TimestampType `sql:",notnull"`

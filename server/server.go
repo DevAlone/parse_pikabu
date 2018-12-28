@@ -23,6 +23,10 @@ func Run() error {
 	// define controllers
 
 	apiRouter := router.Group("/api/v1/")
+	{
+		apiRouter.POST("get_model", api.GetModel)
+	}
+
 	// apiRouter.Use(middlewares.AuthMiddleware.MiddlewareFunc())
 	// apiRouter.Use()
 	{

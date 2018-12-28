@@ -3,6 +3,8 @@ package api
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"reflect"
 )
 
 func AnswerError(c *gin.Context, statusCode int, message string) {
@@ -18,4 +20,23 @@ func AnswerError(c *gin.Context, statusCode int, message string) {
 		"status_code": fmt.Sprint(statusCode),
 		"message":     message,
 	})
+}
+
+func AnswerResponse(c *gin.Context, data interface{}) {
+	if reflect.TypeOf(data).Kind() == reflect.Ptr {
+		data = reflect.ValueOf(data).Elem().Interface()
+	}
+
+	resp := map[string]interface{}{
+		"status":      "ok",
+		"status_code": http.StatusOK,
+	}
+	switch reflect.TypeOf(data).Kind() {
+	case reflect.Slice, reflect.Array:
+		resp["results"] = data
+		resp["number_of_results"] = reflect.ValueOf(data).Len()
+	default:
+		resp["result"] = data
+	}
+	c.JSON(http.StatusOK, resp)
 }

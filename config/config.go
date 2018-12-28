@@ -6,15 +6,16 @@ import (
 )
 
 var Settings struct {
-	Debug                       bool
-	Database                    map[string]string
-	ProxyProviderClientTimeout  int
-	ProxyProviderBaseURL        string
-	Pikabu18BotToken            string
-	ServerListeningAddress      string
-	AMQPAddress                 string
-	MaximumTaskProcessingTime   int
-	CommunitiesProcessingPeriod int
+	Debug                               bool
+	Database                            map[string]string
+	ProxyProviderClientTimeout          int
+	ProxyProviderBaseURL                string
+	Pikabu18BotToken                    string
+	ServerListeningAddress              string
+	AMQPAddress                         string
+	MaximumTaskProcessingTime           int
+	CommunitiesProcessingPeriod         int
+	ServerMaximumNumberOfResultsPerPage uint
 }
 
 func UpdateSettingsFromFile(filename string) error {
@@ -43,4 +44,5 @@ func init() {
 	Settings.AMQPAddress = "amqp://guest:guest@localhost:5672/"
 	Settings.MaximumTaskProcessingTime = 60
 	Settings.CommunitiesProcessingPeriod = 3600
+	Settings.ServerMaximumNumberOfResultsPerPage = 1024
 }
