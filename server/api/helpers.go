@@ -16,9 +16,9 @@ func AnswerError(c *gin.Context, statusCode int, message string) {
 	}
 
 	c.JSON(statusCode, map[string]string{
-		"status":      "error",
-		"status_code": fmt.Sprint(statusCode),
-		"message":     message,
+		"status":        "error",
+		"status_code":   fmt.Sprint(statusCode),
+		"error_message": message,
 	})
 }
 

@@ -24,6 +24,7 @@ func GetModel(c *gin.Context) {
 		OrderByFields string        `json:"order_by_fields"`
 		Offset        pikago.UInt64 `json:"offset"`
 		Limit         pikago.UInt64 `json:"limit"`
+		Filter        string        `json:"filter"`
 	}
 
 	err := c.Bind(&request)
@@ -57,6 +58,18 @@ func GetModel(c *gin.Context) {
 	results := reflect.New(reflect.TypeOf(model)).Interface()
 
 	dbReq := models.Db.Model(results)
+
+	dbReq, err = processFilter(dbReq, typeOfResult, request.Filter)
+	if err != nil {
+		logger.Log.Debug("error: ", err)
+		AnswerError(
+			c,
+			http.StatusBadRequest,
+			fmt.Sprintf("your filter is wrong. Error message: %v", err),
+		)
+		return
+	}
+
 	orderBy, err := orderByFieldsToGoPg(request.OrderByFields, typeOfResult)
 	if err != nil {
 		logger.Log.Debug("error: ", err)
@@ -80,6 +93,9 @@ func GetModel(c *gin.Context) {
 }
 
 func orderByFieldsToGoPg(value string, typeOfResult reflect.Type) ([]string, error) {
+	if len(value) == 0 {
+		return nil, nil
+	}
 	results := []string{}
 
 	fields := strings.Split(value, ",")
@@ -92,11 +108,36 @@ func orderByFieldsToGoPg(value string, typeOfResult reflect.Type) ([]string, err
 		if !match {
 			return nil, errors.Errorf("\"%v\" doesn't match", field)
 		}
-
-		// TODO: restrict to tags
-
-		if strings.HasPrefix(field, "-") {
+		reversedOrder := strings.HasPrefix(field, "-")
+		if reversedOrder {
 			field = field[1:]
+		}
+
+		tagFound := false
+		for i := 0; i < typeOfResult.NumField(); i++ {
+			fieldType := typeOfResult.Field(i)
+			if jsonTag, found := fieldType.Tag.Lookup("json"); found {
+				jsonTag = strings.Split(jsonTag, ",")[0]
+				jsonTag = strings.TrimSpace(jsonTag)
+				if jsonTag == field {
+					if apiTag, found := fieldType.Tag.Lookup("api"); found {
+						for _, item := range strings.Split(apiTag, ",") {
+							item = strings.TrimSpace(item)
+							if item == "ordering" {
+								tagFound = true
+							}
+						}
+					}
+					break
+				}
+			}
+		}
+
+		if !tagFound {
+			return nil, errors.Errorf("You're not allowed to sort by this field")
+		}
+
+		if reversedOrder {
 			results = append(results, field+" DESC")
 		} else {
 			results = append(results, field+" ASC")

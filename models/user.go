@@ -3,37 +3,36 @@ package models
 // TODO: update structure
 
 type PikabuUser struct {
-	PikabuId uint64 `sql:",pk" json:"pikabu_id"`
+	PikabuId uint64 `sql:",pk" json:"pikabu_id" api:"ordering"`
 
 	Username            string        `sql:",notnull" gen_versions:"" json:"username" api:"ordering"`
 	Gender              string        `sql:",notnull" gen_versions:"" json:"gender" api:"ordering"`
-	Rating              int32         `sql:",notnull" gen_versions:"" json:"rating"`
-	NumberOfComments    int32         `sql:",notnull" gen_versions:"" json:"number_of_comments"`
-	NumberOfSubscribers int32         `sql:",notnull" gen_versions:"" json:"number_of_subscribers"`
-	NumberOfStories     int32         `sql:",notnull" gen_versions:"" json:"number_of_stories"`
-	NumberOfHotStories  int32         `sql:",notnull" gen_versions:"" json:"number_of_hot_stories"`
-	NumberOfPluses      int32         `sql:",notnull" gen_versions:"" json:"number_of_pluses"`
-	NumberOfMinuses     int32         `sql:",notnull" gen_versions:"" json:"number_of_minusses"`
-	SignupTimestamp     TimestampType `sql:",notnull" gen_versions:"" json:"signup_timestamp"`
-	AvatarURL           string        `sql:",notnull" gen_versions:"" json:"avatar_url"`
-	ApprovedText        string        `sql:",notnull" gen_versions:"" json:"approved_text"`
-	AwardIds            []uint64      `sql:",notnull,array" gen_versions:"" json:"award_ids"`
-	CommunityIds        []uint64      `sql:",notnull,array" gen_versions:"" json:"community_ids"`
-	BanHistoryItemIds   []uint64      `sql:",notnull,array" gen_versions:"" json:"ban_history_item_ids"`
-	BanEndTimestamp     TimestampType `sql:",notnull" gen_versions:"" json:"ban_end_timestamp"`
-	IsRatingHidden      bool          `sql:",notnull" gen_versions:"" json:"is_rating_hidden"`
-	IsBanned            bool          `sql:",notnull" gen_versions:"" json:"is_banned"`
-	IsPermanentlyBanned bool          `sql:",notnull" gen_versions:"" json:"is_permanently_banned"`
+	Rating              int32         `sql:",notnull" gen_versions:"" json:"rating" api:"ordering,filter"`
+	NumberOfComments    int32         `sql:",notnull" gen_versions:"" json:"number_of_comments" api:"ordering,filter"`
+	NumberOfSubscribers int32         `sql:",notnull" gen_versions:"" json:"number_of_subscribers" api:"ordering,filter"`
+	NumberOfStories     int32         `sql:",notnull" gen_versions:"" json:"number_of_stories" api:"ordering"`
+	NumberOfHotStories  int32         `sql:",notnull" gen_versions:"" json:"number_of_hot_stories" api:"ordering"`
+	NumberOfPluses      int32         `sql:",notnull" gen_versions:"" json:"number_of_pluses" api:"ordering"`
+	NumberOfMinuses     int32         `sql:",notnull" gen_versions:"" json:"number_of_minuses" api:"ordering"`
+	SignupTimestamp     TimestampType `sql:",notnull" gen_versions:"" json:"signup_timestamp" api:"ordering"`
+	AvatarURL           string        `sql:",notnull" gen_versions:"" json:"avatar_url" api:"ordering"`
+	ApprovedText        string        `sql:",notnull" gen_versions:"" json:"approved_text" api:"ordering"`
+	AwardIds            []uint64      `sql:",notnull,array" gen_versions:"" json:"award_ids" api:"ordering"`
+	CommunityIds        []uint64      `sql:",notnull,array" gen_versions:"" json:"community_ids" api:"ordering"`
+	BanHistoryItemIds   []uint64      `sql:",notnull,array" gen_versions:"" json:"ban_history_item_ids" api:"ordering"`
+	BanEndTimestamp     TimestampType `sql:",notnull" gen_versions:"" json:"ban_end_timestamp" api:"ordering"`
+	IsRatingHidden      bool          `sql:",notnull" gen_versions:"" json:"is_rating_hidden" api:"ordering"`
+	IsBanned            bool          `sql:",notnull" gen_versions:"" json:"is_banned" api:"ordering"`
+	IsPermanentlyBanned bool          `sql:",notnull" gen_versions:"" json:"is_permanently_banned" api:"ordering"`
 
 	// ?
 	// IsDeleted bool `sql:",notnull,default:false"`
 
-	AddedTimestamp      TimestampType `sql:",notnull" json:"added_timestamp"`
-	LastUpdateTimestamp TimestampType `sql:",notnull" json:"last_update_timestamp"`
-	NextUpdateTimestamp TimestampType `sql:",notnull" json:"next_update_timestamp"`
+	AddedTimestamp      TimestampType `sql:",notnull" json:"added_timestamp" api:"ordering"`
+	LastUpdateTimestamp TimestampType `sql:",notnull" json:"last_update_timestamp" api:"ordering"`
+	NextUpdateTimestamp TimestampType `sql:",notnull" json:"next_update_timestamp" api:"ordering"`
 }
 
-// TODO: condider generating versions for this struct
 type PikabuUserAward struct {
 	PikabuId uint64 `sql:",pk"`
 
