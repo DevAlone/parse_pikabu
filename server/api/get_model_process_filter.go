@@ -19,6 +19,11 @@ import (
 )
 
 func processFilter(req *orm.Query, resultType reflect.Type, filter string) (*orm.Query, error) {
+	filter = strings.TrimSpace(filter)
+	if len(filter) == 0 {
+		return req, nil
+	}
+
 	src := common.NewTextSource(filter)
 
 	expression, errs := parser.Parse(src)
