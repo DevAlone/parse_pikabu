@@ -35,10 +35,15 @@ func processFilter(req *orm.Query, resultType reflect.Type, filter string) (*orm
 	env := checker.NewStandardEnv(packages.DefaultPackage, typeProvider)
 	// declare fields to filter on
 	err := env.Add(getFieldsToFilter(resultType)...)
-
 	if err != nil {
 		return req, err
 	}
+
+	err = env.Add(getFilterFunctions()...)
+	if err != nil {
+		return req, err
+	}
+
 	c, errs := checker.Check(expression, src, env)
 	if len(errs.GetErrors()) != 0 {
 		return req, errors.Errorf(errs.ToDisplayString())
@@ -86,6 +91,9 @@ func makeSQLExpression(e *expr.Expr, params *[]interface{}) (string, error) {
 			// return " " + fmt.Sprint(c.Int64Value) + " ", nil
 			*params = append(*params, c.Int64Value)
 			return " ?" + fmt.Sprint(len(*params)-1) + " ", nil
+		case *expr.Constant_StringValue:
+			*params = append(*params, c.StringValue)
+			return " ?" + fmt.Sprint(len(*params)-1) + " ", nil
 		default:
 			bytes, _ := json.Marshal(c)
 			logger.Log.Debugf("unknown kind of constant: %v", string(bytes))
@@ -103,7 +111,13 @@ func celFunctionToSQL(function string) (string, error) {
 		logger.Log.Errorf("unknown cel function %v", function)
 		return "", errors.Errorf("some very bad shit happened")
 	}
-	function = function[1 : len(function)-1]
+	if strings.HasPrefix(function, "_") {
+		function = function[1:]
+	}
+	if strings.HasSuffix(function, "_") {
+		function = function[:len(function)-1]
+	}
+	function = strings.ToLower(function)
 
 	switch function {
 	case "||":
@@ -114,6 +128,8 @@ func celFunctionToSQL(function string) (string, error) {
 		return "=", nil
 	case ">", "<":
 		return function, nil
+	case "ilike":
+		return " ILIKE ", nil
 	default:
 		logger.Log.Debugf("unknown function: %v", function)
 		return "", errors.Errorf("you're not allowed to use function \"%v\"", function)
@@ -143,6 +159,21 @@ func getFieldsToFilter(modelType reflect.Type) []*exprpb.Decl {
 	return result
 }
 
+func getFilterFunctions() []*exprpb.Decl {
+	result := []*exprpb.Decl{}
+
+	result = append(result, decls.NewFunction("ilike", decls.NewOverload(
+		"field, string",
+		[]*exprpb.Type{
+			decls.String,
+			decls.String,
+		},
+		decls.Null,
+	)))
+
+	return result
+}
+
 func fieldToDecl(fieldType reflect.StructField) (*exprpb.Decl, error) {
 	fieldApiName := ""
 	if jsonTag, found := fieldType.Tag.Lookup("json"); found {
@@ -159,6 +190,8 @@ func fieldToDecl(fieldType reflect.StructField) (*exprpb.Decl, error) {
 	switch fieldType.Type.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return decls.NewIdent(fieldApiName, decls.Int, nil), nil
+	case reflect.String:
+		return decls.NewIdent(fieldApiName, decls.String, nil), nil
 	}
 
 	return nil, errors.Errorf("forgot to create decl for field %v", fieldType)

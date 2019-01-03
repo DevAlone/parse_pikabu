@@ -5,7 +5,7 @@ package models
 type PikabuUser struct {
 	PikabuId uint64 `sql:",pk" json:"pikabu_id" api:"ordering"`
 
-	Username            string        `sql:",notnull" gen_versions:"" json:"username" api:"ordering"`
+	Username            string        `sql:",notnull" gen_versions:"" json:"username" api:"ordering,filter"`
 	Gender              string        `sql:",notnull" gen_versions:"" json:"gender" api:"ordering"`
 	Rating              int32         `sql:",notnull" gen_versions:"" json:"rating" api:"ordering,filter"`
 	NumberOfComments    int32         `sql:",notnull" gen_versions:"" json:"number_of_comments" api:"ordering,filter"`
