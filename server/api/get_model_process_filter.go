@@ -91,6 +91,9 @@ func makeSQLExpression(e *expr.Expr, params *[]interface{}) (string, error) {
 			// return " " + fmt.Sprint(c.Int64Value) + " ", nil
 			*params = append(*params, c.Int64Value)
 			return " ?" + fmt.Sprint(len(*params)-1) + " ", nil
+		case *expr.Constant_Uint64Value:
+			*params = append(*params, c.Uint64Value)
+			return " ?" + fmt.Sprint(len(*params)-1) + " ", nil
 		case *expr.Constant_StringValue:
 			*params = append(*params, c.StringValue)
 			return " ?" + fmt.Sprint(len(*params)-1) + " ", nil
@@ -190,6 +193,8 @@ func fieldToDecl(fieldType reflect.StructField) (*exprpb.Decl, error) {
 	switch fieldType.Type.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return decls.NewIdent(fieldApiName, decls.Int, nil), nil
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		return decls.NewIdent(fieldApiName, decls.Uint, nil), nil
 	case reflect.String:
 		return decls.NewIdent(fieldApiName, decls.String, nil), nil
 	}

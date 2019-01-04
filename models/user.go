@@ -3,7 +3,7 @@ package models
 // TODO: update structure
 
 type PikabuUser struct {
-	PikabuId uint64 `sql:",pk" json:"pikabu_id" api:"ordering"`
+	PikabuId uint64 `sql:",pk" json:"pikabu_id" api:"ordering,filter"`
 
 	Username            string        `sql:",notnull" gen_versions:"" json:"username" api:"ordering,filter"`
 	Gender              string        `sql:",notnull" gen_versions:"" json:"gender" api:"ordering"`

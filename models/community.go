@@ -1,23 +1,23 @@
 package models
 
 type PikabuCommunity struct {
-	PikabuId            uint64   `sql:",pk"`
-	Name                string   `sql:",notnull" gen_versions:""`
-	LinkName            string   `sql:",notnull" gen_versions:""`
-	URL                 string   `sql:",notnull" gen_versions:""`
-	AvatarURL           string   `sql:",notnull" gen_versions:""`
-	BackgroundImageURL  string   `sql:",notnull" gen_versions:""`
-	Tags                []string `sql:",notnull,array" gen_versions:""`
-	NumberOfStories     int32    `sql:",notnull" gen_versions:""`
-	NumberOfSubscribers int32    `sql:",notnull" gen_versions:""`
-	Description         string   `sql:",notnull" gen_versions:""`
-	Rules               string   `sql:",notnull" gen_versions:""`
-	Restrictions        string   `sql:",notnull" gen_versions:""`
-	AdminId             uint64   `sql:",notnull" gen_versions:""`
-	ModeratorIds        []uint64 `sql:",notnull" gen_versions:""`
+	PikabuId            uint64   `sql:",pk" json:"pikabu_id" api:"ordering,filter"`
+	Name                string   `sql:",notnull" gen_versions:"" json:"name" api:"ordering,filter"`
+	LinkName            string   `sql:",notnull" gen_versions:"" json:"link_name" api:"filter"`
+	URL                 string   `sql:",notnull" gen_versions:"" json:"url" api:"filter"`
+	AvatarURL           string   `sql:",notnull" gen_versions:"" json:"avatar_url" api:"filter"`
+	BackgroundImageURL  string   `sql:",notnull" gen_versions:"" json:"background_image_url" api:"filter"`
+	Tags                []string `sql:",notnull,array" gen_versions:"" json:"tags" api:"filter"`
+	NumberOfStories     int32    `sql:",notnull" gen_versions:"" json:"number_of_stories" api:"ordering,filter"`
+	NumberOfSubscribers int32    `sql:",notnull" gen_versions:"" json:"number_of_subscribers" api:"ordering,filter"`
+	Description         string   `sql:",notnull" gen_versions:"" json:"description" api:"filter"`
+	Rules               string   `sql:",notnull" gen_versions:"" json:"rules" api:"filter"`
+	Restrictions        string   `sql:",notnull" gen_versions:"" json:"restrictions" api:"filter"`
+	AdminId             uint64   `sql:",notnull" gen_versions:"" json:"admin_id" api:"filter"`
+	ModeratorIds        []uint64 `sql:",notnull" gen_versions:"" json:"moderator_ids" api:"filter"`
 
-	AddedTimestamp      TimestampType `sql:",notnull"`
-	LastUpdateTimestamp TimestampType `sql:",notnull"`
+	AddedTimestamp      TimestampType `sql:",notnull" json:"added_timestamp" api:"ordering,filter"`
+	LastUpdateTimestamp TimestampType `sql:",notnull" json:"last_update_timestamp" api:"ordering,filter"`
 }
 
 func init() {

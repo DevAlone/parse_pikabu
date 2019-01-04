@@ -15,10 +15,11 @@ import (
 )
 
 var availableModels = map[string]interface{}{
-	"pikabu_user": []models.PikabuUser{},
+	"pikabu_user":      []models.PikabuUser{},
+	"pikabu_community": []models.PikabuCommunity{},
 }
 
-func GetModel(c *gin.Context) {
+func ListModel(c *gin.Context) {
 	var request struct {
 		Name          string        `json:"name"`
 		OrderByFields string        `json:"order_by_fields"`
@@ -134,7 +135,7 @@ func orderByFieldsToGoPg(value string, typeOfResult reflect.Type) ([]string, err
 		}
 
 		if !tagFound {
-			return nil, errors.Errorf("You're not allowed to sort by this field")
+			return nil, errors.Errorf("You're not allowed to sort by field %v", field)
 		}
 
 		if reversedOrder {
