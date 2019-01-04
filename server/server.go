@@ -24,7 +24,7 @@ func Run() error {
 
 	apiRouter := router.Group("/api/v1/")
 	{
-		apiRouter.POST("get_model", api.ListModel)
+		apiRouter.POST("list_model", api.ListModel)
 	}
 
 	// apiRouter.Use(middlewares.AuthMiddleware.MiddlewareFunc())

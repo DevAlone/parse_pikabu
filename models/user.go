@@ -1,7 +1,5 @@
 package models
 
-// TODO: update structure
-
 type PikabuUser struct {
 	PikabuId uint64 `sql:",pk" json:"pikabu_id" api:"ordering,filter"`
 

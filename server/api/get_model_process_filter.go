@@ -129,7 +129,7 @@ func celFunctionToSQL(function string) (string, error) {
 		return " AND ", nil
 	case "==":
 		return "=", nil
-	case ">", "<":
+	case ">", "<", "!=":
 		return function, nil
 	case "ilike":
 		return " ILIKE ", nil

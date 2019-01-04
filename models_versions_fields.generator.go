@@ -4,6 +4,7 @@ package main
 
 import (
 	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/iancoleman/strcase"
 	"html/template"
 	"os"
 	"reflect"
@@ -59,6 +60,19 @@ var FieldsVersionTablesMap = map[string]interface{}{
 	_, err = f.WriteString(fieldsVersionTablesMapCode)
 	handleErr(err)
 
+	fieldsVersionAPITablesMapCode := `
+var FieldsVersionAPITablesMap = map[string]interface{}{
+`
+	for _, tableName := range generatedTablesNames {
+		fieldsVersionAPITablesMapCode += `"` + tableName + `": []` + tableName + "{},\n"
+	}
+
+	fieldsVersionAPITablesMapCode += `}
+`
+
+	_, err = f.WriteString(fieldsVersionAPITablesMapCode)
+	handleErr(err)
+
 	// generate init
 	_, err = f.WriteString(getInit(generatedTablesNames))
 	handleErr(err)
@@ -109,7 +123,8 @@ func getStructMemberCode(memberName string, memberType string, isPk bool) string
 	if isPk {
 		result += ",pk"
 	}
-	result += ",notnull\"`\n"
+	apiName := strcase.ToSnake(memberName)
+	result += ",notnull\" json:\"" + apiName + "\" api:\"" + "ordering,filter" + "\"`\n"
 	return result
 }
 

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-errors/errors"
+	"github.com/iancoleman/strcase"
 	"gogsweb.2-47.ru/d3dev/pikago"
 	"net/http"
 	"reflect"
@@ -17,6 +18,14 @@ import (
 var availableModels = map[string]interface{}{
 	"pikabu_user":      []models.PikabuUser{},
 	"pikabu_community": []models.PikabuCommunity{},
+}
+
+func init() {
+	// add versions fields
+	for key, val := range models.FieldsVersionAPITablesMap {
+		tableAPIName := strcase.ToSnake(key) + "s"
+		availableModels[tableAPIName] = val
+	}
 }
 
 func ListModel(c *gin.Context) {
