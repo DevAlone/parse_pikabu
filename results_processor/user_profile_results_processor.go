@@ -1,15 +1,16 @@
 package results_processor
 
 import (
+	"fmt"
+	"sync"
+	"time"
+
 	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/task_manager"
-	"fmt"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
 	"gogsweb.2-47.ru/d3dev/pikago"
-	"sync"
-	"time"
 )
 
 var processUserProfileMutex = &sync.Mutex{}
@@ -70,7 +71,7 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 }
 
 func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfile *pikago.UserProfile) error {
-	awardIds, err := createAwardIdsArray(tx, userProfile.Awards, parsingTimestamp)
+	awardIds, err := CreateAwardIdsArray(tx, userProfile.Awards, parsingTimestamp)
 	if err != nil {
 		return err
 	}
@@ -145,7 +146,7 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 	return nil
 }
 
-func createAwardIdsArray(
+func CreateAwardIdsArray(
 	tx *pg.Tx,
 	parsedAwards []pikago.UserProfileAward,
 	parsingTimestamp models.TimestampType,

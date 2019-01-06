@@ -1,12 +1,13 @@
 package models
 
 import (
+	"errors"
+	"strings"
+
 	"bitbucket.org/d3dev/parse_pikabu/config"
 	"bitbucket.org/d3dev/parse_pikabu/logger"
-	"errors"
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
-	"strings"
 )
 
 //go:generate bash -c "cd ..; go run models_versions_fields.generator.go; go fmt models/models.generated.go"
@@ -125,6 +126,7 @@ func _addIndex(tableName string, _columns interface{}, method string, unique boo
 	createIndexQueries = append(createIndexQueries, index)
 }
 
+/*
 type FieldVersionBase struct {
 	Timestamp TimestampType `sql:",pk,notnull"`
 	ItemId    uint64        `sql:",pk,notnull"`
@@ -162,3 +164,4 @@ type TimestampTypeFieldVersion struct {
 	FieldVersionBase
 	Value TimestampType `sql:",notnull"`
 }
+*/
