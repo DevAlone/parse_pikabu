@@ -79,6 +79,8 @@ Available commands are:
 		key := "parse_pikabu_server_authentication_middleware_session_group_" + strings.TrimSpace(os.Args[1])
 		err := redisClient.Set(key, fmt.Sprint(middlewares.GROUP_PARSER), 0).Err()
 		handleError(err)
+	case "load_from_old_db":
+		loadFromOldDb()
 	default:
 		_, err := os.Stderr.WriteString(fmt.Sprintf("Unknown command: %v", command))
 		if err != nil {
