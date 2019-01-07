@@ -1,11 +1,12 @@
 package task_manager
 
 import (
+	"strings"
+	"time"
+
 	"bitbucket.org/d3dev/parse_pikabu/config"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-pg/pg"
-	"strings"
-	"time"
 )
 
 func processUserTasks() error {
@@ -44,31 +45,33 @@ func processUserTasks() error {
 	}
 
 	// init db
-	for _, username := range []string{
-		"admin",
-		"l4rever",
-		"moderator",
-		"lactarius",
-		"apres",
-		"dev",
-		"code501",
-	} {
-		user := &models.PikabuUser{}
-		exists, err := models.Db.Model(user).
-			Where("LOWER(username) = ?", strings.ToLower(username)).
-			Exists()
+	/*
+		for _, username := range []string{
+			"admin",
+			"l4rever",
+			"moderator",
+			"lactarius",
+			"apres",
+			"dev",
+			"code501",
+		} {
+			user := &models.PikabuUser{}
+			exists, err := models.Db.Model(user).
+				Where("LOWER(username) = ?", strings.ToLower(username)).
+				Exists()
 
-		if err != nil {
-			return err
-		}
-
-		if !exists {
-			err = AddParseUserByUsernameTask(username)
 			if err != nil {
 				return err
 			}
+
+			if !exists {
+				err = AddParseUserByUsernameTask(username)
+				if err != nil {
+					return err
+				}
+			}
 		}
-	}
+	*/
 
 	return nil
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 
@@ -41,6 +42,9 @@ func loadFromOldDb() {
 
 	// clear tables
 	for _, table := range models.Tables {
+		if reflect.TypeOf(table) == reflect.TypeOf(&models.PikabuCommunity{}) {
+			continue
+		}
 		err := models.Db.DropTable(table, &orm.DropTableOptions{
 			IfExists: true,
 			Cascade:  true,
@@ -183,9 +187,6 @@ func processUsers() {
 			go func(oldU old_models.User) {
 				defer sem.Release(1)
 				processUser(&oldU)
-				if oldU.PikabuId == 1 {
-					panic("admin")
-				}
 			}(oldUser)
 		}
 
