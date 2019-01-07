@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/old_models"
@@ -11,7 +13,14 @@ import (
 	"github.com/go-pg/pg/orm"
 	"github.com/pkg/errors"
 	"gogsweb.2-47.ru/d3dev/pikago"
+	"golang.org/x/sync/semaphore"
 )
+
+var startTimestamp = time.Now().Unix()
+
+func printTimeSinceStart() {
+	fmt.Printf("time since start: %v\n", (time.Now().Unix() - startTimestamp))
+}
 
 func panicOnError(err error) {
 	if err != nil {
@@ -19,8 +28,11 @@ func panicOnError(err error) {
 	}
 }
 
+var oldDb *pg.DB
+
 func loadFromOldDb() {
 	fmt.Println("loading from db pikabot_graphs...")
+	printTimeSinceStart()
 
 	err := models.InitDb()
 	if err != nil {
@@ -44,18 +56,85 @@ func loadFromOldDb() {
 		handleError(err)
 	}
 
-	oldDb := pg.Connect(&pg.Options{
+	oldDb = pg.Connect(&pg.Options{
 		Database: "pikabot_graphs",
 		User:     "pikabot_graphs",
 		Password: "pikabot_graphs",
 	})
 
-	processUsers(oldDb)
+	createIndices()
+
+	processUsers()
+}
+
+func createIndices() {
+	fmt.Println("creating indices...")
+	printTimeSinceStart()
+
+	processExec := func(_ interface{}, err error) {
+		panicOnError(err)
+	}
+
+	processExec(oldDb.Exec(`
+		CREATE INDEX IF NOT EXISTS core_user_pikabu_id ON core_user (pikabu_id);
+	`))
+
+	processExec(oldDb.Exec(`
+		CREATE INDEX IF NOT EXISTS core_usercommentscountentry_user_id ON core_usercommentscountentry (user_id);
+	`))
+	processExec(oldDb.Exec(`
+		CREATE INDEX IF NOT EXISTS core_usercommentscountentry_timestamp ON core_usercommentscountentry (timestamp);
+	`))
+
+	processExec(oldDb.Exec(`
+		CREATE INDEX IF NOT EXISTS core_userhotpostscountentry_user_id ON core_usercommentscountentry (user_id);
+	`))
+	processExec(oldDb.Exec(`
+		CREATE INDEX IF NOT EXISTS core_userhotpostscountentry_timestamp ON core_usercommentscountentry (timestamp);
+	`))
+
+	processExec(oldDb.Exec(`
+		CREATE INDEX IF NOT EXISTS core_userminusescountentry_user_id ON core_usercommentscountentry (user_id);
+	`))
+	processExec(oldDb.Exec(`
+		CREATE INDEX IF NOT EXISTS core_userminusescountentry_timestamp ON core_usercommentscountentry (timestamp);
+	`))
+
+	processExec(oldDb.Exec(`
+		CREATE INDEX IF NOT EXISTS core_userplusescountentry_user_id ON core_usercommentscountentry (user_id);
+	`))
+	processExec(oldDb.Exec(`
+		CREATE INDEX IF NOT EXISTS core_userplusescountentry_timestamp ON core_usercommentscountentry (timestamp);
+	`))
+
+	processExec(oldDb.Exec(`
+		CREATE INDEX IF NOT EXISTS core_userpostscountentry_user_id ON core_usercommentscountentry (user_id);
+	`))
+	processExec(oldDb.Exec(`
+		CREATE INDEX IF NOT EXISTS core_userpostscountentry_timestamp ON core_usercommentscountentry (timestamp);
+	`))
+
+	processExec(oldDb.Exec(`
+		CREATE INDEX IF NOT EXISTS core_userratingentry_user_id ON core_usercommentscountentry (user_id);
+	`))
+	processExec(oldDb.Exec(`
+		CREATE INDEX IF NOT EXISTS core_userratingentry_timestamp ON core_usercommentscountentry (timestamp);
+	`))
+
+	processExec(oldDb.Exec(`
+		CREATE INDEX IF NOT EXISTS core_usersubscriberscountentry_user_id ON core_usercommentscountentry (user_id);
+	`))
+	processExec(oldDb.Exec(`
+		CREATE INDEX IF NOT EXISTS core_usersubscriberscountentry_timestamp ON core_usercommentscountentry (timestamp);
+	`))
 }
 
 var skipUsers []old_models.User
 
-func processUsers(oldDb *pg.DB) {
+func processUsers() {
+	fmt.Println("processing users...")
+	printTimeSinceStart()
+
 	// select pikabu_id from core_user group by pikabu_id having count(*) > 1;
 	err := oldDb.Model(&skipUsers).
 		Column("pikabu_id").
@@ -66,10 +145,18 @@ func processUsers(oldDb *pg.DB) {
 	if err != pg.ErrNoRows {
 		panicOnError(err)
 	}
+	var (
+		maxWorkers = 64 // 128
+		sem        = semaphore.NewWeighted(int64(maxWorkers))
+	)
+	ctx := context.TODO()
 
 	offset := 0
-	limit := 1024
+	limit := 32
 	for true {
+		fmt.Printf("processing users, offset=%v, limit=%v\n", offset, limit)
+		printTimeSinceStart()
+
 		var users []old_models.User
 		err := oldDb.Model(&users).
 			Order("pikabu_id").
@@ -81,18 +168,27 @@ func processUsers(oldDb *pg.DB) {
 			break
 		}
 		panicOnError(err)
+
+		// var wg sync.WaitGroup
 		for _, oldUser := range users {
-			processUser(oldDb, &oldUser)
+			panicOnError(sem.Acquire(ctx, 1))
+			// wg.Add(1)
+			go func(oldU old_models.User) {
+				defer sem.Release(1)
+				processUser(&oldU)
+				// wg.Done()
+			}(oldUser)
 		}
+		// wg.Wait()
 
 		offset += limit
 	}
 }
 
-func processUser(oldDb *pg.DB, oldUser *old_models.User) {
+func processUser(oldUser *old_models.User) {
 	for _, skipUser := range skipUsers {
 		if skipUser.PikabuId == oldUser.PikabuId {
-			fmt.Printf("skipping user with id %v", skipUser.PikabuId)
+			fmt.Printf("skipping user with id %v \n", skipUser.PikabuId)
 			return
 		}
 	}
@@ -144,7 +240,7 @@ func processUser(oldDb *pg.DB, oldUser *old_models.User) {
 	err = models.Db.Insert(user)
 	panicOnError(err)
 
-	processUserVersionsFields(oldDb, oldUser, user)
+	processUserVersionsFields(oldUser, user)
 }
 
 func extractAwardIds(oldUser *old_models.User) []uint64 {
@@ -177,29 +273,27 @@ func extractAwardIds(oldUser *old_models.User) []uint64 {
 }
 
 func processUserVersionsFields(
-	oldDb *pg.DB,
 	oldUser *old_models.User,
 	user *models.PikabuUser,
 ) {
 	processUserCountersEntryBase(
-		oldDb, "core_userratingentry", "pikabu_user_rating_versions", oldUser, user)
+		"core_userratingentry", "pikabu_user_rating_versions", oldUser, user)
 	processUserCountersEntryBase(
-		oldDb, "core_usersubscriberscountentry", "pikabu_user_number_of_subscribers_versions", oldUser, user)
+		"core_usersubscriberscountentry", "pikabu_user_number_of_subscribers_versions", oldUser, user)
 	processUserCountersEntryBase(
-		oldDb, "core_usercommentscountentry", "pikabu_user_number_of_comments_versions", oldUser, user)
+		"core_usercommentscountentry", "pikabu_user_number_of_comments_versions", oldUser, user)
 	processUserCountersEntryBase(
-		oldDb, "core_userpostscountentry", "pikabu_user_number_of_stories_versions", oldUser, user)
+		"core_userpostscountentry", "pikabu_user_number_of_stories_versions", oldUser, user)
 	processUserCountersEntryBase(
-		oldDb, "core_userhotpostscountentry", "pikabu_user_number_of_hot_stories_versions", oldUser, user)
+		"core_userhotpostscountentry", "pikabu_user_number_of_hot_stories_versions", oldUser, user)
 	processUserCountersEntryBase(
-		oldDb, "core_userplusescountentry", "pikabu_user_number_of_pluses_versions", oldUser, user)
+		"core_userplusescountentry", "pikabu_user_number_of_pluses_versions", oldUser, user)
 	processUserCountersEntryBase(
-		oldDb, "core_userminusescountentry", "pikabu_user_number_of_minuses_versions", oldUser, user)
+		"core_userminusescountentry", "pikabu_user_number_of_minuses_versions", oldUser, user)
 	// TODO: avatar url
 }
 
 func processUserCountersEntryBase(
-	oldDb *pg.DB,
 	tableName string,
 	newTableName string,
 	oldUser *old_models.User,
