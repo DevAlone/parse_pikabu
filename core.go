@@ -1,17 +1,19 @@
 package main
 
 import (
+	"flag"
+	"os"
+	"sync"
+
 	"bitbucket.org/d3dev/parse_pikabu/config"
 	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/results_processor"
 	"bitbucket.org/d3dev/parse_pikabu/server"
+	"bitbucket.org/d3dev/parse_pikabu/statistics"
 	"bitbucket.org/d3dev/parse_pikabu/task_manager"
-	"flag"
 	"github.com/go-errors/errors"
-	"github.com/op/go-logging"
-	"os"
-	"sync"
+	logging "github.com/op/go-logging"
 )
 
 func Main() {
@@ -43,32 +45,36 @@ func Main() {
 	}
 
 	var wg sync.WaitGroup
-	wg.Add(3)
 
+	wg.Add(1)
 	// start server
 	go func() {
 		err := server.Run()
-		if err != nil {
-			handleError(err)
-		}
+		handleError(err)
 		wg.Done()
 	}()
 
+	wg.Add(1)
 	// start task manager
 	go func() {
 		err := task_manager.Run()
-		if err != nil {
-			handleError(err)
-		}
+		handleError(err)
 		wg.Done()
 	}()
 
+	wg.Add(1)
 	// start results processor
 	go func() {
 		err := results_processor.Run()
-		if err != nil {
-			handleError(err)
-		}
+		handleError(err)
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	// statistics
+	go func() {
+		err := statistics.Run()
+		handleError(err)
 		wg.Done()
 	}()
 

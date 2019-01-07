@@ -315,7 +315,7 @@ func calculateNextUpdateTimestamp(
 ) models.TimestampType {
 
 	// TODO: implement!
-	return models.TimestampType(time.Now().Unix() + 60)
+	return models.TimestampType(time.Now().Unix() + 3600*24)
 	// TODO: move to settings
 	/*if user.SignupTimestamp >= models.TimestampType(time.Now().Unix()-3600*24) {
 

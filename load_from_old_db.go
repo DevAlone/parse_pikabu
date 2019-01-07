@@ -64,6 +64,8 @@ func loadFromOldDb() {
 
 	createIndices()
 
+	processCommunities()
+
 	processUsers()
 }
 
@@ -127,6 +129,13 @@ func createIndices() {
 	processExec(oldDb.Exec(`
 		CREATE INDEX IF NOT EXISTS core_usersubscriberscountentry_timestamp ON core_usercommentscountentry (timestamp);
 	`))
+
+	processExec(oldDb.Exec(`
+		CREATE INDEX IF NOT EXISTS user_avatar_url_versions_timestamp ON user_avatar_url_versions (timestamp);
+	`))
+	processExec(oldDb.Exec(`
+		CREATE INDEX IF NOT EXISTS user_avatar_url_versions_item_id ON user_avatar_url_versions (item_id);
+	`))
 }
 
 var skipUsers []old_models.User
@@ -169,20 +178,21 @@ func processUsers() {
 		}
 		panicOnError(err)
 
-		// var wg sync.WaitGroup
 		for _, oldUser := range users {
 			panicOnError(sem.Acquire(ctx, 1))
-			// wg.Add(1)
 			go func(oldU old_models.User) {
 				defer sem.Release(1)
 				processUser(&oldU)
-				// wg.Done()
+				if oldU.PikabuId == 1 {
+					panic("admin")
+				}
 			}(oldUser)
 		}
-		// wg.Wait()
 
 		offset += limit
 	}
+
+	// TODO: process skipped
 }
 
 func processUser(oldUser *old_models.User) {
@@ -224,7 +234,7 @@ func processUser(oldUser *old_models.User) {
 		// ?
 		// IsDeleted bool `sql:",notnull,default:false"`
 
-		AddedTimestamp:      0,
+		AddedTimestamp:      models.TimestampType(oldUser.LastUpdateTimestamp),
 		LastUpdateTimestamp: models.TimestampType(oldUser.LastUpdateTimestamp),
 		NextUpdateTimestamp: 0,
 	}
@@ -277,20 +287,58 @@ func processUserVersionsFields(
 	user *models.PikabuUser,
 ) {
 	processUserCountersEntryBase(
-		"core_userratingentry", "pikabu_user_rating_versions", oldUser, user)
+		"core_userratingentry",
+		"pikabu_user_rating_versions",
+		oldUser,
+		user,
+		oldUser.Rating,
+	)
 	processUserCountersEntryBase(
-		"core_usersubscriberscountentry", "pikabu_user_number_of_subscribers_versions", oldUser, user)
+		"core_usersubscriberscountentry",
+		"pikabu_user_number_of_subscribers_versions",
+		oldUser,
+		user,
+		oldUser.SubscribersCount,
+	)
 	processUserCountersEntryBase(
-		"core_usercommentscountentry", "pikabu_user_number_of_comments_versions", oldUser, user)
+		"core_usercommentscountentry",
+		"pikabu_user_number_of_comments_versions",
+		oldUser,
+		user,
+		oldUser.CommentsCount,
+	)
 	processUserCountersEntryBase(
-		"core_userpostscountentry", "pikabu_user_number_of_stories_versions", oldUser, user)
+		"core_userpostscountentry",
+		"pikabu_user_number_of_stories_versions",
+		oldUser,
+		user,
+		oldUser.PostsCount,
+	)
 	processUserCountersEntryBase(
-		"core_userhotpostscountentry", "pikabu_user_number_of_hot_stories_versions", oldUser, user)
+		"core_userhotpostscountentry",
+		"pikabu_user_number_of_hot_stories_versions",
+		oldUser,
+		user,
+		oldUser.HotPostsCount,
+	)
 	processUserCountersEntryBase(
-		"core_userplusescountentry", "pikabu_user_number_of_pluses_versions", oldUser, user)
+		"core_userplusescountentry",
+		"pikabu_user_number_of_pluses_versions",
+		oldUser,
+		user,
+		oldUser.PlusesCount,
+	)
 	processUserCountersEntryBase(
-		"core_userminusescountentry", "pikabu_user_number_of_minuses_versions", oldUser, user)
-	// TODO: avatar url
+		"core_userminusescountentry",
+		"pikabu_user_number_of_minuses_versions",
+		oldUser,
+		user,
+		oldUser.MinusesCount,
+	)
+	processAvatarUrls(
+		oldUser,
+		user,
+	)
 }
 
 func processUserCountersEntryBase(
@@ -298,6 +346,7 @@ func processUserCountersEntryBase(
 	newTableName string,
 	oldUser *old_models.User,
 	user *models.PikabuUser,
+	currentValue int32,
 ) {
 	var result []old_models.CountersEntryBase
 	_, err := oldDb.Query(&result, `
@@ -307,6 +356,13 @@ func processUserCountersEntryBase(
 	`, oldUser.Id)
 	panicOnError(err)
 
+	if len(result) == 1 {
+		if result[0].Value == currentValue {
+			// fmt.Printf("skip version %v because current value is the same user pikabu id %v\n", tableName, oldUser.PikabuId)
+			return
+		}
+	}
+
 	for _, item := range result {
 		_, err := models.Db.Exec(`
 			INSERT INTO `+newTableName+` 
@@ -314,5 +370,58 @@ func processUserCountersEntryBase(
 			VALUES (?, ?, ?);
 		`, models.TimestampType(item.Timestamp), user.PikabuId, item.Value)
 		panicOnError(err)
+
+		if models.TimestampType(item.Timestamp) < user.AddedTimestamp {
+			user.AddedTimestamp = models.TimestampType(item.Timestamp)
+			_, err := models.Db.Model(user).
+				Set("added_timestamp = ?added_timestamp").
+				Where("pikabu_id = ?pikabu_id").
+				Update()
+			panicOnError(err)
+		}
+	}
+}
+
+func processAvatarUrls(
+	oldUser *old_models.User,
+	user *models.PikabuUser,
+) {
+	var avatarURLVersions []old_models.UserAvatarURLVersion
+
+	err := oldDb.Model(&avatarURLVersions).
+		Where("item_id = ?", oldUser.Id).
+		Order("timestamp").
+		Select()
+	panicOnError(err)
+
+	if len(avatarURLVersions) == 1 && avatarURLVersions[0].Value == oldUser.AvatarURL {
+		// fmt.Printf("skip version avatar url because current value is the same\n")
+		return
+	}
+
+	for _, item := range avatarURLVersions {
+		if item.Timestamp <= 0 {
+			panicOnError(errors.Errorf("avatar timestamp < 0. user %v", oldUser.Id))
+		}
+		if item.ItemId <= 0 {
+			panicOnError(errors.Errorf("avatar item_id < 0. user %v", oldUser.Id))
+		}
+
+		newItem := &models.PikabuUserAvatarURLVersion{
+			Timestamp: models.TimestampType(uint64(item.Timestamp)),
+			ItemId:    uint64(oldUser.PikabuId),
+			Value:     item.Value,
+		}
+		_, err := models.Db.Model(newItem).Insert()
+		panicOnError(err)
+
+		if models.TimestampType(item.Timestamp) < user.AddedTimestamp {
+			user.AddedTimestamp = models.TimestampType(item.Timestamp)
+			_, err := models.Db.Model(user).
+				Set("added_timestamp = ?added_timestamp").
+				Where("pikabu_id = ?pikabu_id").
+				Update()
+			panicOnError(err)
+		}
 	}
 }

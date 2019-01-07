@@ -1,23 +1,25 @@
 package api
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/config"
-	"bitbucket.org/d3dev/parse_pikabu/logger"
-	"bitbucket.org/d3dev/parse_pikabu/models"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/go-errors/errors"
-	"github.com/iancoleman/strcase"
-	"gogsweb.2-47.ru/d3dev/pikago"
 	"net/http"
 	"reflect"
 	"regexp"
 	"strings"
+
+	"bitbucket.org/d3dev/parse_pikabu/config"
+	"bitbucket.org/d3dev/parse_pikabu/logger"
+	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/gin-gonic/gin"
+	"github.com/go-errors/errors"
+	"github.com/iancoleman/strcase"
+	"gogsweb.2-47.ru/d3dev/pikago"
 )
 
 var availableModels = map[string]interface{}{
-	"pikabu_user":      []models.PikabuUser{},
-	"pikabu_community": []models.PikabuCommunity{},
+	"pikabu_user":                        []models.PikabuUser{},
+	"pikabu_community":                   []models.PikabuCommunity{},
+	"number_of_users_to_process_entries": []models.NumberOfUsersToProcessEntry{},
 }
 
 func init() {
