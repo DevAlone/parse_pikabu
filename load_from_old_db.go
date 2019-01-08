@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 
 	"bitbucket.org/d3dev/parse_pikabu/models"
@@ -163,6 +164,7 @@ func processUsers() {
 		sem        = semaphore.NewWeighted(int64(maxWorkers))
 	)
 	ctx := context.TODO()
+	var wg sync.WaitGroup
 
 	offset := 0
 	limit := 32
@@ -184,9 +186,11 @@ func processUsers() {
 
 		for _, oldUser := range users {
 			panicOnError(sem.Acquire(ctx, 1))
+			wg.Add(1)
 			go func(oldU old_models.User) {
 				defer sem.Release(1)
 				processUser(&oldU)
+				wg.Done()
 			}(oldUser)
 		}
 
@@ -194,6 +198,7 @@ func processUsers() {
 	}
 
 	// TODO: process skipped
+	wg.Wait()
 }
 
 func processUser(oldUser *old_models.User) {
