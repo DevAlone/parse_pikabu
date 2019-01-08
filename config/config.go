@@ -6,16 +6,23 @@ import (
 )
 
 var Settings struct {
-	Debug                               bool
-	Database                            map[string]string
-	ProxyProviderClientTimeout          int
-	ProxyProviderBaseURL                string
-	Pikabu18BotToken                    string
-	ServerListeningAddress              string
-	AMQPAddress                         string
+	Debug                      bool
+	Database                   map[string]string
+	ProxyProviderClientTimeout int
+	ProxyProviderBaseURL       string
+	Pikabu18BotToken           string
+	ServerListeningAddress     string
+	AMQPAddress                string
+	// in seconds
 	MaximumTaskProcessingTime           int
 	CommunitiesProcessingPeriod         int
 	ServerMaximumNumberOfResultsPerPage uint
+	// time in seconds to consider user as new
+	NewUserTime                        int
+	NewUsersUpdatingPeriod             int
+	UsersUpdatingPeriodIncreasingValue int
+	UsersMinUpdatingPeriod             int
+	UsersMaxUpdatingPeriod             int
 }
 
 func UpdateSettingsFromFile(filename string) error {
@@ -45,4 +52,9 @@ func init() {
 	Settings.MaximumTaskProcessingTime = 60
 	Settings.CommunitiesProcessingPeriod = 3600
 	Settings.ServerMaximumNumberOfResultsPerPage = 1024
+	Settings.NewUserTime = 3600 * 24 * 7
+	Settings.NewUsersUpdatingPeriod = 3600 * 24
+	Settings.UsersUpdatingPeriodIncreasingValue = 3600
+	Settings.UsersMinUpdatingPeriod = 3600 * 12
+	Settings.UsersMaxUpdatingPeriod = 3600 * 24 * 7
 }

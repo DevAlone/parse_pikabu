@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"bitbucket.org/d3dev/parse_pikabu/config"
 	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/task_manager"
@@ -313,16 +314,28 @@ func calculateNextUpdateTimestamp(
 	user *models.PikabuUser,
 	wasDataChanged bool,
 ) models.TimestampType {
-
-	// TODO: implement!
-	return models.TimestampType(time.Now().Unix() + 3600*24)
-	// TODO: move to settings
-	/*if user.SignupTimestamp >= models.TimestampType(time.Now().Unix()-3600*24) {
-
-		return models.TimestampType(time.Now().Unix() + 3600*(24+12))
+	currentTimestamp := models.TimestampType(time.Now().Unix())
+	updatingPeriod := user.NextUpdateTimestamp - user.LastUpdateTimestamp
+	if updatingPeriod < 0 {
+		updatingPeriod = 0
+	}
+	// update new users frequently
+	if user.SignupTimestamp >= time.Now().Unix()-int64(config.Settings.NewUserTime) {
+		return currentTimestamp + models.TimestampType(Settings.NewUsersUpdatingPeriod)
 	}
 
-	previousUpdatingPeriod := models.TimestampType(
-		math.Abs(float64(user.NextUpdateTimestamp - user.LastUpdateTimestamp)),
-	)*/
+	if wasDataChanged {
+		updatingPeriod /= 2
+	} else {
+		updatingPeriod += config.Settings.UsersUpdatingPeriodIncreasingValue
+	}
+
+	if updatingPeriod < config.Settings.UsersMinUpdatingPeriod {
+		updatingPeriod = config.Settings.UsersMinUpdatingPeriod
+	}
+	if updatingPeriod > config.Settings.UsersMaxUpdatingPeriod {
+		updatingPeriod = config.Settings.UsersMaxUpdatingPeriod
+	}
+
+	return currentTimestamp + models.TimestampType(updatingPeriod)
 }
