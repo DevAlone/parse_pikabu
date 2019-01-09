@@ -2,8 +2,9 @@ package parser
 
 import (
 	"encoding/json"
-	"github.com/go-errors/errors"
 	"io/ioutil"
+
+	"github.com/go-errors/errors"
 )
 
 type ParserConfig struct {
@@ -34,14 +35,14 @@ func NewParserConfigFromBytes(configData []byte) (*ParserConfig, error) {
 	config.ParserId = "unique_parser_id"
 	config.NumberOfInstances = 1
 	config.ApiURL = "http://localhost:8080/api/v1"
-	config.ProxyProviderAPIURL = "https://eivailohciihi4uquapach7abei9iesh.d3d.info/api/v2/"
+	config.ProxyProviderAPIURL = ""
 	config.ProxyProviderTimeout = 60
 	config.PikagoTimeout = 30
 	config.PikagoWaitBetweenProcessingPages = 1
 	config.ApiTimeout = 60
 	config.WaitAfterErrorSeconds = 10
 	config.WaitNoTaskSeconds = 5
-	config.ApiSessionId = "parser_oogoShaituNoh8iebaesiYaeh"
+	config.ApiSessionId = "put parser's session id here"
 	config.AMQPAddress = "amqp://guest:guest@localhost:5672"
 
 	err := json.Unmarshal([]byte(configData), config)

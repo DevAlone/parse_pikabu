@@ -45,7 +45,7 @@ func init() {
 		"Password": "test",
 	}
 	Settings.ProxyProviderClientTimeout = 60
-	Settings.ProxyProviderBaseURL = "https://eivailohciihi4uquapach7abei9iesh.d3d.info/api/v1/"
+	Settings.ProxyProviderBaseURL = ""
 	Settings.Pikabu18BotToken = ""
 	Settings.ServerListeningAddress = "0.0.0.0:8080"
 	Settings.AMQPAddress = "amqp://guest:guest@localhost:5672/"
