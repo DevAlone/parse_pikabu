@@ -1,8 +1,10 @@
 package task_manager
 
 import (
-	"github.com/go-pg/pg"
+	"strings"
 	"time"
+
+	"github.com/go-pg/pg"
 )
 
 func Run() error {
@@ -22,11 +24,21 @@ func Run() error {
 
 func CompleteTask(tx *pg.Tx, tableName, fieldName string, fieldValue interface{}) error {
 	// TODO: refactor to be able to pass the actual model, not a table's name
-	_, err := tx.Model().Exec(`
-		UPDATE `+tableName+` 
-		SET is_done = true
-		WHERE is_done = false AND `+fieldName+` = ?
-	`, fieldValue)
+	var err error
+	switch value := fieldValue.(type) {
+	case string:
+		_, err = tx.Model().Exec(`
+			UPDATE `+tableName+` 
+			SET is_done = true
+			WHERE is_done = false AND LOWER(`+fieldName+`) = ?
+		`, strings.ToLower(value))
+	default:
+		_, err = tx.Model().Exec(`
+			UPDATE `+tableName+` 
+			SET is_done = true
+			WHERE is_done = false AND `+fieldName+` = ?
+		`, fieldValue)
+	}
 
 	return err
 }
