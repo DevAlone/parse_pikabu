@@ -38,7 +38,7 @@ func UpdateSettingsFromFile(filename string) error {
 }
 
 func init() {
-	Settings.Debug = true
+	Settings.Debug = false
 	Settings.Database = map[string]string{
 		"Name":     "test",
 		"Username": "test",
