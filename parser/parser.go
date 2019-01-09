@@ -1,14 +1,8 @@
 package parser
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/logger"
-	"bitbucket.org/d3dev/parse_pikabu/models"
 	"encoding/json"
 	"fmt"
-	"github.com/go-errors/errors"
-	"github.com/op/go-logging"
-	"github.com/streadway/amqp"
-	"gogsweb.2-47.ru/d3dev/pikago"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -17,6 +11,13 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"bitbucket.org/d3dev/parse_pikabu/logger"
+	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/go-errors/errors"
+	logging "github.com/op/go-logging"
+	"github.com/streadway/amqp"
+	"gogsweb.2-47.ru/d3dev/pikago"
 )
 
 type NoTaskError struct{}
