@@ -1,15 +1,16 @@
 package main
 
 import (
+	"fmt"
+	"os"
+	"strings"
+
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/parser"
 	"bitbucket.org/d3dev/parse_pikabu/server/middlewares"
-	"fmt"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg/orm"
-	"os"
-	"strings"
 )
 
 func handleError(err error) {
@@ -44,6 +45,7 @@ Available commands are:
 - parser
 - clean_db
 - add_parser
+- add_parsers
 `))
 		handleError(err)
 		return
@@ -78,6 +80,9 @@ Available commands are:
 		}
 		key := "parse_pikabu_server_authentication_middleware_session_group_" + strings.TrimSpace(os.Args[1])
 		err := redisClient.Set(key, fmt.Sprint(middlewares.GROUP_PARSER), 0).Err()
+		handleError(err)
+	case "add_parsers":
+		err := addParsers()
 		handleError(err)
 	case "load_from_old_db":
 		loadFromOldDb()
