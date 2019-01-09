@@ -320,21 +320,23 @@ func calculateNextUpdateTimestamp(
 		updatingPeriod = 0
 	}
 	// update new users frequently
-	if user.SignupTimestamp >= time.Now().Unix()-int64(config.Settings.NewUserTime) {
-		return currentTimestamp + models.TimestampType(Settings.NewUsersUpdatingPeriod)
+	if user.SignupTimestamp >=
+		models.TimestampType(time.Now().Unix()-int64(config.Settings.NewUserTime)) {
+
+		return currentTimestamp + models.TimestampType(config.Settings.NewUsersUpdatingPeriod)
 	}
 
 	if wasDataChanged {
 		updatingPeriod /= 2
 	} else {
-		updatingPeriod += config.Settings.UsersUpdatingPeriodIncreasingValue
+		updatingPeriod += models.TimestampType(config.Settings.UsersUpdatingPeriodIncreasingValue)
 	}
 
-	if updatingPeriod < config.Settings.UsersMinUpdatingPeriod {
-		updatingPeriod = config.Settings.UsersMinUpdatingPeriod
+	if updatingPeriod < models.TimestampType(config.Settings.UsersMinUpdatingPeriod) {
+		updatingPeriod = models.TimestampType(config.Settings.UsersMinUpdatingPeriod)
 	}
-	if updatingPeriod > config.Settings.UsersMaxUpdatingPeriod {
-		updatingPeriod = config.Settings.UsersMaxUpdatingPeriod
+	if updatingPeriod > models.TimestampType(config.Settings.UsersMaxUpdatingPeriod) {
+		updatingPeriod = models.TimestampType(config.Settings.UsersMaxUpdatingPeriod)
 	}
 
 	return currentTimestamp + models.TimestampType(updatingPeriod)
