@@ -1,18 +1,15 @@
 package main
 
 import (
-	"flag"
 	"os"
 	"sync"
 
-	"bitbucket.org/d3dev/parse_pikabu/config"
 	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/results_processor"
 	"bitbucket.org/d3dev/parse_pikabu/server"
 	"bitbucket.org/d3dev/parse_pikabu/statistics"
 	"bitbucket.org/d3dev/parse_pikabu/task_manager"
-	"github.com/go-errors/errors"
 	logging "github.com/op/go-logging"
 )
 
@@ -27,17 +24,6 @@ func Main() {
 
 	logging.SetBackend(loggingBackend, loggingBackendFormatter)
 	logger.Log.Debug("app started")
-
-	configFilePath := flag.String("config", "core.config.json", "config file")
-
-	if configFilePath == nil {
-		handleError(errors.New("configFilePath is nil"))
-	}
-
-	err = config.UpdateSettingsFromFile(*configFilePath)
-	if err != nil {
-		handleError(err)
-	}
 
 	err = models.InitDb()
 	if err != nil {

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"strings"
 
+	"bitbucket.org/d3dev/parse_pikabu/config"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/parser"
@@ -53,6 +55,17 @@ Available commands are:
 
 	command := os.Args[1]
 	os.Args = os.Args[1:]
+
+	configFilePath := flag.String("config", "core.config.json", "config file")
+
+	if configFilePath == nil {
+		handleError(errors.New("configFilePath is nil"))
+	}
+
+	err := config.UpdateSettingsFromFile(*configFilePath)
+	if err != nil {
+		handleError(err)
+	}
 
 	switch command {
 	case "core":
