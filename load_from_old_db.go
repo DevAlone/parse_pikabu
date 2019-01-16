@@ -62,7 +62,7 @@ func loadFromOldDb() {
 	}
 
 	oldDb = pg.Connect(&pg.Options{
-		Database: "pikabot_graphs",
+		Database: "pikabot_graphs_copy",
 		User:     "pikabot_graphs",
 		Password: "pikabot_graphs",
 	})
@@ -253,10 +253,10 @@ func processUser(oldUser *old_models.User) {
 		panicOnError(errors.Errorf("AAA, PANIC!!!!"))
 	}
 
+	processUserVersionsFields(oldUser, user)
+
 	err = models.Db.Insert(user)
 	panicOnError(err)
-
-	processUserVersionsFields(oldUser, user)
 }
 
 func extractAwardIds(oldUser *old_models.User) []uint64 {
