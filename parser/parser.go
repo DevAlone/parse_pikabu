@@ -61,7 +61,7 @@ func (this *Parser) handleError(err error) {
 	if err == nil {
 		panic("trying to handle nil error\n")
 	} else if _, ok := err.(NoTaskError); ok {
-		logger.ParserLog.Debug("there is no task, waiting...")
+		// logger.ParserLog.Debug("there is no task, waiting...")
 		time.Sleep(time.Duration(this.Config.WaitNoTaskSeconds) * time.Second)
 		return
 	}
