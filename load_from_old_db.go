@@ -379,11 +379,13 @@ func processUserCountersEntryBase(
 
 		if models.TimestampType(item.Timestamp) < user.AddedTimestamp {
 			user.AddedTimestamp = models.TimestampType(item.Timestamp)
+			/*
 			_, err := models.Db.Model(user).
 				Set("added_timestamp = ?added_timestamp").
 				Where("pikabu_id = ?pikabu_id").
 				Update()
 			panicOnError(err)
+			*/
 		}
 	}
 }
@@ -423,11 +425,13 @@ func processAvatarUrls(
 
 		if models.TimestampType(item.Timestamp) < user.AddedTimestamp {
 			user.AddedTimestamp = models.TimestampType(item.Timestamp)
+			/*
 			_, err := models.Db.Model(user).
 				Set("added_timestamp = ?added_timestamp").
 				Where("pikabu_id = ?pikabu_id").
 				Update()
 			panicOnError(err)
+				*/
 		}
 	}
 }
