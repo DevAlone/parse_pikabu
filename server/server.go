@@ -17,7 +17,7 @@ func Run() error {
 	}
 
 	router := gin.New()
-	router.Use(gin.Logger())
+	// router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
 	// define controllers
