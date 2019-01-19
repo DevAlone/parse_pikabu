@@ -105,63 +105,31 @@ func _addIndex(tableName string, _columns interface{}, method string, unique boo
 		panic(errors.New("addIndex() bad 2nd argument"))
 	}
 
-	index := "CREATE "
-	if unique {
-		index += "UNIQUE "
-	}
-	index += "INDEX IF NOT EXISTS " + tableName + "__"
-	index += strings.Join(columns, "__")
-	if unique {
-		index += "__unique"
-	}
-	index += "__idx ON " + tableName
+	method = strings.ToLower(method)
 
+	indexName := ""
+	if unique {
+		indexName += "unique__"
+	}
+	indexName += tableName + "__"
 	if len(method) > 0 {
-		index += " USING " + method + " "
+		indexName += "using_method_" + method + "__"
+	}
+	indexName += strings.Join(columns, "__") + "__"
+	indexName += "idx"
+
+	indexQuery := "CREATE "
+	if unique {
+		indexQuery += "UNIQUE "
+	}
+	indexQuery += "INDEX IF NOT EXISTS " + indexName + " "
+	indexQuery += "ON " + tableName + " "
+	if len(method) > 0 {
+		indexQuery += "USING " + method + " "
 	}
 
-	index += "("
-	index += strings.Join(columns, ",")
-	index += ");\n"
-	createIndexQueries = append(createIndexQueries, index)
+	indexQuery += "("
+	indexQuery += strings.Join(columns, ",")
+	indexQuery += ");\n"
+	createIndexQueries = append(createIndexQueries, indexQuery)
 }
-
-/*
-type FieldVersionBase struct {
-	Timestamp TimestampType `sql:",pk,notnull"`
-	ItemId    uint64        `sql:",pk,notnull"`
-}
-
-type Int32FieldVersion struct {
-	FieldVersionBase
-	Value int32 `sql:",notnull"`
-}
-type Int64FieldVersion struct {
-	FieldVersionBase
-	Value int64 `sql:",notnull"`
-}
-type UInt32FieldVersion struct {
-	FieldVersionBase
-	Value uint32 `sql:",notnull"`
-}
-type UInt64FieldVersion struct {
-	FieldVersionBase
-	Value uint64 `sql:",notnull"`
-}
-type Float32FieldVersion struct {
-	FieldVersionBase
-	Value float32 `sql:",notnull"`
-}
-type StringFieldVersion struct {
-	FieldVersionBase
-	Value string `sql:",notnull"`
-}
-type BoolFieldVersion struct {
-	FieldVersionBase
-	Value bool `sql:",notnull"`
-}
-type TimestampTypeFieldVersion struct {
-	FieldVersionBase
-	Value TimestampType `sql:",notnull"`
-}
-*/

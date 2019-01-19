@@ -98,8 +98,12 @@ func init() {
 		Tables = append(Tables, item)
 	}
 
-	// TODO: add proper indices
-	// username is not hash for fast sorting
+	// TODO: consider two indices for username(btree and hash)
+	addIndex("pikabu_users", "username", "")
+	addIndex("pikabu_users", "added_timestamp", "")
+	addIndex("pikabu_users", "last_update_timestamp", "")
+	addIndex("pikabu_users", "next_update_timestamp", "")
+
 	/*addUniqueIndex("core_user", "username", "")
 	addIndex("core_user", "rating", "")
 	addIndex("core_user", "comments_count", "")
