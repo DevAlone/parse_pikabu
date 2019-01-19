@@ -11,13 +11,13 @@ import (
 func (this *Parser) processTask(task interface{}) error {
 	switch t := task.(type) {
 	case models.ParseUserByIdTask:
-		//logger.Log.Debugf("taking task to parse user by id %v", t)
+		//logger.ParserLog.Debugf("taking task to parse user by id %v", t)
 		//if err := this.takeTask("parse_user_by_id_tasks", t.Id); err != nil {
 		//	return err
 		//}
 		// TODO: process
 	case models.ParseUserByUsernameTask:
-		//logger.Log.Debugf("taking task to parse user by username %v", t)
+		//logger.ParserLog.Debugf("taking task to parse user by username %v", t)
 		//if err := this.takeTask("parse_user_by_username_tasks", t.Id); err != nil {
 		//	return err
 		//}
@@ -26,7 +26,7 @@ func (this *Parser) processTask(task interface{}) error {
 			return err
 		}
 	case models.SimpleTask:
-		//logger.Log.Debugf("taking simple task %v", t)
+		//logger.ParserLog.Debugf("taking simple task %v", t)
 		//if err := this.takeTask("simple_tasks", t.Id); err != nil {
 		//	return err
 		//}
@@ -62,7 +62,7 @@ func (this *Parser) processTask(task interface{}) error {
 //}
 
 func (this *Parser) processParseUserByUsernameTask(task models.ParseUserByUsernameTask) error {
-	logger.Log.Debugf("sending request to get user %v", task.Username)
+	logger.ParserLog.Debugf("sending request to get user %v", task.Username)
 	userProfile, err := this.pikagoClient.UserProfileGet(task.Username)
 	if err != nil {
 		return err
@@ -80,7 +80,7 @@ func (this *Parser) processSimpleTask(task models.SimpleTask) error {
 
 	page := 0
 	for true {
-		logger.Log.Debugf("sending request to get communities")
+		logger.ParserLog.Debugf("sending request to get communities")
 		communitiesPage, err := this.pikagoClient.CommunitiesGet(page)
 		if err != nil {
 			return err
