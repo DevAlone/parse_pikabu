@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"bitbucket.org/d3dev/parse_pikabu/config"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -226,12 +227,18 @@ func (this *Parser) PutResultsToQueue(routingKey string, result interface{}) err
 func Main() {
 	file, err := os.OpenFile("logs/parser.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	panicOnError(err)
-	// loggingBackend := logger.NewLogBackend(os.Stderr, "", 0)
 	loggingBackend := logging.NewLogBackend(file, "", 0)
 	loggingBackendFormatter := logging.NewBackendFormatter(loggingBackend, logger.LogFormat)
 
 	logging.SetBackend(loggingBackend, loggingBackendFormatter)
-	logger.ParserLog.Debug("app started")
+
+	if config.Settings.Debug {
+		logging.SetLevel(logging.DEBUG, "parse_pikabu/parser")
+	} else {
+		logging.SetLevel(logging.WARNING, "parse_pikabu/parser")
+	}
+
+	logger.ParserLog.Debug("parsers started")
 
 	parsersConfig, err := NewParsersConfigFromFile("parsers.config.json")
 	panicOnError(err)

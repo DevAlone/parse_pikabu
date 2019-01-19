@@ -1,10 +1,7 @@
 package logger
 
 import (
-	"os"
-
-	"bitbucket.org/d3dev/parse_pikabu/config"
-	logging "github.com/op/go-logging"
+	"github.com/op/go-logging"
 )
 
 var Log = logging.MustGetLogger("parse_pikabu/core")
@@ -14,6 +11,7 @@ var LogFormat = logging.MustStringFormatter(
 )
 
 func init() {
+	/*
 	file, err := os.OpenFile("logs/parse_pikabu.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		panic(err)
@@ -34,4 +32,5 @@ func init() {
 	} else {
 		logging.SetLevel(logging.INFO, "parse_pikabu/parser")
 	}
+	*/
 }
