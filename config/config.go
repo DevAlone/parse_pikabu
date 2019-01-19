@@ -54,7 +54,7 @@ func init() {
 	Settings.ServerMaximumNumberOfResultsPerPage = 1024
 	Settings.NewUserTime = 3600 * 24 * 7
 	Settings.NewUsersUpdatingPeriod = 3600 * 24
-	Settings.UsersUpdatingPeriodIncreasingValue = 3600
+	Settings.UsersUpdatingPeriodIncreasingValue = 6 * 3600
 	Settings.UsersMinUpdatingPeriod = 3600 * 12
 	Settings.UsersMaxUpdatingPeriod = 3600 * 24 * 7
 }
