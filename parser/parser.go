@@ -4,11 +4,11 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/config"
 	"encoding/json"
 	"fmt"
+	"github.com/streadway/amqp"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
-	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -16,8 +16,7 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-errors/errors"
-	logging "github.com/op/go-logging"
-	"github.com/streadway/amqp"
+	"github.com/op/go-logging"
 	"gogsweb.2-47.ru/d3dev/pikago"
 )
 
@@ -29,6 +28,7 @@ type Parser struct {
 	Config       *ParserConfig
 	httpClient   *http.Client
 	pikagoClient *pikago.Client
+	amqpChannel  *amqp.Channel
 }
 
 func NewParser(config *ParserConfig) (*Parser, error) {
@@ -160,69 +160,6 @@ func (this *Parser) pullTask() (interface{}, error) {
 	return nil, errors.Errorf("bad task name: %v", task.Name)
 }
 
-func (this *Parser) PutResultsToQueue(routingKey string, result interface{}) error {
-	numberOfResults := 0
-	resultType := reflect.TypeOf(result)
-	switch resultType.Kind() {
-	case reflect.Slice, reflect.Array:
-		numberOfResults = reflect.ValueOf(result).Len()
-	default:
-		result = []interface{}{result}
-		numberOfResults = 1
-	}
-
-	var jsonMessage models.ParserResult
-	jsonMessage.ParsingTimestamp = models.TimestampType(time.Now().Unix())
-	jsonMessage.ParserId = "d3dev/" + this.Config.ParserId
-	jsonMessage.NumberOfResults = numberOfResults
-	jsonMessage.Results = result
-
-	message, err := json.Marshal(jsonMessage)
-	if err != nil {
-		return err
-	}
-
-	conn, err := amqp.Dial(this.Config.AMQPAddress)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	ch, err := conn.Channel()
-	if err != nil {
-		return err
-	}
-	defer ch.Close()
-
-	err = ch.ExchangeDeclare(
-		"parser_results",
-		"fanout",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		return err
-	}
-
-	err = ch.Publish(
-		"parser_results",
-		routingKey,
-		true,
-		false,
-		amqp.Publishing{
-			ContentType:  "application/json",
-			DeliveryMode: amqp.Persistent,
-			Body:         message,
-		},
-	)
-
-	return err
-
-}
-
 func Main() {
 	file, err := os.OpenFile("logs/parser.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	panicOnError(err)
@@ -261,6 +198,8 @@ func Main() {
 			go func() {
 				parser.Loop()
 				wg.Done()
+				err := parser.Cleanup()
+				panicOnError(err)
 			}()
 		}
 	}
