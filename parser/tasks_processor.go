@@ -10,25 +10,16 @@ import (
 func (this *Parser) processTask(task interface{}) error {
 	switch t := task.(type) {
 	case models.ParseUserByIdTask:
-		//logger.ParserLog.Debugf("taking task to parse user by id %v", t)
-		//if err := this.takeTask("parse_user_by_id_tasks", t.Id); err != nil {
-		//	return err
-		//}
-		// TODO: process
+		err := this.processParseUserByIdTask(t)
+		if err != nil {
+			return err
+		}
 	case models.ParseUserByUsernameTask:
-		//logger.ParserLog.Debugf("taking task to parse user by username %v", t)
-		//if err := this.takeTask("parse_user_by_username_tasks", t.Id); err != nil {
-		//	return err
-		//}
 		err := this.processParseUserByUsernameTask(t)
 		if err != nil {
 			return err
 		}
 	case models.SimpleTask:
-		//logger.ParserLog.Debugf("taking simple task %v", t)
-		//if err := this.takeTask("simple_tasks", t.Id); err != nil {
-		//	return err
-		//}
 		return this.processSimpleTask(t)
 	default:
 		return errors.Errorf("bad task %v\n", t)
@@ -36,29 +27,16 @@ func (this *Parser) processTask(task interface{}) error {
 	return nil
 }
 
-//func (this *Parser) takeTask(
-//	taskTableName string,
-//	idField uint64,
-//) error {
-//	resp, err := this.doAPIRequest(
-//		"get",
-//		"/take/"+taskTableName+"/"+fmt.Sprint(idField),
-//		nil)
-//	if err != nil {
-//		return err
-//	}
-//	defer resp.Body.Close()
-//	bytesResp, err := ioutil.ReadAll(resp.Body)
-//	textResp := string(bytesResp)
-//	if err != nil {
-//		return err
-//	}
-//	if resp.StatusCode != http.StatusOK {
-//		return errors.Errorf("unable to take task %v, error: %s", taskTableName, textResp)
-//	}
-//
-//	return nil
-//}
+func (this *Parser) processParseUserByIdTask(task models.ParseUserByIdTask) error {
+	/*
+	curl -v 'https://pikabu.ru/ajax/user_info.php?action=get_short_profile&user_id=1'
+		-H 'X-Csrf-Token: 89hvsja20e8ivco081oboj6fgnfpmq45'
+		-H 'X-Requested-With: XMLHttpRequest'
+		-H 'Cookie: PHPSESS=89hvsja20e8ivco081oboj6fgnfpmq45;'
+	*/
+	// TODO: complete
+	return nil
+}
 
 func (this *Parser) processParseUserByUsernameTask(task models.ParseUserByUsernameTask) error {
 	userProfile, err := this.pikagoClient.UserProfileGet(task.Username)
