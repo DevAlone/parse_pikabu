@@ -170,7 +170,6 @@ func (this *Parser) PutResultsToQueue(routingKey string, result interface{}) err
 		result = []interface{}{result}
 		numberOfResults = 1
 	}
-	logger.ParserLog.Debugf("putting result to queue %v", result)
 
 	var jsonMessage models.ParserResult
 	jsonMessage.ParsingTimestamp = models.TimestampType(time.Now().Unix())

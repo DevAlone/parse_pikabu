@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-errors/errors"
 	"gogsweb.2-47.ru/d3dev/pikago"
@@ -62,7 +61,6 @@ func (this *Parser) processTask(task interface{}) error {
 //}
 
 func (this *Parser) processParseUserByUsernameTask(task models.ParseUserByUsernameTask) error {
-	logger.ParserLog.Debugf("sending request to get user %v", task.Username)
 	userProfile, err := this.pikagoClient.UserProfileGet(task.Username)
 	if err != nil {
 		return err
@@ -80,7 +78,6 @@ func (this *Parser) processSimpleTask(task models.SimpleTask) error {
 
 	page := 0
 	for true {
-		logger.ParserLog.Debugf("sending request to get communities")
 		communitiesPage, err := this.pikagoClient.CommunitiesGet(page)
 		if err != nil {
 			return err
