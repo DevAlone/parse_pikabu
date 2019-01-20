@@ -30,4 +30,19 @@ func init() {
 	} {
 		Tables = append(Tables, table)
 	}
+
+	addIndex("simple_tasks", "is_done", "")
+	addIndex("simple_tasks", "is_taken", "")
+	addIndex("simple_tasks", "added_timestamp", "")
+	addIndex("simple_tasks", "name", "hash")
+
+	addIndex("parse_user_by_username_tasks", "is_done", "")
+	addIndex("parse_user_by_username_tasks", "is_taken", "")
+	addIndex("parse_user_by_username_tasks", "added_timestamp", "")
+	addIndex("parse_user_by_username_tasks", "username", "hash")
+
+	addIndex("parse_user_by_id_tasks", "is_done", "")
+	addIndex("parse_user_by_id_tasks", "is_taken", "")
+	addIndex("parse_user_by_id_tasks", "added_timestamp", "")
+	addIndex("parse_user_by_id_tasks", "pikabu_id", "")
 }
