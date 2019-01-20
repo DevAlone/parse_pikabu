@@ -1,13 +1,13 @@
 package models
 
 import (
-	"errors"
-	"strings"
-
 	"bitbucket.org/d3dev/parse_pikabu/config"
 	"bitbucket.org/d3dev/parse_pikabu/logger"
+	"errors"
+	"fmt"
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
+	"strings"
 )
 
 //go:generate bash -c "cd ..; go run models_versions_fields.generator.go; go fmt models/models.generated.go"
@@ -16,6 +16,7 @@ type TimestampType int64
 
 var Db *pg.DB
 var Tables []interface{}
+var CustomQueries []string
 var createIndexQueries []string
 
 type QueryHook struct{}
@@ -23,14 +24,14 @@ type QueryHook struct{}
 func (this QueryHook) BeforeQuery(event *pg.QueryEvent) {}
 func (this QueryHook) AfterQuery(event *pg.QueryEvent) {
 	// TODO: make sure that it works
-	/*query, err := event.FormattedQuery()
-	if err != nil {
-		logger.Log.Critical(err)
-		return
-	}*/
 	if config.Settings.Debug {
+		query, err := event.FormattedQuery()
+		if err != nil {
+			logger.Log.Critical(err)
+			return
+		}
 		// logger.Log.Debug(fmt.Sprintf("SQL: %s %s\n", time.Since(event.Time), query))
-		// logger.Log.Debug(fmt.Sprintf("SQL: %s\n", query))
+		logger.Log.Debug(fmt.Sprintf("SQL: %s\n", query))
 	}
 }
 
@@ -77,7 +78,14 @@ func createSchema() error {
 		})
 		if err != nil {
 			print(i, model, "\n")
-			panic(err)
+			return err
+		}
+	}
+
+	for i, query := range CustomQueries {
+		_, err := Db.Exec(query)
+		if err != nil {
+			print(i, query, "\n")
 			return err
 		}
 	}
@@ -117,6 +125,10 @@ func _addIndex(tableName string, _columns interface{}, method string, unique boo
 	}
 	indexName += strings.Join(columns, "__") + "__"
 	indexName += "idx"
+
+	indexName = strings.Replace(indexName, "(", "_oparenthesis_", -1)
+	indexName = strings.Replace(indexName, ")", "_cparenthesis_", -1)
+	indexName = strings.ToLower(indexName)
 
 	indexQuery := "CREATE "
 	if unique {

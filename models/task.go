@@ -31,6 +31,21 @@ func init() {
 		Tables = append(Tables, table)
 	}
 
+	/*
+		CustomQueries = append(CustomQueries, `
+			CREATE MATERIALIZED VIEW IF NOT EXISTS parse_user_by_username_tasks_is_not_done_and_is_not_taken
+			AS SELECT * FROM parse_user_by_username_tasks WHERE is_done = false AND is_taken = false;
+		`)
+		CustomQueries = append(CustomQueries, `
+			CREATE MATERIALIZED VIEW IF NOT EXISTS parse_user_by_id_tasks_is_not_done_and_is_not_taken
+			AS SELECT * FROM parse_user_by_id_tasks WHERE is_done = false AND is_taken = false;
+		`)
+		CustomQueries = append(CustomQueries, `
+			CREATE MATERIALIZED VIEW IF NOT EXISTS simple_tasks_is_not_done_and_is_not_taken
+			AS SELECT * FROM simple_tasks WHERE is_done = false AND is_taken = false;
+		`)
+	*/
+
 	addIndex("simple_tasks", "is_done", "")
 	addIndex("simple_tasks", "is_taken", "")
 	addIndex("simple_tasks", "added_timestamp", "")
@@ -40,6 +55,7 @@ func init() {
 	addIndex("parse_user_by_username_tasks", "is_taken", "")
 	addIndex("parse_user_by_username_tasks", "added_timestamp", "")
 	addIndex("parse_user_by_username_tasks", "username", "hash")
+	addIndex("parse_user_by_username_tasks", "LOWER(username)", "hash")
 
 	addIndex("parse_user_by_id_tasks", "is_done", "")
 	addIndex("parse_user_by_id_tasks", "is_taken", "")

@@ -128,14 +128,6 @@ func init() {
 	addIndex("core_pikabuuser", "username", "hash")
 	addIndex("core_pikabuuser", "is_processed", "")
 
-	addUniqueIndex("core_userratingentry", []string{"user_id", "timestamp"}, "")
-	addUniqueIndex("core_usersubscriberscountentry", []string{"user_id", "timestamp"}, "")
-	addUniqueIndex("core_usercommentscountentry", []string{"user_id", "timestamp"}, "")
-	addUniqueIndex("core_userpostscountentry", []string{"user_id", "timestamp"}, "")
-	addUniqueIndex("core_userhotpostscountentry", []string{"user_id", "timestamp"}, "")
-	addUniqueIndex("core_userplusescountentry", []string{"user_id", "timestamp"}, "")
-	addUniqueIndex("core_userminusescountentry", []string{"user_id", "timestamp"}, "")
-
 	addIndex("core_userratingentry", "user_id", "")
 	addIndex("core_usersubscriberscountentry", "user_id", "")
 	addIndex("core_usercommentscountentry", "user_id", "")

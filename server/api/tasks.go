@@ -4,6 +4,7 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
@@ -23,6 +24,9 @@ func GetAnyTask(c *gin.Context) {
 
 	taskData, err := TryToGetTaskFromDb()
 	if err != nil {
+		if e, ok := err.(*errors.Error); ok {
+			fmt.Println(e.ErrorStack())
+		}
 		panic(err)
 	}
 
@@ -99,16 +103,25 @@ func TryToGetTaskFromDb() (interface{}, error) {
 	for _, table := range tables {
 		var result = table.Right
 
+		/*
+			// doesn't  work because matealized views aren't updated by themselves,
+			// you need to call refresh materiazed view yourself
+			_, err := models.Db.Model(result).QueryOne(result, `
+				SELECT * FROM `+table.Left.(string)+"_is_not_done_and_is_not_taken "+`
+				TABLESAMPLE SYSTEM_ROWS(1);
+			`)
+		*/
+
 		err := models.Db.Model(result).
 			Where("is_done = false AND is_taken = false	").
-			OrderExpr("random()").
+			// OrderExpr("random()").
 			Limit(1).
 			Select(result)
 
 		if err == pg.ErrNoRows {
 			continue
 		} else if err != nil {
-			return nil, err
+			return nil, errors.New(err)
 		}
 
 		reflect.ValueOf(result).Elem().FieldByName("IsTaken").SetBool(true)
