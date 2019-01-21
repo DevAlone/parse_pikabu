@@ -45,6 +45,7 @@ func getAMQPConnection(amqpAddress string) (*amqp.Connection, error) {
 	if err != nil {
 		return nil, err
 	}
+	amqpConnections[amqpAddress] = connection
 
 	return connection, nil
 }
