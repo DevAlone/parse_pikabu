@@ -31,10 +31,10 @@ type Parser struct {
 	amqpChannel  *amqp.Channel
 }
 
-func NewParser(config *ParserConfig) (*Parser, error) {
+func NewParser(parserConfig *ParserConfig) (*Parser, error) {
 	parser := &Parser{}
 	var err error
-	parser.Config = config
+	parser.Config = parserConfig
 	parser.httpClient = &http.Client{
 		Timeout: time.Duration(parser.Config.ApiTimeout) * time.Second,
 	}
@@ -53,6 +53,11 @@ func NewParser(config *ParserConfig) (*Parser, error) {
 	parser.pikagoClient, err = pikago.NewClient(requestsSender)
 	if err != nil {
 		return nil, err
+	}
+	if config.Settings.Debug {
+		pikago.LogsAreEnabled = true
+		parser.pikagoClient.Log = logging.MustGetLogger("pikago")
+		logging.SetLevel(logging.DEBUG, parser.pikagoClient.Log.Module)
 	}
 
 	return parser, nil
