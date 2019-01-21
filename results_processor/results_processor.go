@@ -60,7 +60,9 @@ func startListener() error {
 		false,
 		false,
 		false,
-		nil,
+		amqp.Table{
+			"x-queue-mode": "lazy",
+		},
 	)
 	if err != nil {
 		return errors.New(err)
