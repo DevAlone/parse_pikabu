@@ -54,7 +54,7 @@ func AddParseCommunitiesTask() error {
 
 	task.AddedTimestamp = models.TimestampType(time.Now().Unix())
 	task.IsDone = false
-	task.IsTaken = false
+	task.IsTaken = true
 
 	if !exists {
 		err := models.Db.Insert(task)
