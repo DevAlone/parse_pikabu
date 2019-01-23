@@ -1,3 +1,4 @@
+// TODO: remove
 package api
 
 import (
@@ -92,8 +93,8 @@ func TaskToResult(taskName string, taskData interface{}) interface{} {
 
 func TryToGetTaskFromDb() (interface{}, error) {
 	tables := []helpers.Tuple{
-		{"parse_user_by_username_tasks", &models.ParseUserByUsernameTask{}},
-		{"parse_user_by_id_tasks", &models.ParseUserByIdTask{}},
+		// {"parse_user_by_username_tasks", &models.ParseUserByUsernameTask{}},
+		// {"parse_user_by_id_tasks", &models.ParseUserByIdTask{}},
 		{"simple_tasks", &models.SimpleTask{}},
 	}
 	rand.Shuffle(len(tables), func(i, j int) {

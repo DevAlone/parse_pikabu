@@ -62,10 +62,8 @@ func PushTaskToQueue(taskPtr interface{}) error {
 		}
 		var routingKey string
 		switch t := taskPtr.(type) {
-		case *models.ParseUserByUsernameTask:
-			routingKey = "parse_user_by_username"
-		case *models.ParseUserByIdTask:
-			routingKey = "parse_user_by_id"
+		case *models.ParseUserTask:
+			routingKey = "parse_user"
 		case *models.SimpleTask:
 			routingKey = t.Name
 			taskPtr = map[string]string{} // empty map
@@ -129,7 +127,7 @@ func waitTasksQueueForEmpty(connection *amqp.Connection) error {
 			return nil
 		}
 
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(50 * time.Millisecond)
 	}
 	return nil
 }

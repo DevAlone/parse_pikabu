@@ -1,8 +1,9 @@
-package main
+package core
 
 import (
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
+	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"github.com/op/go-logging"
 	"os"
 	"sync"
@@ -17,7 +18,7 @@ import (
 func Main() {
 	file, err := os.OpenFile("logs/parse_pikabu.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
-		panicOnError(err)
+		helpers.PanicOnError(err)
 	}
 	loggingBackend := logging.NewLogBackend(file, "", 0)
 	loggingBackendFormatter := logging.NewBackendFormatter(loggingBackend, logger.LogFormat)
@@ -34,7 +35,7 @@ func Main() {
 
 	err = models.InitDb()
 	if err != nil {
-		panicOnError(err)
+		helpers.PanicOnError(err)
 	}
 
 	var wg sync.WaitGroup
@@ -43,7 +44,7 @@ func Main() {
 	// start server
 	go func() {
 		err := server.Run()
-		panicOnError(err)
+		helpers.PanicOnError(err)
 		wg.Done()
 	}()
 
@@ -51,7 +52,7 @@ func Main() {
 	// start task manager
 	go func() {
 		err := task_manager.Run()
-		panicOnError(err)
+		helpers.PanicOnError(err)
 		wg.Done()
 	}()
 
@@ -59,7 +60,7 @@ func Main() {
 	// start results processor
 	go func() {
 		err := results_processor.Run()
-		panicOnError(err)
+		helpers.PanicOnError(err)
 		wg.Done()
 	}()
 
@@ -67,7 +68,7 @@ func Main() {
 	// statistics
 	go func() {
 		err := statistics.Run()
-		panicOnError(err)
+		helpers.PanicOnError(err)
 		wg.Done()
 	}()
 

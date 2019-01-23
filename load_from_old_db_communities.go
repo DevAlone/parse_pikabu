@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"context"
 	"fmt"
 	"sync"
@@ -16,7 +17,7 @@ func createCommunitiesIndices() {
 	printTimeSinceStart()
 
 	processExec := func(_ interface{}, err error) {
-		panicOnError(err)
+		helpers.PanicOnError(err)
 	}
 
 	processExec(oldDb.Exec(`
@@ -42,7 +43,7 @@ func processCommunities() {
 	var communities []models.PikabuCommunity
 
 	err := models.Db.Model(&communities).Select()
-	panicOnError(err)
+	helpers.PanicOnError(err)
 
 	var (
 		maxWorkers = 64 // 128
@@ -52,7 +53,7 @@ func processCommunities() {
 	var wg sync.WaitGroup
 
 	for _, community := range communities {
-		panicOnError(sem.Acquire(ctx, 1))
+		helpers.PanicOnError(sem.Acquire(ctx, 1))
 		wg.Add(1)
 		go func(community models.PikabuCommunity) {
 			defer sem.Release(1)
@@ -73,14 +74,14 @@ func processCommunity(community models.PikabuCommunity) {
 	if err == pg.ErrNoRows {
 		return
 	}
-	panicOnError(err)
+	helpers.PanicOnError(err)
 
 	var counterEntries []old_models.CommunityCountersEntry
 	err = oldDb.Model(&counterEntries).
 		Where("community_id = ?", oldCommunity.Id).
 		Order("timestamp").
 		Select()
-	panicOnError(err)
+	helpers.PanicOnError(err)
 
 	for _, counterEntry := range counterEntries {
 		numOfSubsVersion := models.PikabuCommunityNumberOfSubscribersVersion{
@@ -89,7 +90,7 @@ func processCommunity(community models.PikabuCommunity) {
 			Value:     counterEntry.SubscribersCount,
 		}
 		err := models.Db.Insert(&numOfSubsVersion)
-		panicOnError(err)
+		helpers.PanicOnError(err)
 
 		numOfStoriesVersion := models.PikabuCommunityNumberOfStoriesVersion{
 			Timestamp: models.TimestampType(counterEntry.Timestamp),
@@ -97,7 +98,7 @@ func processCommunity(community models.PikabuCommunity) {
 			Value:     counterEntry.StoriesCount,
 		}
 		err = models.Db.Insert(&numOfStoriesVersion)
-		panicOnError(err)
+		helpers.PanicOnError(err)
 
 		if models.TimestampType(counterEntry.Timestamp) < community.AddedTimestamp {
 			community.AddedTimestamp = models.TimestampType(counterEntry.Timestamp)
@@ -105,7 +106,7 @@ func processCommunity(community models.PikabuCommunity) {
 				Set("added_timestamp = ?added_timestamp").
 				Where("pikabu_id = ?pikabu_id").
 				Update()
-			panicOnError(err)
+			helpers.PanicOnError(err)
 		}
 	}
 }

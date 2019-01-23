@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"bitbucket.org/d3dev/parse_pikabu/core"
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/core/server/middlewares"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
@@ -16,23 +17,9 @@ import (
 	"github.com/go-pg/pg/orm"
 )
 
-func panicOnError(err error) {
-	if err == nil {
-		return
-	}
-
-	if e, ok := err.(*errors.Error); ok {
-		_, er := os.Stderr.WriteString(e.ErrorStack())
-		if er != nil {
-			panic(er)
-		}
-	}
-	panic(err)
-}
-
 var commands = map[string]func(){
 	"core": func() {
-		Main()
+		core.Main()
 	},
 	"parser": func() {
 		parser.Main()
@@ -40,7 +27,7 @@ var commands = map[string]func(){
 	"clean_db": func() {
 		err := models.InitDb()
 		if err != nil {
-			panicOnError(err)
+			helpers.PanicOnError(err)
 		}
 
 		// clear tables
@@ -50,22 +37,22 @@ var commands = map[string]func(){
 				Cascade:  true,
 			})
 			if err != nil {
-				panicOnError(err)
+				helpers.PanicOnError(err)
 			}
 		}
 	},
 	"add_parser": func() {
 		redisClient := helpers.GetRedisClient()
 		if len(os.Args) < 2 {
-			panicOnError(errors.New("too few arguments"))
+			helpers.PanicOnError(errors.New("too few arguments"))
 		}
 		key := "parse_pikabu_server_authentication_middleware_session_group_" + strings.TrimSpace(os.Args[1])
 		err := redisClient.Set(key, fmt.Sprint(middlewares.GROUP_PARSER), 0).Err()
-		panicOnError(err)
+		helpers.PanicOnError(err)
 	},
 	"add_parsers_from_config": func() {
 		err := addParsersFromConfig()
-		panicOnError(err)
+		helpers.PanicOnError(err)
 	},
 	"load_from_old_db": func() {
 		loadFromOldDb()
@@ -82,7 +69,7 @@ func main() {
 Available commands are: 
 %s
 `, commandsList))
-		panicOnError(err)
+		helpers.PanicOnError(err)
 		return
 	}
 
@@ -97,14 +84,14 @@ Available commands are:
 
 	err := config.UpdateSettingsFromFile(*configFilePath)
 	if err != nil {
-		panicOnError(err)
+		helpers.PanicOnError(err)
 	}
 
 	if handler, found := commands[command]; found {
 		handler()
 	} else {
-		panicOnError(errors.Errorf("wrong command"))
+		helpers.PanicOnError(errors.Errorf("wrong command"))
 	}
 
-	panicOnError(amqp_helper.Cleanup())
+	helpers.PanicOnError(amqp_helper.Cleanup())
 }

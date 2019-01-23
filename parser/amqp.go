@@ -1,12 +1,14 @@
 package parser
 
 import (
+	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/parser/logger"
 	"encoding/json"
 	"github.com/go-errors/errors"
 	"github.com/streadway/amqp"
 	"reflect"
+	"strings"
 	"time"
 )
 
@@ -110,6 +112,11 @@ func (this *Parser) PutResultsToQueue(routingKey string, result interface{}) err
 			return err
 		}
 
+		err = this.waitResultsQueueForEmpty(connection)
+		if err != nil {
+			return err
+		}
+
 		err = this.amqpChannel.Publish(
 			"parser_results",
 			routingKey,
@@ -130,4 +137,27 @@ func (this *Parser) PutResultsToQueue(routingKey string, result interface{}) err
 	}
 
 	return errors.Errorf("Unable to connect to queue")
+}
+
+func (this *Parser) waitResultsQueueForEmpty(connection *amqp.Connection) error {
+	for true {
+		parserTasksQueue, err := this.amqpChannel.QueueInspect("bitbucket.org/d3dev/parse_pikabu/parser_results")
+		if err != nil {
+			// TODO: fix
+			if !strings.Contains(err.Error(), "NOT_FOUND - no queue") {
+				return err
+			} else {
+				this.amqpChannel = nil
+				_ = this.initChannel(connection)
+				return errors.New(err)
+			}
+		}
+
+		if parserTasksQueue.Messages <= config.Settings.MaxNumberOfTasksInQueue {
+			return nil
+		}
+
+		time.Sleep(50 * time.Millisecond)
+	}
+	return nil
 }

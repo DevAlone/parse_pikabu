@@ -121,20 +121,13 @@ func (this *Parser) processMessage(message amqp.Delivery) error {
 	logger.Log.Debugf("got message: %v", string(message.Body))
 
 	switch message.RoutingKey {
-	case "parse_user_by_username":
-		var task models.ParseUserByUsernameTask
+	case "parse_user":
+		var task models.ParseUserTask
 		err := pikago.JsonUnmarshal(message.Body, &task)
 		if err != nil {
 			return errors.New(err)
 		}
-		return this.processParseUserByUsernameTask(task)
-	case "parse_user_by_id":
-		var task models.ParseUserByIdTask
-		err := pikago.JsonUnmarshal(message.Body, &task)
-		if err != nil {
-			return errors.New(err)
-		}
-		return this.processParseUserByIdTask(task)
+		return this.processParseUserTask(task)
 	case "parse_communities_pages":
 		return this.processParseCommunitiesPagesTask()
 	default:
@@ -147,18 +140,15 @@ func (this *Parser) processMessage(message amqp.Delivery) error {
 	}
 }
 
-func (this *Parser) processParseUserByIdTask(task models.ParseUserByIdTask) error {
+func (this *Parser) processParseUserTask(task models.ParseUserTask) error {
+	// TODO: parse by id as well
 	/*
 		curl -v 'https://pikabu.ru/ajax/user_info.php?action=get_short_profile&user_id=1'
 			-H 'X-Csrf-Token: 89hvsja20e8ivco081oboj6fgnfpmq45'
 			-H 'X-Requested-With: XMLHttpRequest'
 			-H 'Cookie: PHPSESS=89hvsja20e8ivco081oboj6fgnfpmq45;'
 	*/
-	// TODO: complete
-	return nil
-}
 
-func (this *Parser) processParseUserByUsernameTask(task models.ParseUserByUsernameTask) error {
 	userProfile, err := this.pikagoClient.UserProfileGet(task.Username)
 	if err != nil {
 		return err

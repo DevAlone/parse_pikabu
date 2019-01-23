@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"context"
 	"fmt"
 	"reflect"
@@ -32,7 +33,7 @@ func loadFromOldDb() {
 
 	err := models.InitDb()
 	if err != nil {
-		panicOnError(err)
+		helpers.PanicOnError(err)
 	}
 
 	// clear tables
@@ -45,14 +46,14 @@ func loadFromOldDb() {
 			Cascade:  true,
 		})
 		if err != nil {
-			panicOnError(err)
+			helpers.PanicOnError(err)
 		}
 	}
 
 	// create again
 	err = models.InitDb()
 	if err != nil {
-		panicOnError(err)
+		helpers.PanicOnError(err)
 	}
 
 	oldDb = pg.Connect(&pg.Options{
@@ -73,7 +74,7 @@ func createIndices() {
 	printTimeSinceStart()
 
 	processExec := func(_ interface{}, err error) {
-		panicOnError(err)
+		helpers.PanicOnError(err)
 	}
 
 	processExec(oldDb.Exec(`
@@ -151,7 +152,7 @@ func processUsers() {
 		Select()
 
 	if err != pg.ErrNoRows {
-		panicOnError(err)
+		helpers.PanicOnError(err)
 	}
 	var (
 		maxWorkers = 64 // 128
@@ -176,10 +177,10 @@ func processUsers() {
 		if err == pg.ErrNoRows {
 			break
 		}
-		panicOnError(err)
+		helpers.PanicOnError(err)
 
 		for _, oldUser := range users {
-			panicOnError(sem.Acquire(ctx, 1))
+			helpers.PanicOnError(sem.Acquire(ctx, 1))
 			wg.Add(1)
 			go func(oldU old_models.User) {
 				defer sem.Release(1)
@@ -206,7 +207,7 @@ func processUser(oldUser *old_models.User) {
 	awardIds := extractAwardIds(oldUser)
 
 	if oldUser.PikabuId <= 0 {
-		panicOnError(errors.Errorf("Bad id %v", oldUser.PikabuId))
+		helpers.PanicOnError(errors.Errorf("Bad id %v", oldUser.PikabuId))
 	}
 
 	user := &models.PikabuUser{
@@ -242,15 +243,15 @@ func processUser(oldUser *old_models.User) {
 	count, err := models.Db.Model(user).
 		Where("pikabu_id = ?pikabu_id").
 		Count()
-	panicOnError(err)
+	helpers.PanicOnError(err)
 	if count > 0 {
-		panicOnError(errors.Errorf("AAA, PANIC!!!!"))
+		helpers.PanicOnError(errors.Errorf("AAA, PANIC!!!!"))
 	}
 
 	processUserVersionsFields(oldUser, user)
 
 	err = models.Db.Insert(user)
-	panicOnError(err)
+	helpers.PanicOnError(err)
 }
 
 func extractAwardIds(oldUser *old_models.User) []uint64 {
@@ -263,11 +264,11 @@ func extractAwardIds(oldUser *old_models.User) []uint64 {
 	var awards []pikago.UserProfileAward
 	err := pikago.JsonUnmarshal([]byte(awardsStr), &awards)
 	if err != nil {
-		panicOnError(errors.Errorf("unable to unmarshal %v", awardsStr))
+		helpers.PanicOnError(errors.Errorf("unable to unmarshal %v", awardsStr))
 	}
 
 	tx, err := models.Db.Begin()
-	panicOnError(err)
+	helpers.PanicOnError(err)
 	defer tx.Rollback()
 
 	results, err := results_processor.CreateAwardIdsArray(
@@ -275,9 +276,9 @@ func extractAwardIds(oldUser *old_models.User) []uint64 {
 		awards,
 		models.TimestampType(oldUser.LastUpdateTimestamp),
 	)
-	panicOnError(err)
+	helpers.PanicOnError(err)
 
-	panicOnError(tx.Commit())
+	helpers.PanicOnError(tx.Commit())
 
 	return results
 }
@@ -354,7 +355,7 @@ func processUserCountersEntryBase(
 		WHERE user_id = ?
 		ORDER BY timestamp;
 	`, oldUser.Id)
-	panicOnError(err)
+	helpers.PanicOnError(err)
 
 	if len(result) == 1 {
 		if result[0].Value == currentValue {
@@ -369,7 +370,7 @@ func processUserCountersEntryBase(
 			(timestamp, item_id, value)
 			VALUES (?, ?, ?);
 		`, models.TimestampType(item.Timestamp), user.PikabuId, item.Value)
-		panicOnError(err)
+		helpers.PanicOnError(err)
 
 		if models.TimestampType(item.Timestamp) < user.AddedTimestamp {
 			user.AddedTimestamp = models.TimestampType(item.Timestamp)
@@ -378,7 +379,7 @@ func processUserCountersEntryBase(
 					Set("added_timestamp = ?added_timestamp").
 					Where("pikabu_id = ?pikabu_id").
 					Update()
-				panicOnError(err)
+				helpers.PanicOnError(err)
 			*/
 		}
 	}
@@ -394,7 +395,7 @@ func processAvatarUrls(
 		Where("item_id = ?", oldUser.Id).
 		Order("timestamp").
 		Select()
-	panicOnError(err)
+	helpers.PanicOnError(err)
 
 	if len(avatarURLVersions) == 1 && avatarURLVersions[0].Value == oldUser.AvatarURL {
 		// fmt.Printf("skip version avatar url because current value is the same\n")
@@ -403,10 +404,10 @@ func processAvatarUrls(
 
 	for _, item := range avatarURLVersions {
 		if item.Timestamp <= 0 {
-			panicOnError(errors.Errorf("avatar timestamp < 0. user %v", oldUser.Id))
+			helpers.PanicOnError(errors.Errorf("avatar timestamp < 0. user %v", oldUser.Id))
 		}
 		if item.ItemId <= 0 {
-			panicOnError(errors.Errorf("avatar item_id < 0. user %v", oldUser.Id))
+			helpers.PanicOnError(errors.Errorf("avatar item_id < 0. user %v", oldUser.Id))
 		}
 
 		newItem := &models.PikabuUserAvatarURLVersion{
@@ -415,7 +416,7 @@ func processAvatarUrls(
 			Value:     item.Value,
 		}
 		_, err := models.Db.Model(newItem).Insert()
-		panicOnError(err)
+		helpers.PanicOnError(err)
 
 		if models.TimestampType(item.Timestamp) < user.AddedTimestamp {
 			user.AddedTimestamp = models.TimestampType(item.Timestamp)
@@ -424,7 +425,7 @@ func processAvatarUrls(
 					Set("added_timestamp = ?added_timestamp").
 					Where("pikabu_id = ?pikabu_id").
 					Update()
-				panicOnError(err)
+				helpers.PanicOnError(err)
 			*/
 		}
 	}
