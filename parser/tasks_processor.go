@@ -175,14 +175,6 @@ func (this *Parser) processParseUserTask(task models.ParseUserTask) error {
 func (this *Parser) processParseUserTaskById(task models.ParseUserTask) (*struct {
 	User *pikago.UserProfile `json:"user"`
 }, error) {
-	// TODO: parse by id as well
-	/*
-		curl -v 'https://pikabu.ru/ajax/user_info.php?action=get_short_profile&user_id=1'
-			-H 'X-Csrf-Token: 89hvsja20e8ivco081oboj6fgnfpmq45'
-			-H 'X-Requested-With: XMLHttpRequest'
-			-H 'Cookie: PHPSESS=89hvsja20e8ivco081oboj6fgnfpmq45;'
-	*/
-
 	// parse by id
 	url := fmt.Sprintf("https://pikabu.ru/ajax/user_info.php?action=get_short_profile&user_id=%v", task.PikabuId)
 	httpReq, err := http.NewRequest("GET", url, nil)
