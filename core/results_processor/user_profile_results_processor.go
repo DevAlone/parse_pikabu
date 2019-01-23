@@ -44,7 +44,7 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 	// complete tasks
 	err = task_manager.CompleteTask(
 		tx,
-		"parse_user_by_id_tasks",
+		"parse_user_tasks",
 		"pikabu_id",
 		userProfile.UserId.Value,
 	)
@@ -54,7 +54,7 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 
 	err = task_manager.CompleteTask(
 		tx,
-		"parse_user_by_username_tasks",
+		"parse_user_tasks",
 		"username",
 		userProfile.Username,
 	)
