@@ -25,9 +25,9 @@ func Main() {
 	logging.SetBackend(loggingBackend, loggingBackendFormatter)
 
 	if config.Settings.Debug {
-		logging.SetLevel(logging.DEBUG, "parse_pikabu/core")
+		logging.SetLevel(logging.DEBUG, "parse_pikabu")
 	} else {
-		logging.SetLevel(logging.WARNING, "parse_pikabu/core")
+		logging.SetLevel(logging.WARNING, "parse_pikabu")
 	}
 
 	logger.Log.Debug("core started")

@@ -115,6 +115,7 @@ func waitTasksQueueForEmpty(connection *amqp.Connection) error {
 	for true {
 		parserTasksQueue, err := amqpChannel.QueueInspect("bitbucket.org/d3dev/parse_pikabu/parser_tasks")
 		if err != nil {
+			// TODO: fix
 			if !strings.Contains(err.Error(), "NOT_FOUND - no queue") {
 				return err
 			} else {
