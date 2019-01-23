@@ -1,20 +1,17 @@
 package parser
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/config"
-	"encoding/json"
+	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"fmt"
 	"github.com/streadway/amqp"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
 	"sync"
 	"time"
 
-	"bitbucket.org/d3dev/parse_pikabu/logger"
-	"bitbucket.org/d3dev/parse_pikabu/models"
+	"bitbucket.org/d3dev/parse_pikabu/parser/logger"
 	"github.com/go-errors/errors"
 	"github.com/op/go-logging"
 	"gogsweb.2-47.ru/d3dev/pikago"
@@ -65,44 +62,22 @@ func NewParser(parserConfig *ParserConfig) (*Parser, error) {
 
 func (this *Parser) handleError(err error) {
 	if err == nil {
-		panic("trying to handle nil error\n")
-	} else if _, ok := err.(NoTaskError); ok {
+		return
+	}
+
+	if _, ok := err.(NoTaskError); ok {
 		// logger.ParserLog.Debug("there is no task, waiting...")
 		time.Sleep(time.Duration(this.Config.WaitNoTaskSeconds) * time.Second)
 		return
 	}
 
 	if e, ok := err.(*errors.Error); ok {
-		logger.ParserLog.Error(e.ErrorStack())
+		logger.Log.Error(e.ErrorStack())
 	} else {
-		logger.ParserLog.Error(err.Error())
+		logger.Log.Error(err.Error())
 	}
 
 	time.Sleep(time.Duration(this.Config.WaitAfterErrorSeconds) * time.Second)
-}
-
-func (this *Parser) Loop() {
-	for true {
-		func() {
-			defer func() {
-				if r := recover(); r != nil {
-					this.handleError(errors.Errorf("panic: %v", r))
-				}
-			}()
-
-			task, err := this.pullTask()
-			if err != nil {
-				this.handleError(err)
-				return
-			}
-			// process task
-			err = this.processTask(task)
-			if err != nil {
-				this.handleError(err)
-				return
-			}
-		}()
-	}
 }
 
 func (this *Parser) doAPIRequest(method string, url string, body io.Reader) (*http.Response, error) {
@@ -115,6 +90,7 @@ func (this *Parser) doAPIRequest(method string, url string, body io.Reader) (*ht
 	return this.httpClient.Do(req)
 }
 
+/*
 func (this *Parser) pullTask() (interface{}, error) {
 	resp, err := this.doAPIRequest("get", "/get/tasks/any", nil)
 	if err != nil {
@@ -164,6 +140,7 @@ func (this *Parser) pullTask() (interface{}, error) {
 
 	return nil, errors.Errorf("bad task name: %v", task.Name)
 }
+*/
 
 func Main() {
 	file, err := os.OpenFile("logs/parser.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
@@ -179,7 +156,7 @@ func Main() {
 		logging.SetLevel(logging.WARNING, "parse_pikabu/parser")
 	}
 
-	logger.ParserLog.Debug("parsers started")
+	logger.Log.Debug("parsers started")
 
 	parsersConfig, err := NewParsersConfigFromFile("parsers.config.json")
 	panicOnError(err)
@@ -189,13 +166,13 @@ func Main() {
 	for _, parserConfig := range parsersConfig.Configs {
 		// var configs
 		for i := uint(0); i < parserConfig.NumberOfInstances; i++ {
-			var config ParserConfig
-			config = parserConfig
+			var conf ParserConfig
+			conf = parserConfig
 			if i != 0 {
-				config.ParserId += "_copy_" + fmt.Sprint(i)
+				conf.ParserId += "_copy_" + fmt.Sprint(i)
 			}
 
-			parser, err := NewParser(&config)
+			parser, err := NewParser(&conf)
 			if err != nil {
 				panicOnError(err)
 			}

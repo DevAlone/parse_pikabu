@@ -1,9 +1,9 @@
 package main
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/logger"
+	"bitbucket.org/d3dev/parse_pikabu/core/logger"
+	"bitbucket.org/d3dev/parse_pikabu/core/results_processor"
 	"bitbucket.org/d3dev/parse_pikabu/models"
-	"bitbucket.org/d3dev/parse_pikabu/results_processor"
 	"github.com/go-pg/pg/orm"
 	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"
@@ -18,7 +18,7 @@ func TestUserProfileParsing(t *testing.T) {
 
 	err := models.InitDb()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	// clear tables
@@ -28,14 +28,14 @@ func TestUserProfileParsing(t *testing.T) {
 			Cascade:  true,
 		})
 		if err != nil {
-			handleError(err)
+			panicOnError(err)
 		}
 	}
 
 	// create again
 	err = models.InitDb()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	var wg sync.WaitGroup
@@ -45,7 +45,7 @@ func TestUserProfileParsing(t *testing.T) {
 	go func() {
 		err := results_processor.Run()
 		if err != nil {
-			handleError(err)
+			panicOnError(err)
 		}
 		wg.Done()
 	}()
@@ -132,7 +132,7 @@ func TestUserProfileParsing(t *testing.T) {
 `,
 	))
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	waitForQueueEmpty()
@@ -142,7 +142,7 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 	err = models.Db.Select(user)
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 	assert.Equal(t, "Pisacavtor", user.Username)
 	assert.Equal(t, int32(-3), user.Rating)
@@ -260,7 +260,7 @@ func TestUserProfileParsing(t *testing.T) {
 `,
 	))
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	waitForQueueEmpty()
@@ -270,7 +270,7 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 	err = models.Db.Select(user)
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 	assert.Equal(t, "Pisacavtor1", user.Username)
 	assert.Equal(t, int32(10), user.Rating)
@@ -347,7 +347,7 @@ func TestUserProfileParsing(t *testing.T) {
 `,
 	))
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	waitForQueueEmpty()
@@ -357,7 +357,7 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 	err = models.Db.Select(user)
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 	assert.Equal(t, "Pisacavtor", user.Username)
 	assert.Equal(t, int32(5), user.Rating)
@@ -433,7 +433,7 @@ func TestUserProfileParsing(t *testing.T) {
 `,
 	))
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	waitForQueueEmpty()
@@ -443,7 +443,7 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 	err = models.Db.Select(user)
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 	assert.Equal(t, "Pisacavtor", user.Username)
 	assert.Equal(t, int32(5), user.Rating)
@@ -555,7 +555,7 @@ func TestUserProfileParsing(t *testing.T) {
 `,
 	))
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	waitForQueueEmpty()
@@ -565,7 +565,7 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 	err = models.Db.Select(user)
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 	assert.Equal(t, "Pisacavtor", user.Username)
 	assert.Equal(t, int32(5), user.Rating)
@@ -592,7 +592,7 @@ func TestUserProfileParsing(t *testing.T) {
 		Order("timestamp").
 		Select()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	assert.Equal(t, []models.PikabuUserUsernameVersion{
@@ -619,7 +619,7 @@ func TestUserProfileParsing(t *testing.T) {
 		Order("timestamp").
 		Select()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	assert.Equal(t, []models.PikabuUserRatingVersion{
@@ -634,7 +634,7 @@ func TestUserProfileParsing(t *testing.T) {
 		Order("timestamp").
 		Select()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	assert.Equal(t, []models.PikabuUserIsRatingHiddenVersion{
@@ -650,7 +650,7 @@ func TestUserProfileParsing(t *testing.T) {
 		Order("timestamp").
 		Select()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	assert.Equal(t, []models.PikabuUserBanEndTimestampVersion{
@@ -668,7 +668,7 @@ func TestUserProfileParsing(t *testing.T) {
 		Order("pikabu_id").
 		Select()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	assert.Equal(t, []models.PikabuUserAward{
@@ -725,7 +725,7 @@ func TestUserProfileParsing(t *testing.T) {
 		Order("timestamp").
 		Select()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	assert.Equal(t, []models.PikabuUserAwardIdsVersion{
@@ -739,7 +739,7 @@ func TestUserProfileParsing(t *testing.T) {
 	err = models.Db.Model(&awardTitleVersions).
 		Where("item_id = ?", 287578).
 		Select()
-	handleError(err)
+	panicOnError(err)
 
 	assert.Equal(t, []models.PikabuUserAwardAwardTitleVersion{
 		{Timestamp: 100, ItemId: 287578, Value: "Пятничное [Моё]"},
@@ -750,7 +750,7 @@ func TestUserProfileParsing(t *testing.T) {
 	err = models.Db.Model(&awardStoryIdVersions).
 		Where("item_id = ?", 287578).
 		Select()
-	handleError(err)
+	panicOnError(err)
 
 	assert.Equal(t, []models.PikabuUserAwardStoryIdVersion{
 		{Timestamp: 100, ItemId: 287578, Value: 5983144},
@@ -761,7 +761,7 @@ func TestUserProfileParsing(t *testing.T) {
 	communities := []models.PikabuUserCommunity{}
 	err = models.Db.Model(&communities).Select()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	assert.Equal(t, []models.PikabuUserCommunity{
@@ -797,7 +797,7 @@ func TestUserProfileParsing(t *testing.T) {
 		Order("timestamp").
 		Select()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	assert.Equal(t, []models.PikabuUserCommunityIdsVersion{
@@ -813,7 +813,7 @@ func TestUserProfileParsing(t *testing.T) {
 		Order("added_timestamp").
 		Select()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	assert.Equal(t, []models.PikabuUserBanHistoryItem{
@@ -862,7 +862,7 @@ func TestUserProfileParsing(t *testing.T) {
 		Where("item_id = ?", user.PikabuId).
 		Select()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	assert.Equal(t, []models.PikabuUserBanHistoryItemIdsVersion{
@@ -962,7 +962,7 @@ func TestUserProfileParsing(t *testing.T) {
 `,
 	))
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	waitForQueueEmpty()
@@ -972,7 +972,7 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 	err = models.Db.Select(user)
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 	assert.Equal(t, "Pisacavtor", user.Username)
 	assert.Equal(t, int32(5), user.Rating)
@@ -999,7 +999,7 @@ func TestUserProfileParsing(t *testing.T) {
 		Order("timestamp").
 		Select()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	assert.Equal(t, []models.PikabuUserRatingVersion{
@@ -1099,7 +1099,7 @@ func TestUserProfileParsing(t *testing.T) {
 `,
 	))
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	waitForQueueEmpty()
@@ -1109,7 +1109,7 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 	err = models.Db.Select(user)
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 	assert.Equal(t, "Pisacavtor", user.Username)
 	assert.Equal(t, int32(4), user.Rating)
@@ -1136,7 +1136,7 @@ func TestUserProfileParsing(t *testing.T) {
 		Order("timestamp").
 		Select()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	assert.Equal(t, []models.PikabuUserRatingVersion{
@@ -1157,13 +1157,13 @@ func TestUserProfileParsing(t *testing.T) {
 			Cascade:  true,
 		})
 		if err != nil {
-			handleError(err)
+			panicOnError(err)
 		}
 	}
 }
 
 func pushTaskToQueue(key string, message []byte) error {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672")
+	conn, err := amqp.Dial("amqp_helper://guest:guest@localhost:5672")
 	if err != nil {
 		return err
 	}
@@ -1203,15 +1203,15 @@ func pushTaskToQueue(key string, message []byte) error {
 }
 
 func waitForQueueEmpty() {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672")
+	conn, err := amqp.Dial("amqp_helper://guest:guest@localhost:5672")
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 	defer conn.Close()
 
 	ch, err := conn.Channel()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 	defer ch.Close()
 
@@ -1225,7 +1225,7 @@ func waitForQueueEmpty() {
 		nil,
 	)
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	q, err := ch.QueueDeclare(
@@ -1237,7 +1237,7 @@ func waitForQueueEmpty() {
 		nil,
 	)
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 	for q.Messages > 0 {
 		time.Sleep(1 * time.Second)
@@ -1250,7 +1250,7 @@ func TestConcurrentUserProfileParsing(t *testing.T) {
 
 	err := models.InitDb()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	// clear tables
@@ -1260,14 +1260,14 @@ func TestConcurrentUserProfileParsing(t *testing.T) {
 			Cascade:  true,
 		})
 		if err != nil {
-			handleError(err)
+			panicOnError(err)
 		}
 	}
 
 	// create again
 	err = models.InitDb()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	var wg sync.WaitGroup
@@ -1277,7 +1277,7 @@ func TestConcurrentUserProfileParsing(t *testing.T) {
 	go func() {
 		err := results_processor.Run()
 		if err != nil {
-			handleError(err)
+			panicOnError(err)
 		}
 		wg.Done()
 	}()
@@ -1303,7 +1303,7 @@ func TestConcurrentUserProfileParsing(t *testing.T) {
 		}
 		err = pushTaskToQueue("user_profile", []byte(item))
 		if err != nil {
-			handleError(err)
+			panicOnError(err)
 		}
 	}
 
@@ -1315,7 +1315,7 @@ func TestConcurrentUserProfileParsing(t *testing.T) {
 	}
 	err = models.Db.Select(user)
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 	assert.Equal(t, "moderator", user.Username)
 	assert.Equal(t, int32(120951), user.Rating)
@@ -1342,7 +1342,7 @@ func TestConcurrentUserProfileParsing(t *testing.T) {
 		Where("item_id = ?", user.PikabuId).
 		Order("timestamp").
 		Select()
-	handleError(err)
+	panicOnError(err)
 
 	assert.Equal(t, []models.PikabuUserRatingVersion{}, ratingVersions)
 
@@ -1353,7 +1353,7 @@ func TestConcurrentUserProfileParsing(t *testing.T) {
 			Cascade:  true,
 		})
 		if err != nil {
-			handleError(err)
+			panicOnError(err)
 		}
 	}
 }

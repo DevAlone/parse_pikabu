@@ -1,8 +1,8 @@
 package parser
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
+	"bitbucket.org/d3dev/parse_pikabu/parser/logger"
 	"encoding/json"
 	"github.com/go-errors/errors"
 	"github.com/streadway/amqp"
@@ -125,7 +125,7 @@ func (this *Parser) PutResultsToQueue(routingKey string, result interface{}) err
 			return nil
 		} else {
 			_ = this.CleanupAMQP()
-			logger.ParserLog.Error(err)
+			logger.Log.Error(err)
 		}
 	}
 

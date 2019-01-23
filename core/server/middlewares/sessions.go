@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"strings"
 
+	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	. "bitbucket.org/d3dev/parse_pikabu/helpers"
-	"bitbucket.org/d3dev/parse_pikabu/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
 )

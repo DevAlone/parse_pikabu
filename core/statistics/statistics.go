@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"bitbucket.org/d3dev/parse_pikabu/logger"
+	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 )
 

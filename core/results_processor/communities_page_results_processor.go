@@ -1,7 +1,7 @@
 package results_processor
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/logger"
+	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"

@@ -1,8 +1,8 @@
 package models
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/config"
-	"bitbucket.org/d3dev/parse_pikabu/logger"
+	"bitbucket.org/d3dev/parse_pikabu/core/config"
+	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"errors"
 	"fmt"
 	"github.com/go-pg/pg"

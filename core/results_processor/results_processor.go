@@ -1,8 +1,9 @@
 package results_processor
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/config"
-	"bitbucket.org/d3dev/parse_pikabu/logger"
+	"bitbucket.org/d3dev/parse_pikabu/amqp_helper"
+	"bitbucket.org/d3dev/parse_pikabu/core/config"
+	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
@@ -17,10 +18,11 @@ func Run() error {
 		err := startListener()
 		if err != nil {
 			if e, ok := err.(*errors.Error); ok {
-				logger.ParserLog.Error(e.ErrorStack())
+				logger.Log.Error(e.ErrorStack())
 			} else {
-				logger.ParserLog.Error(err.Error())
+				logger.Log.Error(err.Error())
 			}
+			_ = amqp_helper.Cleanup()
 		}
 		time.Sleep(5 * time.Second)
 	}
@@ -29,17 +31,16 @@ func Run() error {
 }
 func startListener() error {
 	logger.Log.Debug("connecting to amqp server...")
-	conn, err := amqp.Dial(config.Settings.AMQPAddress)
+	connection, err := amqp_helper.GetAMQPConnection(config.Settings.AMQPAddress)
 	if err != nil {
 		return errors.New(err)
 	}
-	defer conn.Close()
 
-	ch, err := conn.Channel()
+	ch, err := connection.Channel()
 	if err != nil {
 		return errors.New(err)
 	}
-	defer ch.Close()
+	defer func() { _ = ch.Close() }()
 
 	err = ch.ExchangeDeclare(
 		"parser_results",
@@ -55,14 +56,17 @@ func startListener() error {
 	}
 
 	q, err := ch.QueueDeclare(
-		"bitbucket.org/d3dev/parse_pikabu",
+		"bitbucket.org/d3dev/parse_pikabu/parser_results",
 		true,
 		false,
 		false,
 		false,
-		amqp.Table{
-			"x-queue-mode": "lazy",
-		},
+		nil,
+		/*
+			amqp.Table{
+				"x-queue-mode": "lazy",
+			},
+		*/
 	)
 	if err != nil {
 		return errors.New(err)
@@ -79,10 +83,15 @@ func startListener() error {
 		return errors.New(err)
 	}
 
+	err = ch.Qos(2, 0, false)
+	if err != nil {
+		return errors.New(err)
+	}
+
 	messages, err := ch.Consume(
 		q.Name,
 		"", // routing key
-		true,
+		false,
 		false,
 		false,
 		false,
@@ -94,8 +103,11 @@ func startListener() error {
 
 	logger.Log.Debug("start waiting for parser results")
 	for message := range messages {
-		logger.Log.Debugf("got parser result: %v", string(message.Body))
 		err = processMessage(message)
+		if err != nil {
+			return err
+		}
+		err = message.Ack(false)
 		if err != nil {
 			return err
 		}
@@ -129,7 +141,7 @@ func processMessage(message amqp.Delivery) error {
 		if err != nil {
 			return err
 		}
-	case "communities_page":
+	case "communities_pages":
 		var resp models.ParserCommunitiesPageResult
 		err := pikago.JsonUnmarshal(message.Body, &resp)
 		if err != nil {

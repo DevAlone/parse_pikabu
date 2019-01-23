@@ -23,6 +23,7 @@ var Settings struct {
 	UsersUpdatingPeriodIncreasingValue int
 	UsersMinUpdatingPeriod             int
 	UsersMaxUpdatingPeriod             int
+	MaxNumberOfTasksInQueue            int
 }
 
 func UpdateSettingsFromFile(filename string) error {
@@ -49,7 +50,7 @@ func init() {
 	Settings.Pikabu18BotToken = ""
 	Settings.ServerListeningAddress = "0.0.0.0:8080"
 	Settings.AMQPAddress = "amqp://guest:guest@localhost:5672/"
-	Settings.MaximumTaskProcessingTime = 60
+	Settings.MaximumTaskProcessingTime = 2 * 60
 	Settings.CommunitiesProcessingPeriod = 3600
 	Settings.ServerMaximumNumberOfResultsPerPage = 1024
 	Settings.NewUserTime = 3600 * 24 * 7
@@ -57,4 +58,5 @@ func init() {
 	Settings.UsersUpdatingPeriodIncreasingValue = 6 * 3600
 	Settings.UsersMinUpdatingPeriod = 3600 * 12
 	Settings.UsersMaxUpdatingPeriod = 3600 * 24 * 7
+	Settings.MaxNumberOfTasksInQueue = 64
 }

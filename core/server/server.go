@@ -1,10 +1,10 @@
 package server
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/config"
+	"bitbucket.org/d3dev/parse_pikabu/core/config"
+	"bitbucket.org/d3dev/parse_pikabu/core/server/api"
+	"bitbucket.org/d3dev/parse_pikabu/core/server/middlewares"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
-	"bitbucket.org/d3dev/parse_pikabu/server/api"
-	"bitbucket.org/d3dev/parse_pikabu/server/middlewares"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )

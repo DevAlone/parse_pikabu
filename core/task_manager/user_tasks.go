@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"bitbucket.org/d3dev/parse_pikabu/config"
+	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-pg/pg"
 )
@@ -16,6 +16,7 @@ func processUserTasks() error {
 		Where(
 			"is_done = false AND is_taken = true AND added_timestamp < ?",
 			models.TimestampType(time.Now().Unix())-models.TimestampType(config.Settings.MaximumTaskProcessingTime)).
+		Limit(1024).
 		Select()
 	if err != pg.ErrNoRows && err != nil {
 		return err
@@ -91,30 +92,24 @@ func AddParseUserByUsernameTask(username string) error {
 
 	exists := err != pg.ErrNoRows
 
-	if exists {
-		expired := task.AddedTimestamp < models.TimestampType(time.Now().Unix())-
-			models.TimestampType(config.Settings.MaximumTaskProcessingTime)
+	task.AddedTimestamp = models.TimestampType(time.Now().Unix())
+	task.IsDone = false
+	task.IsTaken = false
+	task.Username = username
 
-		if !expired && !task.IsDone {
-			return nil
+	if !exists {
+		err := models.Db.Insert(task)
+		if err != nil {
+			return err
 		}
-
-		task.IsTaken = false
-		task.IsDone = false
-		task.AddedTimestamp = models.TimestampType(time.Now().Unix())
-
-		return models.Db.Update(task)
+	} else {
+		err := models.Db.Update(task)
+		if err != nil {
+			return err
+		}
 	}
 
-	task = &models.ParseUserByUsernameTask{
-		Task: models.Task{
-			AddedTimestamp: models.TimestampType(time.Now().Unix()),
-		},
-		Username: username,
-	}
-
-	return models.Db.Insert(task)
-
+	return PushTaskToQueue(task)
 }
 
 // TODO: unused

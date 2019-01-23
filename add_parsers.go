@@ -5,16 +5,16 @@ import (
 	"os"
 	"strings"
 
+	"bitbucket.org/d3dev/parse_pikabu/core/server/middlewares"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/parser"
-	"bitbucket.org/d3dev/parse_pikabu/server/middlewares"
 	"github.com/go-errors/errors"
 )
 
-func addParsers() error {
+func addParsersFromConfig() error {
 	redisClient := helpers.GetRedisClient()
 	if len(os.Args) < 2 {
-		handleError(errors.New("too few arguments"))
+		return errors.New("too few arguments")
 	}
 	parsersConfig, err := parser.NewParsersConfigFromFile(os.Args[1])
 	if err != nil {

@@ -5,10 +5,10 @@ import (
 	"sync"
 	"time"
 
-	"bitbucket.org/d3dev/parse_pikabu/config"
-	"bitbucket.org/d3dev/parse_pikabu/logger"
+	"bitbucket.org/d3dev/parse_pikabu/core/config"
+	"bitbucket.org/d3dev/parse_pikabu/core/logger"
+	"bitbucket.org/d3dev/parse_pikabu/core/task_manager"
 	"bitbucket.org/d3dev/parse_pikabu/models"
-	"bitbucket.org/d3dev/parse_pikabu/task_manager"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
 	"gogsweb.2-47.ru/d3dev/pikago"

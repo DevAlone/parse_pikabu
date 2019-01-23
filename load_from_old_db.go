@@ -8,9 +8,9 @@ import (
 	"sync"
 	"time"
 
+	"bitbucket.org/d3dev/parse_pikabu/core/results_processor"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/old_models"
-	"bitbucket.org/d3dev/parse_pikabu/results_processor"
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
 	"github.com/pkg/errors"
@@ -24,12 +24,6 @@ func printTimeSinceStart() {
 	fmt.Printf("time since start: %v\n", (time.Now().Unix() - startTimestamp))
 }
 
-func panicOnError(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
 var oldDb *pg.DB
 
 func loadFromOldDb() {
@@ -38,7 +32,7 @@ func loadFromOldDb() {
 
 	err := models.InitDb()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	// clear tables
@@ -51,14 +45,14 @@ func loadFromOldDb() {
 			Cascade:  true,
 		})
 		if err != nil {
-			handleError(err)
+			panicOnError(err)
 		}
 	}
 
 	// create again
 	err = models.InitDb()
 	if err != nil {
-		handleError(err)
+		panicOnError(err)
 	}
 
 	oldDb = pg.Connect(&pg.Options{
@@ -380,11 +374,11 @@ func processUserCountersEntryBase(
 		if models.TimestampType(item.Timestamp) < user.AddedTimestamp {
 			user.AddedTimestamp = models.TimestampType(item.Timestamp)
 			/*
-			_, err := models.Db.Model(user).
-				Set("added_timestamp = ?added_timestamp").
-				Where("pikabu_id = ?pikabu_id").
-				Update()
-			panicOnError(err)
+				_, err := models.Db.Model(user).
+					Set("added_timestamp = ?added_timestamp").
+					Where("pikabu_id = ?pikabu_id").
+					Update()
+				panicOnError(err)
 			*/
 		}
 	}
@@ -426,12 +420,12 @@ func processAvatarUrls(
 		if models.TimestampType(item.Timestamp) < user.AddedTimestamp {
 			user.AddedTimestamp = models.TimestampType(item.Timestamp)
 			/*
-			_, err := models.Db.Model(user).
-				Set("added_timestamp = ?added_timestamp").
-				Where("pikabu_id = ?pikabu_id").
-				Update()
-			panicOnError(err)
-				*/
+				_, err := models.Db.Model(user).
+					Set("added_timestamp = ?added_timestamp").
+					Where("pikabu_id = ?pikabu_id").
+					Update()
+				panicOnError(err)
+			*/
 		}
 	}
 }

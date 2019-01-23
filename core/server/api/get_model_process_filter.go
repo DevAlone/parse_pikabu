@@ -1,7 +1,7 @@
 package api
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/logger"
+	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"encoding/json"
 	"fmt"
 	"github.com/go-errors/errors"

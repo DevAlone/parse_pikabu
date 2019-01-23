@@ -19,7 +19,7 @@ func Run() error {
 		time.Sleep(1 * time.Second)
 	}
 
-	return nil
+	return Cleanup()
 }
 
 func CompleteTask(tx *pg.Tx, tableName, fieldName string, fieldValue interface{}) error {

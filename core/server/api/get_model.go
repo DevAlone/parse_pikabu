@@ -7,8 +7,8 @@ import (
 	"regexp"
 	"strings"
 
-	"bitbucket.org/d3dev/parse_pikabu/config"
-	"bitbucket.org/d3dev/parse_pikabu/logger"
+	"bitbucket.org/d3dev/parse_pikabu/core/config"
+	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/gin-gonic/gin"
 	"github.com/go-errors/errors"
