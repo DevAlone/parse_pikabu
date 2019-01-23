@@ -6,7 +6,6 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"encoding/json"
-	"fmt"
 	"github.com/go-errors/errors"
 	"github.com/streadway/amqp"
 	"strings"
@@ -115,13 +114,12 @@ func PushTaskToQueue(taskPtr interface{}) error {
 func waitTasksQueueForEmpty(connection *amqp.Connection) error {
 	for true {
 		parserTasksQueue, err := amqpChannel.QueueInspect("bitbucket.org/d3dev/parse_pikabu/parser_tasks")
-		fmt.Println("pq ", parserTasksQueue.Messages)
 		if err != nil {
 			if !strings.Contains(err.Error(), "NOT_FOUND - no queue") {
 				return err
 			} else {
 				amqpChannel = nil
-				err = initChannel(connection)
+				_ = initChannel(connection)
 				return errors.New(err)
 			}
 		}
@@ -130,7 +128,6 @@ func waitTasksQueueForEmpty(connection *amqp.Connection) error {
 			return nil
 		}
 
-		fmt.Println("Waiting...")
 		time.Sleep(100 * time.Millisecond)
 	}
 	return nil
