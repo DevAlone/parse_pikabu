@@ -28,6 +28,8 @@ func processUserTasks() error {
 		}
 	}
 
+	return nil
+
 	// update users
 	users := []models.PikabuUser{}
 	err = models.Db.Model(&users).

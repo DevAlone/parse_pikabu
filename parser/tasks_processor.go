@@ -151,7 +151,7 @@ func (this *Parser) processParseUserTask(task models.ParseUserTask) error {
 
 	userProfile, err := this.pikagoClient.UserProfileGet(task.Username)
 	if err != nil {
-		return err
+		return errors.Errorf("Error while processing task %v. Error: %v", task, err)
 	}
 	var res struct {
 		User *pikago.UserProfile `json:"user"`
