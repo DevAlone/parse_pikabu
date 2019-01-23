@@ -94,7 +94,7 @@ func AddParseUserByUsernameTask(username string) error {
 
 	task.AddedTimestamp = models.TimestampType(time.Now().Unix())
 	task.IsDone = false
-	task.IsTaken = false
+	task.IsTaken = true
 	task.Username = username
 
 	if !exists {
