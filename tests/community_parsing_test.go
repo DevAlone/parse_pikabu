@@ -3,6 +3,7 @@ package main
 import (
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/core/results_processor"
+	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-pg/pg/orm"
 	"github.com/stretchr/testify/assert"
@@ -11,12 +12,13 @@ import (
 )
 
 func TestCommunityParsing(t *testing.T) {
+	initLogs()
 	logger.Log.Debug(`start test "community parsing"`)
 
 	// init db, create list of tables
 	err := models.InitDb()
 	if err != nil {
-		panicOnError(err)
+		helpers.PanicOnError(err)
 	}
 
 	// clear tables
@@ -26,14 +28,14 @@ func TestCommunityParsing(t *testing.T) {
 			Cascade:  true,
 		})
 		if err != nil {
-			panicOnError(err)
+			helpers.PanicOnError(err)
 		}
 	}
 
 	// create again
 	err = models.InitDb()
 	if err != nil {
-		panicOnError(err)
+		helpers.PanicOnError(err)
 	}
 
 	var wg sync.WaitGroup
@@ -43,12 +45,12 @@ func TestCommunityParsing(t *testing.T) {
 	go func() {
 		err := results_processor.Run()
 		if err != nil {
-			panicOnError(err)
+			helpers.PanicOnError(err)
 		}
 		wg.Done()
 	}()
 
-	err = pushTaskToQueue("communities_page", []byte(`
+	err = pushTaskToQueue("communities_pages", []byte(`
 {
 	"parsing_timestamp": 1,
 	"parser_id": "d3dev/parser_id",
@@ -104,7 +106,7 @@ func TestCommunityParsing(t *testing.T) {
 }
 `,
 	))
-	panicOnError(err)
+	helpers.PanicOnError(err)
 
 	waitForQueueEmpty()
 
@@ -112,7 +114,7 @@ func TestCommunityParsing(t *testing.T) {
 	err = models.Db.Model(&communities).
 		Order("pikabu_id").
 		Select()
-	panicOnError(err)
+	helpers.PanicOnError(err)
 
 	assert.Equal(t, []models.PikabuCommunity{
 		{
@@ -136,7 +138,7 @@ func TestCommunityParsing(t *testing.T) {
 	}, communities)
 
 	// make some changes
-	err = pushTaskToQueue("communities_page", []byte(`
+	err = pushTaskToQueue("communities_pages", []byte(`
 {
 	"parsing_timestamp": 2,
 	"parser_id": "d3dev/parser_id",
@@ -197,13 +199,13 @@ func TestCommunityParsing(t *testing.T) {
 }
 `,
 	))
-	panicOnError(err)
+	helpers.PanicOnError(err)
 
 	waitForQueueEmpty()
 
 	communities = []models.PikabuCommunity{}
 	err = models.Db.Model(&communities).Order("pikabu_id").Select()
-	panicOnError(err)
+	helpers.PanicOnError(err)
 
 	assert.Equal(t, []models.PikabuCommunity{
 		{
@@ -231,7 +233,7 @@ func TestCommunityParsing(t *testing.T) {
 		Where("item_id = ?", 1).
 		Order("timestamp").
 		Select()
-	panicOnError(err)
+	helpers.PanicOnError(err)
 
 	assert.Equal(t, []models.PikabuCommunityLinkNameVersion{
 		{ItemId: 1, Timestamp: 1, Value: "link_name1"},
@@ -243,7 +245,7 @@ func TestCommunityParsing(t *testing.T) {
 		Where("item_id = ?", 1).
 		Order("timestamp").
 		Select()
-	panicOnError(err)
+	helpers.PanicOnError(err)
 
 	assert.Equal(t, []models.PikabuCommunityTagsVersion{
 		{ItemId: 1, Timestamp: 1, Value: []string{"tag1", "tag2", "tag3"}},
@@ -255,7 +257,7 @@ func TestCommunityParsing(t *testing.T) {
 		Where("item_id = ?", 1).
 		Order("timestamp").
 		Select()
-	panicOnError(err)
+	helpers.PanicOnError(err)
 
 	assert.Equal(t, []models.PikabuCommunityModeratorIdsVersion{
 		{ItemId: 1, Timestamp: 1, Value: []uint64{1000, 1001, 1002}},
@@ -269,7 +271,7 @@ func TestCommunityParsing(t *testing.T) {
 			Cascade:  true,
 		})
 		if err != nil {
-			panicOnError(err)
+			helpers.PanicOnError(err)
 		}
 	}
 }
