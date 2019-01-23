@@ -14,7 +14,6 @@ func (this *Parser) Loop() {
 	for true {
 		err := this.ListenForTasks()
 		if err != nil {
-			_ = amqp_helper.Cleanup()
 			this.handleError(err)
 			time.Sleep(time.Duration(this.Config.WaitAfterErrorSeconds) * time.Second)
 		}
