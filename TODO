@@ -2,3 +2,4 @@ add restrictions to filters in struct tags
 process deleted communities
 /amcharts/images/dragIconRoundBig.svg 404
 fix logging
+clean username versions with the same value but in different cases
