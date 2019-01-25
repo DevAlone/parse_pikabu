@@ -36,6 +36,8 @@ func createCommunitiesIndices() {
 }
 
 func processCommunities() {
+	fmt.Println("ignoring communities")
+	return
 	createCommunitiesIndices()
 
 	fmt.Println("processing communities")

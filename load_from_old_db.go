@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bitbucket.org/d3dev/parse_pikabu/core/config"
+	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"context"
 	"fmt"
-	"reflect"
+	"github.com/op/go-logging"
+	"math"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -13,7 +17,6 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/old_models"
 	"github.com/go-pg/pg"
-	"github.com/go-pg/pg/orm"
 	"github.com/pkg/errors"
 	"gogsweb.2-47.ru/d3dev/pikago"
 	"golang.org/x/sync/semaphore"
@@ -28,33 +31,52 @@ func printTimeSinceStart() {
 var oldDb *pg.DB
 
 func loadFromOldDb() {
-	fmt.Println("loading from db pikabot_graphs...")
-	printTimeSinceStart()
-
-	err := models.InitDb()
+	file, err := os.OpenFile("logs/load_from_old_db.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		helpers.PanicOnError(err)
 	}
+	loggingBackend := logging.NewLogBackend(file, "", 0)
+	loggingBackendFormatter := logging.NewBackendFormatter(loggingBackend, logger.LogFormat)
 
-	// clear tables
-	for _, table := range models.Tables {
-		if reflect.TypeOf(table) == reflect.TypeOf(&models.PikabuCommunity{}) {
-			continue
-		}
-		err := models.Db.DropTable(table, &orm.DropTableOptions{
-			IfExists: true,
-			Cascade:  true,
-		})
-		if err != nil {
-			helpers.PanicOnError(err)
-		}
+	logging.SetBackend(loggingBackend, loggingBackendFormatter)
+
+	if config.Settings.Debug {
+		logging.SetLevel(logging.DEBUG, "parse_pikabu")
+	} else {
+		logging.SetLevel(logging.WARNING, "parse_pikabu")
 	}
 
-	// create again
+	logger.Log.Debug("load_from_old_db started")
+
+	fmt.Println("loading from db pikabot_graphs...")
+	printTimeSinceStart()
+
 	err = models.InitDb()
 	if err != nil {
 		helpers.PanicOnError(err)
 	}
+
+	/*
+		// clear tables
+		for _, table := range models.Tables {
+			if reflect.TypeOf(table) == reflect.TypeOf(&models.PikabuCommunity{}) {
+				continue
+			}
+			err := models.Db.DropTable(table, &orm.DropTableOptions{
+				IfExists: true,
+				Cascade:  true,
+			})
+			if err != nil {
+				helpers.PanicOnError(err)
+			}
+		}
+
+		// create again
+		err = models.InitDb()
+		if err != nil {
+			helpers.PanicOnError(err)
+		}
+	*/
 
 	oldDb = pg.Connect(&pg.Options{
 		Database: "pikabot_graphs_copy",
@@ -169,8 +191,8 @@ func processUsers() {
 
 		var users []old_models.User
 		err := oldDb.Model(&users).
+			Where("pikabu_id > ?", offset).
 			Order("pikabu_id").
-			Offset(offset).
 			Limit(limit).
 			Select()
 
@@ -180,6 +202,7 @@ func processUsers() {
 		helpers.PanicOnError(err)
 
 		for _, oldUser := range users {
+			offset = int(math.Max(float64(offset), float64(oldUser.PikabuId)))
 			helpers.PanicOnError(sem.Acquire(ctx, 1))
 			wg.Add(1)
 			go func(oldU old_models.User) {
@@ -189,7 +212,8 @@ func processUsers() {
 			}(oldUser)
 		}
 
-		offset += limit
+		// offset += limit
+
 	}
 
 	// TODO: process skipped
@@ -245,7 +269,9 @@ func processUser(oldUser *old_models.User) {
 		Count()
 	helpers.PanicOnError(err)
 	if count > 0 {
-		helpers.PanicOnError(errors.Errorf("AAA, PANIC!!!!"))
+		fmt.Printf("User with id %v already exists\n", user.PikabuId)
+		return
+		// helpers.PanicOnError(errors.Errorf("AAA, PANIC!!!!"))
 	}
 
 	processUserVersionsFields(oldUser, user)
@@ -368,8 +394,10 @@ func processUserCountersEntryBase(
 		_, err := models.Db.Exec(`
 			INSERT INTO `+newTableName+` 
 			(timestamp, item_id, value)
-			VALUES (?, ?, ?);
-		`, models.TimestampType(item.Timestamp), user.PikabuId, item.Value)
+			VALUES (?, ?, ?)
+			ON CONFLICT (timestamp, item_id) DO UPDATE
+			SET value = ?;
+		`, models.TimestampType(item.Timestamp), user.PikabuId, item.Value, item.Value)
 		helpers.PanicOnError(err)
 
 		if models.TimestampType(item.Timestamp) < user.AddedTimestamp {
@@ -415,7 +443,10 @@ func processAvatarUrls(
 			ItemId:    uint64(oldUser.PikabuId),
 			Value:     item.Value,
 		}
-		_, err := models.Db.Model(newItem).Insert()
+		_, err := models.Db.Model(newItem).
+			OnConflict("(timestamp, item_id) DO UPDATE").
+			Set("value = ?", newItem.Value).
+			Insert()
 		helpers.PanicOnError(err)
 
 		if models.TimestampType(item.Timestamp) < user.AddedTimestamp {
