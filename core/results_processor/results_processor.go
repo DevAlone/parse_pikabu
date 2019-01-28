@@ -111,11 +111,19 @@ func startListener() error {
 			for message := range messages {
 				err = processMessage(message)
 				if err != nil {
-					panic(err)
+					logger.Log.Error(err)
+					if e, ok := err.(*errors.Error); ok {
+						logger.Log.Error(e.ErrorStack())
+					}
+					// panic(err)
 				}
 				err = message.Ack(false)
 				if err != nil {
-					panic(err)
+					logger.Log.Error(err)
+					if e, ok := err.(*errors.Error); ok {
+						logger.Log.Error(e.ErrorStack())
+					}
+					// panic(err)
 				}
 			}
 		}()
