@@ -28,9 +28,30 @@ func processUserProfiles(parsingTimestamp models.TimestampType, userProfiles []*
 	return nil
 }
 
+var userProfileIdLocks = map[uint64]bool{}
+var userProfileIdLocksMutex = sync.Mutex{}
+
 func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago.UserProfile) error {
-	processUserProfileMutex.Lock()
-	defer processUserProfileMutex.Unlock()
+	// lock results with the same id
+	found := true
+	for found {
+		userProfileIdLocksMutex.Lock()
+		_, found = userProfileIdLocks[userProfile.UserId.Value]
+		if !found {
+			userProfileIdLocks[userProfile.UserId.Value] = true
+			userProfileIdLocksMutex.Unlock()
+			break
+		}
+		userProfileIdLocksMutex.Unlock()
+
+		time.Sleep(10 * time.Millisecond)
+	}
+	// unlock
+	defer func() {
+		userProfileIdLocksMutex.Lock()
+		delete(userProfileIdLocks, userProfile.UserId.Value)
+		userProfileIdLocksMutex.Unlock()
+	}()
 
 	if userProfile == nil {
 		return errors.New("nil user profile")
@@ -132,7 +153,7 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 		logger.Log.Warning("skipping user %v because of old parsing result", user.Username)
 		return nil
 	} else if err != nil {
-		return err
+		return errors.New(err)
 	}
 
 	nextUpdateTimestamp := calculateNextUpdateTimestamp(tx, user, wasDataChanged)

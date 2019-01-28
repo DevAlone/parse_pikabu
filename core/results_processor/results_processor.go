@@ -10,6 +10,8 @@ import (
 	"github.com/streadway/amqp"
 	"gogsweb.2-47.ru/d3dev/pikago"
 	"reflect"
+	"runtime"
+	"sync"
 	"time"
 )
 
@@ -102,16 +104,23 @@ func startListener() error {
 	}
 
 	logger.Log.Debug("start waiting for parser results")
-	for message := range messages {
-		err = processMessage(message)
-		if err != nil {
-			return err
-		}
-		err = message.Ack(false)
-		if err != nil {
-			return err
-		}
+	var wg sync.WaitGroup
+	for i := 0; i < config.Settings.NumberOfTasksProcessorsMultiplier*runtime.GOMAXPROCS(0); i++ {
+		wg.Add(1)
+		go func() {
+			for message := range messages {
+				err = processMessage(message)
+				if err != nil {
+					panic(err)
+				}
+				err = message.Ack(false)
+				if err != nil {
+					panic(err)
+				}
+			}
+		}()
 	}
+	wg.Wait()
 	logger.Log.Debug("stop waiting for parser results")
 
 	return nil
@@ -241,8 +250,11 @@ func processModelFieldsVersions(
 			} else {
 				err = tx.Insert(versionTable)
 			}
+			if err != nil {
+				return errors.New(err)
+			}
 
-			return err
+			return nil
 		}
 
 		count, err := tx.Model(versionTable).Where("item_id = ?", oldId).Count()

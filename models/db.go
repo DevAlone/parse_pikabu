@@ -128,6 +128,7 @@ func _addIndex(tableName string, _columns interface{}, method string, unique boo
 
 	indexName = strings.Replace(indexName, "(", "_oparenthesis_", -1)
 	indexName = strings.Replace(indexName, ")", "_cparenthesis_", -1)
+	indexName = strings.Replace(indexName, " ", "_space_", -1)
 	indexName = strings.ToLower(indexName)
 
 	indexQuery := "CREATE "

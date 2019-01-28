@@ -43,10 +43,11 @@ func NewParser(parserConfig *ParserConfig) (*Parser, error) {
 		return nil, err
 	}
 	requestsSender, err := pikago.NewClientProxyRequestsSender(proxyProvider)
-	requestsSender.SetTimeout(parser.Config.PikagoTimeout)
 	if err != nil {
 		return nil, err
 	}
+	requestsSender.NumberOfRequestTries = 900
+	requestsSender.SetTimeout(parser.Config.PikagoTimeout)
 	parser.pikagoClient, err = pikago.NewClient(requestsSender)
 	if err != nil {
 		return nil, err

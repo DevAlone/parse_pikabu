@@ -24,6 +24,8 @@ var Settings struct {
 	UsersMinUpdatingPeriod             int
 	UsersMaxUpdatingPeriod             int
 	MaxNumberOfTasksInQueue            int
+	// actual number if number of thread multiplied by this value
+	NumberOfTasksProcessorsMultiplier int
 }
 
 func UpdateSettingsFromFile(filename string) error {
@@ -59,4 +61,5 @@ func init() {
 	Settings.UsersMinUpdatingPeriod = 3600 * 12
 	Settings.UsersMaxUpdatingPeriod = 3600 * 24 * 7
 	Settings.MaxNumberOfTasksInQueue = 64
+	Settings.NumberOfTasksProcessorsMultiplier = 4
 }

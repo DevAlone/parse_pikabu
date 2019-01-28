@@ -98,8 +98,16 @@ func init() {
 		Tables = append(Tables, item)
 	}
 
+	/* // make it working
+	CustomQueries = append(CustomQueries, `
+		CREATE EXTENSION pg_trgm;
+	`)
+	*/
+
 	// TODO: consider two indices for username(btree and hash)
 	addIndex("pikabu_users", "username", "")
+	addIndex("pikabu_users", "LOWER(username)", "hash")
+	addIndex("pikabu_users", "username gin_trgm_ops", "gin")
 	addIndex("pikabu_users", "added_timestamp", "")
 	addIndex("pikabu_users", "last_update_timestamp", "")
 	addIndex("pikabu_users", "next_update_timestamp", "")
