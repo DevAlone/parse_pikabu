@@ -46,7 +46,7 @@ func NewParser(parserConfig *ParserConfig) (*Parser, error) {
 	if err != nil {
 		return nil, err
 	}
-	requestsSender.NumberOfRequestTries = 900
+	// requestsSender.NumberOfRequestTries = 900
 	requestsSender.SetTimeout(parser.Config.PikagoTimeout)
 	parser.pikagoClient, err = pikago.NewClient(requestsSender)
 	if err != nil {
