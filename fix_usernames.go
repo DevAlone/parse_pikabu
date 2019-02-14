@@ -106,7 +106,7 @@ func fixUsernameProcessUser(user *models.PikabuUser) {
 		for _, usernameVersion := range usernameVersions {
 			helpers.PanicOnError(models.Db.Delete(&usernameVersion))
 		}
-	} else {
+	} else if len(usernames) != 0 {
 		fmt.Printf("NOT fixing user %v with id %v\n", user.Username, user.PikabuId)
 	}
 }
