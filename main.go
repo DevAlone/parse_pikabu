@@ -57,6 +57,9 @@ var commands = map[string]func(){
 	"load_from_old_db": func() {
 		loadFromOldDb()
 	},
+	"fix_usernames": func() {
+		fixUsernames()
+	},
 }
 
 func main() {
