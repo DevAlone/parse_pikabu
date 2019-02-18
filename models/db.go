@@ -1,13 +1,13 @@
 package models
 
 import (
+	"errors"
+	"strings"
+
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
-	"errors"
-	"fmt"
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
-	"strings"
 )
 
 //go:generate bash -c "cd ..; go run models_versions_fields.generator.go; go fmt models/models.generated.go"
@@ -23,16 +23,18 @@ type QueryHook struct{}
 
 func (this QueryHook) BeforeQuery(event *pg.QueryEvent) {}
 func (this QueryHook) AfterQuery(event *pg.QueryEvent) {
-	// TODO: make sure that it works
-	if config.Settings.Debug {
-		query, err := event.FormattedQuery()
-		if err != nil {
-			logger.Log.Critical(err)
-			return
+	// TODO: make option in settings
+	/*
+		if config.Settings.Debug {
+			query, err := event.FormattedQuery()
+			if err != nil {
+				logger.Log.Critical(err)
+				return
+			}
+			// logger.Log.Debug(fmt.Sprintf("SQL: %s %s\n", time.Since(event.Time), query))
+			logger.Log.Debug(fmt.Sprintf("SQL: %s\n", query))
 		}
-		// logger.Log.Debug(fmt.Sprintf("SQL: %s %s\n", time.Since(event.Time), query))
-		logger.Log.Debug(fmt.Sprintf("SQL: %s\n", query))
-	}
+	*/
 }
 
 func InitDb() error {
