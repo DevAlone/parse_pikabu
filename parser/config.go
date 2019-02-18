@@ -20,6 +20,9 @@ type ParserConfig struct {
 	ProxyProviderTimeout             int
 	PikagoTimeout                    uint
 	PikagoWaitBetweenProcessingPages int
+	PikagoNumberOfRequestTries       uint
+	PikagoWaitBeforeNextRequestMs    uint
+	PikagoChangeProxyOnNthBadTry     uint
 	WaitAfterErrorSeconds            int
 	WaitNoTaskSeconds                int
 	AMQPAddress                      string
@@ -38,7 +41,10 @@ func NewParserConfigFromBytes(configData []byte) (*ParserConfig, error) {
 	config.ProxyProviderAPIURL = ""
 	config.ProxyProviderTimeout = 60
 	config.PikagoTimeout = 30
+	config.PikagoNumberOfRequestTries = 21
+	config.PikagoChangeProxyOnNthBadTry = 3
 	config.PikagoWaitBetweenProcessingPages = 1
+	config.PikagoWaitBeforeNextRequestMs = 500
 	config.ApiTimeout = 60
 	config.WaitAfterErrorSeconds = 10
 	config.WaitNoTaskSeconds = 5

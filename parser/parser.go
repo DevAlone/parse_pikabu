@@ -1,9 +1,7 @@
 package parser
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"fmt"
-	"github.com/streadway/amqp"
 	"io"
 	"net/http"
 	"os"
@@ -11,9 +9,12 @@ import (
 	"sync"
 	"time"
 
+	"bitbucket.org/d3dev/parse_pikabu/core/config"
+	"github.com/streadway/amqp"
+
 	"bitbucket.org/d3dev/parse_pikabu/parser/logger"
 	"github.com/go-errors/errors"
-	"github.com/op/go-logging"
+	logging "github.com/op/go-logging"
 	"gogsweb.2-47.ru/d3dev/pikago"
 )
 
@@ -24,7 +25,7 @@ func (this NoTaskError) Error() string { return "there is no any task" }
 type Parser struct {
 	Config       *ParserConfig
 	httpClient   *http.Client
-	pikagoClient *pikago.Client
+	pikagoClient *pikago.MobileClient
 	amqpChannel  *amqp.Channel
 }
 
@@ -46,8 +47,10 @@ func NewParser(parserConfig *ParserConfig) (*Parser, error) {
 	if err != nil {
 		return nil, err
 	}
-	// requestsSender.NumberOfRequestTries = 900
-	requestsSender.SetTimeout(parser.Config.PikagoTimeout)
+	requestsSender.NumberOfRequestTries = parser.Config.PikagoNumberOfRequestTries
+	requestsSender.ChangeProxyOnNthBadTry = parser.Config.PikagoChangeProxyOnNthBadTry
+	requestsSender.WaitBeforeNextRequestMs = parser.Config.PikagoWaitBeforeNextRequestMs
+	requestsSender.SetTimeout(time.Duration(parser.Config.PikagoTimeout) * time.Second)
 	parser.pikagoClient, err = pikago.NewClient(requestsSender)
 	if err != nil {
 		return nil, err
@@ -57,9 +60,9 @@ func NewParser(parserConfig *ParserConfig) (*Parser, error) {
 		return req
 	})
 	if config.Settings.Debug {
-		pikago.LogsAreEnabled = true
-		parser.pikagoClient.Log = logging.MustGetLogger("pikago")
-		logging.SetLevel(logging.DEBUG, parser.pikagoClient.Log.Module)
+		logging.SetLevel(logging.DEBUG, "pikago")
+	} else {
+		logging.SetLevel(logging.WARNING, "pikago")
 	}
 
 	return parser, nil
