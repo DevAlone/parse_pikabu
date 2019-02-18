@@ -44,7 +44,7 @@ func NewParserConfigFromBytes(configData []byte) (*ParserConfig, error) {
 	config.PikagoNumberOfRequestTries = 21
 	config.PikagoChangeProxyOnNthBadTry = 3
 	config.PikagoWaitBetweenProcessingPages = 1
-	config.PikagoWaitBeforeNextRequestMs = 500
+	config.PikagoWaitBeforeNextRequestMs = 1
 	config.ApiTimeout = 60
 	config.WaitAfterErrorSeconds = 10
 	config.WaitNoTaskSeconds = 5
