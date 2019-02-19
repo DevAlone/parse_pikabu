@@ -1,12 +1,13 @@
 package core
 
 import (
+	"os"
+	"sync"
+
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
-	"github.com/op/go-logging"
-	"os"
-	"sync"
+	logging "github.com/op/go-logging"
 
 	"bitbucket.org/d3dev/parse_pikabu/core/results_processor"
 	"bitbucket.org/d3dev/parse_pikabu/core/server"
@@ -30,8 +31,6 @@ func Main() {
 	} else {
 		logging.SetLevel(logging.WARNING, "parse_pikabu")
 	}
-
-	logger.Log.Debug("core started")
 
 	err = models.InitDb()
 	if err != nil {

@@ -10,10 +10,56 @@ import (
 	"github.com/go-pg/pg"
 )
 
+func addMissingTasksWorker() error {
+	for true {
+		var users []models.PikabuUser
+		// very slow query
+		err := models.Db.Model(&users).
+			ColumnExpr("pikabu_user.*").
+			Join("LEFT JOIN parse_user_tasks AS parse_user_task").
+			JoinOn("pikabu_user.pikabu_id = parse_user_task.pikabu_id").
+			Where("parse_user_task.pikabu_id IS NULL").
+			Limit(1024).
+			Select()
+		if err != nil {
+			return err
+		}
+		for _, user := range users {
+			err := AddParseUserTask(user.PikabuId, user.Username)
+			if err != nil {
+				return err
+			}
+		}
+		time.Sleep(5 * 60 * time.Second)
+	}
+
+	return nil
+}
 func processUserTasks() error {
+	// update users
+	users := []models.PikabuUser{}
+	err := models.Db.Model(&users).
+		ColumnExpr("pikabu_user.*").
+		Join("LEFT JOIN parse_user_tasks AS parse_user_task").
+		JoinOn("pikabu_user.pikabu_id = parse_user_task.pikabu_id").
+		Where("next_update_timestamp <= ? AND parse_user_task.is_done = true", time.Now().Unix()).
+		Order("next_update_timestamp").
+		Limit(1024).
+		Select()
+	if err != pg.ErrNoRows && err != nil {
+		return errors.New(err)
+	}
+
+	for _, user := range users {
+		err = AddParseUserTask(user.PikabuId, user.Username)
+		if err != nil {
+			return err
+		}
+	}
+
 	// update tasks
 	parseUserTasks := []models.ParseUserTask{}
-	err := models.Db.Model(&parseUserTasks).
+	err = models.Db.Model(&parseUserTasks).
 		Where(
 			"is_done = false AND is_taken = true AND added_timestamp < ?",
 			models.TimestampType(time.Now().Unix())-models.TimestampType(config.Settings.MaximumTaskProcessingTime)).
@@ -24,35 +70,6 @@ func processUserTasks() error {
 	}
 	for _, task := range parseUserTasks {
 		err := AddParseUserTask(task.PikabuId, task.Username)
-		if err != nil {
-			return err
-		}
-	}
-
-	// update users
-	/*
-		users := []models.PikabuUser{}
-		err = models.Db.Model(&users).
-			ColumnExpr("pikabu_user.*").
-			Join("LEFT JOIN parse_user_tasks AS parse_user_task").
-			JoinOn("pikabu_user.pikabu_id = parse_user_task.pikabu_id").
-			Where("next_update_timestamp <= ? AND (parse_user_task.pikabu_id IS NULL OR parse_user_task.is_done = true)", time.Now().Unix()).
-			Order("next_update_timestamp").
-			Limit(1024).
-			Select()
-		if err != pg.ErrNoRows && err != nil {
-			return errors.New(err)
-		}
-	*/
-	users := []models.PikabuUser{}
-	err = models.Db.Model(&users).
-		Where("next_update_timestamp <= ?", time.Now().Unix()).
-		Order("next_update_timestamp").
-		Limit(1024).
-		Select()
-
-	for _, user := range users {
-		err = AddParseUserTask(user.PikabuId, user.Username)
 		if err != nil {
 			return err
 		}

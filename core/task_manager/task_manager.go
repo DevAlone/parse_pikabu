@@ -2,12 +2,22 @@ package task_manager
 
 import (
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-pg/pg"
 )
 
 func Run() error {
+	var wg sync.WaitGroup
+	/*wg.Add(1)
+	go func() {
+		err := addMissingTasksWorker()
+		helpers.PanicOnError(err)
+		wg.Done()
+	}()
+	*/
+
 	for true {
 		if err := processUserTasks(); err != nil {
 			return err
@@ -18,6 +28,8 @@ func Run() error {
 
 		time.Sleep(10 * time.Millisecond)
 	}
+
+	wg.Wait()
 
 	return Cleanup()
 }
