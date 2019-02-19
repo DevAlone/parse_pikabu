@@ -1,8 +1,9 @@
 package task_manager
 
 import (
-	"github.com/go-errors/errors"
 	"time"
+
+	"github.com/go-errors/errors"
 
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/models"
@@ -29,18 +30,26 @@ func processUserTasks() error {
 	}
 
 	// update users
+	/*
+		users := []models.PikabuUser{}
+		err = models.Db.Model(&users).
+			ColumnExpr("pikabu_user.*").
+			Join("LEFT JOIN parse_user_tasks AS parse_user_task").
+			JoinOn("pikabu_user.pikabu_id = parse_user_task.pikabu_id").
+			Where("next_update_timestamp <= ? AND (parse_user_task.pikabu_id IS NULL OR parse_user_task.is_done = true)", time.Now().Unix()).
+			Order("next_update_timestamp").
+			Limit(1024).
+			Select()
+		if err != pg.ErrNoRows && err != nil {
+			return errors.New(err)
+		}
+	*/
 	users := []models.PikabuUser{}
 	err = models.Db.Model(&users).
-		ColumnExpr("pikabu_user.*").
-		Join("LEFT JOIN parse_user_tasks AS parse_user_task").
-		JoinOn("pikabu_user.pikabu_id = parse_user_task.pikabu_id").
-		Where("next_update_timestamp <= ? AND (parse_user_task.pikabu_id IS NULL OR parse_user_task.is_done = true)", time.Now().Unix()).
+		Where("next_update_timestamp <= ?", time.Now().Unix()).
 		Order("next_update_timestamp").
 		Limit(1024).
 		Select()
-	if err != pg.ErrNoRows && err != nil {
-		return errors.New(err)
-	}
 
 	for _, user := range users {
 		err = AddParseUserTask(user.PikabuId, user.Username)
