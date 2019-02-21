@@ -121,6 +121,7 @@ func fixUsernameProcessUser(user *models.PikabuUser) {
 			err := models.Db.Update(&previousVersion)
 			helpers.PanicOnError(err)
 			err = models.Db.Delete(&usernameVersion)
+			usernameVersions[i] = previousVersion
 			helpers.PanicOnError(err)
 		}
 	}
