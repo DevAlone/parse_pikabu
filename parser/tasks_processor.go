@@ -1,19 +1,22 @@
 package parser
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/amqp_helper"
-	"bitbucket.org/d3dev/parse_pikabu/helpers"
-	"bitbucket.org/d3dev/parse_pikabu/models"
-	"bitbucket.org/d3dev/parse_pikabu/parser/logger"
 	go_errors "errors"
 	"fmt"
-	"github.com/go-errors/errors"
-	"github.com/streadway/amqp"
-	"gogsweb.2-47.ru/d3dev/pikago"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
+
+	"gogsweb.2-47.ru/d3dev/pikago"
+
+	"bitbucket.org/d3dev/parse_pikabu/amqp_helper"
+	"bitbucket.org/d3dev/parse_pikabu/helpers"
+	"bitbucket.org/d3dev/parse_pikabu/models"
+	"bitbucket.org/d3dev/parse_pikabu/parser/logger"
+	"github.com/go-errors/errors"
+	"github.com/streadway/amqp"
+	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )
 
 func (this *Parser) Loop() {
@@ -129,7 +132,7 @@ func (this *Parser) processMessage(message amqp.Delivery) error {
 	switch message.RoutingKey {
 	case "parse_user":
 		var task models.ParseUserTask
-		err := pikago.JsonUnmarshal(message.Body, &task)
+		err := pikago.JsonUnmarshal(message.Body, &task, true)
 		if err != nil {
 			return errors.New(err)
 		}
@@ -148,7 +151,7 @@ func (this *Parser) processMessage(message amqp.Delivery) error {
 
 func (this *Parser) processParseUserTask(task models.ParseUserTask) error {
 	var res *struct {
-		User *pikago.UserProfile `json:"user"`
+		User *pikago_models.UserProfile `json:"user"`
 	}
 	var err error
 
@@ -173,7 +176,7 @@ func (this *Parser) processParseUserTask(task models.ParseUserTask) error {
 }
 
 func (this *Parser) processParseUserTaskById(task models.ParseUserTask) (*struct {
-	User *pikago.UserProfile `json:"user"`
+	User *pikago_models.UserProfile `json:"user"`
 }, error) {
 	// parse by id
 	url := fmt.Sprintf("https://pikabu.ru/ajax/user_info.php?action=get_short_profile&user_id=%v", task.PikabuId)
@@ -202,7 +205,7 @@ func (this *Parser) processParseUserTaskById(task models.ParseUserTask) (*struct
 			Html string `json:"html"`
 		} `json:"data"`
 	}
-	err = pikago.JsonUnmarshal(body, &resp)
+	err = pikago.JsonUnmarshal(body, &resp, true)
 	if err != nil {
 		return nil, err
 	}
@@ -225,14 +228,14 @@ func (this *Parser) processParseUserTaskById(task models.ParseUserTask) (*struct
 }
 
 func (this *Parser) processParseUserTaskByUsername(task models.ParseUserTask) (*struct {
-	User *pikago.UserProfile `json:"user"`
+	User *pikago_models.UserProfile `json:"user"`
 }, error) {
 	userProfile, err := this.pikagoClient.UserProfileGet(task.Username)
 	if err != nil {
 		return nil, err
 	}
 	var res struct {
-		User *pikago.UserProfile `json:"user"`
+		User *pikago_models.UserProfile `json:"user"`
 	}
 	res.User = userProfile
 
@@ -240,7 +243,7 @@ func (this *Parser) processParseUserTaskByUsername(task models.ParseUserTask) (*
 }
 
 func (this *Parser) processParseCommunitiesPagesTask() error {
-	results := []pikago.CommunitiesPage{}
+	results := []pikago_models.CommunitiesPage{}
 
 	page := 0
 	for true {

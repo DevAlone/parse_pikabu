@@ -1,6 +1,11 @@
 package results_processor
 
 import (
+	"reflect"
+	"runtime"
+	"sync"
+	"time"
+
 	"bitbucket.org/d3dev/parse_pikabu/amqp_helper"
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
@@ -9,10 +14,7 @@ import (
 	"github.com/go-pg/pg"
 	"github.com/streadway/amqp"
 	"gogsweb.2-47.ru/d3dev/pikago"
-	"reflect"
-	"runtime"
-	"sync"
-	"time"
+	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )
 
 func Run() error {
@@ -140,7 +142,7 @@ func processMessage(message amqp.Delivery) error {
 	switch message.RoutingKey {
 	case "user_profile":
 		var resp models.ParserUserProfileResult
-		err := pikago.JsonUnmarshal(message.Body, &resp)
+		err := pikago.JsonUnmarshal(message.Body, &resp, true)
 		if err != nil {
 			return errors.New(err)
 		}
@@ -149,7 +151,7 @@ func processMessage(message amqp.Delivery) error {
 			return errors.Errorf("bad result: %v", resp)
 		}
 
-		userProfiles := []*pikago.UserProfile{}
+		userProfiles := []*pikago_models.UserProfile{}
 		for _, result := range resp.Results {
 			userProfiles = append(userProfiles, result.User)
 		}
@@ -160,7 +162,7 @@ func processMessage(message amqp.Delivery) error {
 		}
 	case "communities_pages":
 		var resp models.ParserCommunitiesPageResult
-		err := pikago.JsonUnmarshal(message.Body, &resp)
+		err := pikago.JsonUnmarshal(message.Body, &resp, true)
 		if err != nil {
 			return errors.New(err)
 		}

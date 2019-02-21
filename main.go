@@ -1,11 +1,12 @@
 package main
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/amqp_helper"
 	"flag"
 	"fmt"
 	"os"
 	"strings"
+
+	"bitbucket.org/d3dev/parse_pikabu/amqp_helper"
 
 	"bitbucket.org/d3dev/parse_pikabu/core"
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
@@ -53,9 +54,6 @@ var commands = map[string]func(){
 	"add_parsers_from_config": func() {
 		err := addParsersFromConfig()
 		helpers.PanicOnError(err)
-	},
-	"load_from_old_db": func() {
-		loadFromOldDb()
 	},
 	"fix_usernames": func() {
 		fixUsernames()

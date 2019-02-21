@@ -13,7 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-errors/errors"
 	"github.com/iancoleman/strcase"
-	"gogsweb.2-47.ru/d3dev/pikago"
+	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )
 
 var availableModels = map[string]interface{}{
@@ -32,11 +32,11 @@ func init() {
 
 func ListModel(c *gin.Context) {
 	var request struct {
-		Name          string        `json:"name"`
-		OrderByFields string        `json:"order_by_fields"`
-		Offset        pikago.UInt64 `json:"offset"`
-		Limit         pikago.UInt64 `json:"limit"`
-		Filter        string        `json:"filter"`
+		Name          string               `json:"name"`
+		OrderByFields string               `json:"order_by_fields"`
+		Offset        pikago_models.UInt64 `json:"offset"`
+		Limit         pikago_models.UInt64 `json:"limit"`
+		Filter        string               `json:"filter"`
 	}
 
 	err := c.Bind(&request)

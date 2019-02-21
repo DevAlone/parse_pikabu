@@ -1,17 +1,18 @@
 package results_processor
 
 import (
+	"sync"
+
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
-	"gogsweb.2-47.ru/d3dev/pikago"
-	"sync"
+	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )
 
 var processCommunitiesPagesMutex = &sync.Mutex{}
 
-func processCommunitiesPages(parsingTimestamp models.TimestampType, communitiesPages []pikago.CommunitiesPage) error {
+func processCommunitiesPages(parsingTimestamp models.TimestampType, communitiesPages []pikago_models.CommunitiesPage) error {
 	processCommunitiesPagesMutex.Lock()
 	defer processCommunitiesPagesMutex.Unlock()
 
@@ -47,7 +48,7 @@ func processCommunitiesPages(parsingTimestamp models.TimestampType, communitiesP
 
 func processCommunity(
 	parsingTimestamp models.TimestampType,
-	tx *pg.Tx, parsedCommunity *pikago.Community,
+	tx *pg.Tx, parsedCommunity *pikago_models.Community,
 ) error {
 	moderatorIds := []uint64{}
 	for _, moderator := range parsedCommunity.CommunityModerators {

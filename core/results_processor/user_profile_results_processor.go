@@ -11,12 +11,12 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
-	"gogsweb.2-47.ru/d3dev/pikago"
+	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )
 
 var processUserProfileMutex = &sync.Mutex{}
 
-func processUserProfiles(parsingTimestamp models.TimestampType, userProfiles []*pikago.UserProfile) error {
+func processUserProfiles(parsingTimestamp models.TimestampType, userProfiles []*pikago_models.UserProfile) error {
 	for _, userProfile := range userProfiles {
 		// TODO: make it concurrent
 		err := processUserProfile(parsingTimestamp, userProfile)
@@ -31,7 +31,7 @@ func processUserProfiles(parsingTimestamp models.TimestampType, userProfiles []*
 var userProfileIdLocks = map[uint64]bool{}
 var userProfileIdLocksMutex = sync.Mutex{}
 
-func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago.UserProfile) error {
+func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago_models.UserProfile) error {
 	// lock results with the same id
 	found := true
 	for found {
@@ -92,7 +92,7 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 	return tx.Commit()
 }
 
-func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfile *pikago.UserProfile) error {
+func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfile *pikago_models.UserProfile) error {
 	awardIds, err := CreateAwardIdsArray(tx, userProfile.Awards, parsingTimestamp)
 	if err != nil {
 		return err
@@ -170,7 +170,7 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 
 func CreateAwardIdsArray(
 	tx *pg.Tx,
-	parsedAwards []pikago.UserProfileAward,
+	parsedAwards []pikago_models.UserProfileAward,
 	parsingTimestamp models.TimestampType,
 ) ([]uint64, error) {
 	result := []uint64{}
@@ -228,7 +228,7 @@ func CreateAwardIdsArray(
 
 func createCommunityIdsArray(
 	tx *pg.Tx,
-	parsedCommunities []pikago.UserProfileCommunity,
+	parsedCommunities []pikago_models.UserProfileCommunity,
 	parsingTimestamp models.TimestampType,
 ) ([]uint64, error) {
 	result := []uint64{}
@@ -270,7 +270,7 @@ func createCommunityIdsArray(
 
 func createBanHistoryIdsArray(
 	tx *pg.Tx,
-	parsedBanHistoryItems []pikago.UserProfileBanHistory,
+	parsedBanHistoryItems []pikago_models.UserProfileBanHistory,
 	parsingTimestamp models.TimestampType,
 ) ([]uint64, error) {
 	result := []uint64{}

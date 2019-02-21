@@ -1,7 +1,7 @@
 package models
 
 import (
-	"gogsweb.2-47.ru/d3dev/pikago"
+	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )
 
 type ParserBaseResult struct {
@@ -18,11 +18,11 @@ type ParserResult struct {
 type ParserUserProfileResult struct {
 	ParserBaseResult
 	Results []struct {
-		User *pikago.UserProfile `json:"user"`
+		User *pikago_models.UserProfile `json:"user"`
 	} `json:"results"`
 }
 
 type ParserCommunitiesPageResult struct {
 	ParserBaseResult
-	Results []pikago.CommunitiesPage `json:"results"`
+	Results []pikago_models.CommunitiesPage `json:"results"`
 }
