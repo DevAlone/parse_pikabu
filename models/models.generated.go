@@ -4,339 +4,339 @@ package models
 // generated at timestamp 2019-01-04 20:54:28.418143326 &#43;0000 UTC m=&#43;0.003784432
 
 type PikabuCommunityNameVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuCommunityLinkNameVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuCommunityURLVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuCommunityAvatarURLVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuCommunityBackgroundImageURLVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuCommunityTagsVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     []string      `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     []string      `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuCommunityNumberOfStoriesVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     int32         `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int32         `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuCommunityNumberOfSubscribersVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     int32         `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int32         `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuCommunityDescriptionVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuCommunityRulesVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuCommunityRestrictionsVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuCommunityAdminIdVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     uint64        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     uint64        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuCommunityModeratorIdsVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     []uint64      `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     []uint64      `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserUsernameVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserGenderVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserRatingVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     int32         `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int32         `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserNumberOfCommentsVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     int32         `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int32         `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserNumberOfSubscribersVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     int32         `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int32         `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserNumberOfStoriesVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     int32         `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int32         `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserNumberOfHotStoriesVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     int32         `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int32         `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserNumberOfPlusesVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     int32         `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int32         `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserNumberOfMinusesVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     int32         `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int32         `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserSignupTimestampVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     TimestampType `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     TimestampType `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserAvatarURLVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserApprovedTextVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserAwardIdsVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     []uint64      `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     []uint64      `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserCommunityIdsVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     []uint64      `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     []uint64      `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserBanHistoryItemIdsVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     []uint64      `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     []uint64      `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserBanEndTimestampVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     TimestampType `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     TimestampType `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserIsRatingHiddenVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     bool          `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     bool          `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserIsBannedVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     bool          `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     bool          `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserIsPermanentlyBannedVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     bool          `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     bool          `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserAwardUserIdVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     uint64        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     uint64        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserAwardAwardIdVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     uint64        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     uint64        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserAwardAwardTitleVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserAwardAwardImageURLVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserAwardStoryIdVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     uint64        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     uint64        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserAwardStoryTitleVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserAwardIssuingDateVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserAwardIsHiddenVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     bool          `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     bool          `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserAwardCommentIdVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     uint64        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     uint64        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserAwardLinkVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserBanHistoryItemBanStartTimestampVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     TimestampType `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     TimestampType `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserBanHistoryItemCommentIdVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     uint64        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     uint64        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserBanHistoryItemCommentHtmlDeleteReasonVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserBanHistoryItemStoryIdVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     uint64        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     uint64        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserBanHistoryItemUserIdVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     uint64        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     uint64        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserBanHistoryItemBanReasonVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserBanHistoryItemBanReasonIdVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     uint64        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     uint64        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserBanHistoryItemStoryURLVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserBanHistoryItemModeratorIdVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     uint64        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     uint64        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserBanHistoryItemModeratorNameVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserBanHistoryItemModeratorAvatarVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserBanHistoryItemReasonsLimitVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     uint64        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     uint64        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserBanHistoryItemReasonCountVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     uint64        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     uint64        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserBanHistoryItemReasonTitleVersion struct {
-	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"ordering,filter"`
-	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"ordering,filter"`
-	Value     string        `sql:",notnull" json:"value" api:"ordering,filter"`
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 var FieldsVersionTablesMap = map[string]interface{}{

@@ -1,10 +1,12 @@
 package statistics
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
+	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 )
 
@@ -13,11 +15,19 @@ func Run() error {
 
 	wg.Add(1)
 	go func() {
-		ProcessNumberOfUsersInQueue()
+		err := ProcessNumberOfUsersInQueue()
+		helpers.PanicOnError(err)
 		wg.Done()
 	}()
 
-	wg.Done()
+	wg.Add(1)
+	go func() {
+		err := ProcessDistributions()
+		helpers.PanicOnError(err)
+		wg.Done()
+	}()
+
+	wg.Wait()
 
 	return nil
 }
@@ -47,4 +57,42 @@ func ProcessNumberOfUsersInQueue() error {
 	}
 
 	return nil
+}
+
+func ProcessDistributions() error {
+	for true {
+		err := ProcessDistribution("pikabu_users", "signup_timestamp", 86400)
+		if err != nil {
+			return err
+		}
+
+		time.Sleep(10 * time.Minute)
+	}
+
+	return nil
+}
+
+func ProcessDistribution(tableName string, columnName string, bucketSize int) error {
+	distributionTableName := tableName + "_" + columnName + "_distribution_" + fmt.Sprint(bucketSize)
+	_, err := models.Db.Exec(`
+DELETE FROM ` + distributionTableName + `; 
+INSERT INTO ` + distributionTableName + `
+SELECT timestamp, value FROM (
+	WITH stats AS (
+		SELECT MIN(` + columnName + `) as min_value, MAX(` + columnName + `) as max_value
+		FROM ` + tableName + `
+	)
+	SELECT 
+		width_bucket(` + columnName + `::int, min_value::int, max_value::int, ((max_value - min_value) / (` + fmt.Sprint(bucketSize) + `))::int) as bucket,
+		MIN(` + columnName + `) as timestamp,
+		COUNT(*) AS value
+	FROM 
+		` + tableName + `, stats
+	GROUP BY
+		bucket
+	ORDER BY
+		bucket
+) distribution;
+`)
+	return err
 }

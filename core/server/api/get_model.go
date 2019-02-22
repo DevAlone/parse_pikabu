@@ -17,9 +17,10 @@ import (
 )
 
 var availableModels = map[string]interface{}{
-	"pikabu_user":                        []models.PikabuUser{},
-	"pikabu_community":                   []models.PikabuCommunity{},
-	"number_of_users_to_process_entries": []models.NumberOfUsersToProcessEntry{},
+	"pikabu_user":                                      []models.PikabuUser{},
+	"pikabu_community":                                 []models.PikabuCommunity{},
+	"number_of_users_to_process_entries":               []models.NumberOfUsersToProcessEntry{},
+	"pikabu_users_signup_timestamp_distribution_86400": []models.PikabuUsersSignupTimestampDistribution_86400{},
 }
 
 func init() {
@@ -135,7 +136,7 @@ func orderByFieldsToGoPg(value string, typeOfResult reflect.Type) ([]string, err
 					if apiTag, found := fieldType.Tag.Lookup("api"); found {
 						for _, item := range strings.Split(apiTag, ",") {
 							item = strings.TrimSpace(item)
-							if item == "ordering" {
+							if item == "order" {
 								tagFound = true
 							}
 						}

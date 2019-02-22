@@ -3,12 +3,13 @@
 package main
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/models"
-	"github.com/iancoleman/strcase"
 	"html/template"
 	"os"
 	"reflect"
 	"time"
+
+	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/iancoleman/strcase"
 )
 
 func main() {
@@ -124,7 +125,7 @@ func getStructMemberCode(memberName string, memberType string, isPk bool) string
 		result += ",pk"
 	}
 	apiName := strcase.ToSnake(memberName)
-	result += ",notnull\" json:\"" + apiName + "\" api:\"" + "ordering,filter" + "\"`\n"
+	result += ",notnull\" json:\"" + apiName + "\" api:\"" + "order,filter" + "\"`\n"
 	return result
 }
 

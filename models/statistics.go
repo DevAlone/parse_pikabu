@@ -1,7 +1,7 @@
 package models
 
 type NumberOfUsersToProcessEntry struct {
-	Timestamp TimestampType `sql:",pk" json:"timestamp" api:"ordering,filter"`
+	Timestamp TimestampType `sql:",pk" json:"timestamp" api:"order,filter"`
 	Value     int64         `json:"value"`
 }
 
