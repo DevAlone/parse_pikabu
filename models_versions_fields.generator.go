@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	f, err := os.Create("models/models.generated.go")
+	f, err := os.Create("models/models_versions_fields.generated.go")
 	handleErr(err)
 	defer f.Close()
 

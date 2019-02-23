@@ -17,16 +17,22 @@ import (
 )
 
 var availableModels = map[string]interface{}{
-	"pikabu_user":                                      []models.PikabuUser{},
-	"pikabu_community":                                 []models.PikabuCommunity{},
-	"number_of_users_to_process_entries":               []models.NumberOfUsersToProcessEntry{},
-	"pikabu_users_signup_timestamp_distribution_86400": []models.PikabuUsersSignupTimestampDistribution_86400{},
+	"pikabu_user":                                   []models.PikabuUser{},
+	"pikabu_community":                              []models.PikabuCommunity{},
+	"number_of_users_to_process_entries":            []models.NumberOfUsersToProcessEntry{},
+	"pikabu_user_updating_period_distribution_3600": []models.PikabuUserUpdatingPeriodDistribution_3600{},
 }
 
 func init() {
 	// add versions fields
 	for key, val := range models.FieldsVersionAPITablesMap {
 		tableAPIName := strcase.ToSnake(key) + "s"
+		availableModels[tableAPIName] = val
+	}
+
+	// add versions fields
+	for key, val := range models.GeneratedDistributionFieldsAPI {
+		tableAPIName := strcase.ToSnake(key)
 		availableModels[tableAPIName] = val
 	}
 }

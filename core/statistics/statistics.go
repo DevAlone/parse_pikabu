@@ -5,6 +5,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/iancoleman/strcase"
+
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
@@ -61,12 +63,21 @@ func ProcessNumberOfUsersInQueue() error {
 
 func ProcessDistributions() error {
 	for true {
-		err := ProcessDistribution("pikabu_users", "signup_timestamp", 86400)
+		for _, distributionFieldModel := range models.GeneratedDistributionFields {
+			baseTableNameSnakeCase := strcase.ToSnake(distributionFieldModel.BaseTableName)
+			baseColumnNameSnakeCase := strcase.ToSnake(distributionFieldModel.BaseColumnName)
+			err := ProcessDistribution(baseTableNameSnakeCase, baseColumnNameSnakeCase, distributionFieldModel.BucketSize)
+			if err != nil {
+				return err
+			}
+		}
+
+		err := ProcessDistribution("pikabu_user", "updating_period", 3600)
 		if err != nil {
 			return err
 		}
 
-		time.Sleep(10 * time.Minute)
+		time.Sleep(1 * time.Hour)
 	}
 
 	return nil
@@ -74,6 +85,10 @@ func ProcessDistributions() error {
 
 func ProcessDistribution(tableName string, columnName string, bucketSize int) error {
 	distributionTableName := tableName + "_" + columnName + "_distribution_" + fmt.Sprint(bucketSize)
+	if columnName == "updating_period" {
+		columnName = "(next_update_timestamp - last_update_timestamp)"
+	}
+	tableName += "s"
 	_, err := models.Db.Exec(`
 DELETE FROM ` + distributionTableName + `; 
 INSERT INTO ` + distributionTableName + `

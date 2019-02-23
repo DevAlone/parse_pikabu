@@ -11,7 +11,8 @@ import (
 	"github.com/go-pg/pg/orm"
 )
 
-//go:generate bash -c "cd ..; go run models_versions_fields.generator.go; go fmt models/models.generated.go"
+//go:generate bash -c "cd ..; go run models_versions_fields.generator.go; go fmt models/models_versions_fields.generated.go"
+//go:generate bash -c "cd ..; go run models_distributions_fields.generator.go; go fmt models/models_distributions_fields.generated.go"
 
 type TimestampType int64
 

@@ -12,7 +12,7 @@ type PikabuUser struct {
 	NumberOfHotStories  int32         `sql:",notnull" gen_versions:"" json:"number_of_hot_stories" api:"order"`
 	NumberOfPluses      int32         `sql:",notnull" gen_versions:"" json:"number_of_pluses" api:"order"`
 	NumberOfMinuses     int32         `sql:",notnull" gen_versions:"" json:"number_of_minuses" api:"order"`
-	SignupTimestamp     TimestampType `sql:",notnull" gen_versions:"" json:"signup_timestamp" api:"order"`
+	SignupTimestamp     TimestampType `sql:",notnull" gen_versions:"" gen_distributions:"86400" json:"signup_timestamp" api:"order"`
 	AvatarURL           string        `sql:",notnull" gen_versions:"" json:"avatar_url" api:"order"`
 	ApprovedText        string        `sql:",notnull" gen_versions:"" json:"approved_text" api:"order"`
 	AwardIds            []uint64      `sql:",notnull,array" gen_versions:"" json:"award_ids" api:"order"`
@@ -27,13 +27,13 @@ type PikabuUser struct {
 	// IsDeleted bool `sql:",notnull,default:false"`
 
 	AddedTimestamp      TimestampType `sql:",notnull" json:"added_timestamp" api:"order"`
-	LastUpdateTimestamp TimestampType `sql:",notnull" json:"last_update_timestamp" api:"order"`
-	NextUpdateTimestamp TimestampType `sql:",notnull" json:"next_update_timestamp" api:"order"`
+	LastUpdateTimestamp TimestampType `sql:",notnull" json:"last_update_timestamp" gen_distributions:"86400" api:"order"`
+	NextUpdateTimestamp TimestampType `sql:",notnull" json:"next_update_timestamp" gen_distributions:"86400" api:"order"`
 }
 
-type PikabuUsersSignupTimestampDistribution_86400 struct {
+type PikabuUserUpdatingPeriodDistribution_3600 struct {
 	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
-	Value     int64         `sql:",pk,notnull" json:"value" api:"order,filter"`
+	Value     int64         `sql:",notnull" json:"value"`
 }
 
 type PikabuUserAward struct {
@@ -99,7 +99,7 @@ func init() {
 		&PikabuUserAward{},
 		&PikabuUserCommunity{},
 		&PikabuUserBanHistoryItem{},
-		&PikabuUsersSignupTimestampDistribution_86400{},
+		&PikabuUserUpdatingPeriodDistribution_3600{},
 	} {
 		Tables = append(Tables, item)
 	}
