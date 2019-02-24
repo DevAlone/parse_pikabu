@@ -30,11 +30,94 @@ func addMissingTasksWorker() error {
 				return err
 			}
 		}
-		time.Sleep(5 * 60 * time.Second)
+
+		time.Sleep(10 * time.Minute)
 	}
 
 	return nil
 }
+
+func addMissingUsersWorker() error {
+	for true {
+		// parse gaps
+		for offset := uint64(0); true; {
+			var gaps []struct {
+				GapStart uint64
+				GapEnd   uint64
+			}
+			_, err := models.Db.Query(&gaps, `
+SELECT
+    pikabu_id + 1 as gap_start, 
+    next_nr - 1 as gap_end 
+FROM (
+    SELECT 
+        pikabu_id, 
+        lead(pikabu_id) 
+    OVER (ORDER BY pikabu_id) as next_nr 
+    FROM pikabu_users
+    WHERE pikabu_id > ?
+) nr 
+WHERE pikabu_id + 1 <> next_nr LIMIT 10;
+`, offset)
+			if err == pg.ErrNoRows {
+				break
+			} else if err != nil {
+				return err
+			}
+
+			for _, gap := range gaps {
+				if gap.GapEnd > offset {
+					offset = gap.GapEnd
+				}
+
+				for i := gap.GapStart; i <= gap.GapEnd; i++ {
+					deletedUser := models.PikabuDeletedOrNeverExistedUser{
+						PikabuId:            i,
+						LastUpdateTimestamp: 0,
+						NextUpdateTimestamp: 0,
+					}
+					_, err := models.Db.Model(&deletedUser).
+						OnConflict("(pikabu_id) DO NOTHING").
+						Insert()
+					if err != nil {
+						return err
+					}
+				}
+			}
+
+			// set offset to max value
+			var lastUser models.PikabuUser
+			err = models.Db.Model(&lastUser).
+				Order("pikabu_id DESC").
+				Limit(1).
+				Select()
+			if err != nil {
+				return err
+			}
+
+			for i := 0; i < config.Settings.NumberOfNewUsersGap; i++ {
+				deletedUser := models.PikabuDeletedOrNeverExistedUser{
+					PikabuId:            lastUser.PikabuId + 1 + uint64(i),
+					LastUpdateTimestamp: 0,
+					NextUpdateTimestamp: 0,
+				}
+				_, err := models.Db.Model(&deletedUser).
+					OnConflict("(pikabu_id) DO NOTHING").
+					Insert()
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		// parse new users
+
+		time.Sleep(10 * time.Minute)
+	}
+
+	return nil
+}
+
 func processUserTasks() error {
 	// update users
 	users := []models.PikabuUser{}
@@ -74,8 +157,6 @@ func processUserTasks() error {
 			return err
 		}
 	}
-
-	// TODO: parse new users by their id
 
 	return nil
 }

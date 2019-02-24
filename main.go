@@ -4,7 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime/pprof"
 	"strings"
+
+	"github.com/pkg/profile"
 
 	"bitbucket.org/d3dev/parse_pikabu/amqp_helper"
 
@@ -78,9 +81,26 @@ Available commands are:
 	os.Args = os.Args[1:]
 
 	configFilePath := flag.String("config", "core.config.json", "config file")
+	cpuProfile := flag.String("cpuprofile", "", "set to true to profile cpu")
+	memProfile := flag.String("memprofile", "", "set to true to profile memory")
+
+	flag.Parse()
 
 	if configFilePath == nil || len(*configFilePath) == 0 {
 		panic(errors.New("configFilePath is nil"))
+	}
+
+	if *cpuProfile != "" {
+		f, err := os.Create("cpu.pprof")
+		helpers.PanicOnError(err)
+		err = pprof.StartCPUProfile(f)
+		helpers.PanicOnError(err)
+		defer pprof.StopCPUProfile()
+	}
+
+	if *memProfile != "" {
+		p := profile.Start(profile.MemProfile)
+		defer p.Stop()
 	}
 
 	err := config.UpdateSettingsFromFile(*configFilePath)

@@ -86,6 +86,13 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 		return err
 	}
 
+	_, err = tx.Model(&models.PikabuDeletedOrNeverExistedUser{
+		PikabuId: userProfile.UserId.Value,
+	}).WherePK().Delete()
+	if err != nil && err != pg.ErrNoRows {
+		return err
+	}
+
 	// save results
 	err = saveUserProfile(tx, parsingTimestamp, userProfile)
 	if err != nil {

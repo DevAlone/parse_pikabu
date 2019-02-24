@@ -1,6 +1,8 @@
 package amqp_helper
 
 import (
+	"sync"
+
 	cmap "github.com/orcaman/concurrent-map"
 	"github.com/streadway/amqp"
 )
@@ -26,7 +28,12 @@ func Cleanup() error {
 	return nil
 }
 
+var getAMQPConnectionMutex sync.Mutex
+
 func GetAMQPConnection(amqpAddress string) (*amqp.Connection, error) {
+	getAMQPConnectionMutex.Lock()
+	defer getAMQPConnectionMutex.Unlock()
+
 	if connection, ok := AmqpConnections.Get(amqpAddress); ok {
 		return connection.(*amqp.Connection), nil
 	}

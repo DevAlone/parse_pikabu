@@ -68,7 +68,31 @@ func processUserProfileNotFoundResult(parsingTimestamp models.TimestampType, res
 		}
 	}
 
-	// TODO: complete
+	var deletedUser models.PikabuDeletedOrNeverExistedUser
+	_, err = tx.Model(&deletedUser).
+		Where("pikabu_id = ?", res.PikabuId).
+		SelectOrInsert()
+	if err != pg.ErrNoRows && err != nil {
+		return err
+	}
+	if err != pg.ErrNoRows {
+		updatingPeriod := deletedUser.NextUpdateTimestamp - deletedUser.LastUpdateTimestamp
+		if updatingPeriod < 0 {
+			updatingPeriod = -updatingPeriod
+		}
+		if updatingPeriod == 0 {
+			updatingPeriod = models.TimestampType(config.Settings.UsersMaxUpdatingPeriod)
+		} else {
+			updatingPeriod = models.TimestampType(float32(updatingPeriod) * 1.5)
+		}
+
+		deletedUser.NextUpdateTimestamp = parsingTimestamp + updatingPeriod
+		deletedUser.LastUpdateTimestamp = parsingTimestamp
+		err := tx.Update(&deletedUser)
+		if err != nil {
+			return err
+		}
+	}
 
 	return tx.Commit()
 }

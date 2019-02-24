@@ -32,6 +32,12 @@ type PikabuUser struct {
 	NextUpdateTimestamp TimestampType `sql:",notnull" json:"next_update_timestamp" gen_distributions:"86400" api:"order"`
 }
 
+type PikabuDeletedOrNeverExistedUser struct {
+	PikabuId            uint64        `sql:",pk" json:"pikabu_id"`
+	LastUpdateTimestamp TimestampType `sql:",notnull" json:"last_update_timestamp"`
+	NextUpdateTimestamp TimestampType `sql:",notnull" json:"next_update_timestamp"`
+}
+
 type PikabuUserUpdatingPeriodDistribution_3600 struct {
 	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
 	Value     int64         `sql:",notnull" json:"value"`
@@ -101,6 +107,7 @@ func init() {
 		&PikabuUserCommunity{},
 		&PikabuUserBanHistoryItem{},
 		&PikabuUserUpdatingPeriodDistribution_3600{},
+		&PikabuDeletedOrNeverExistedUser{},
 	} {
 		Tables = append(Tables, item)
 	}
@@ -138,4 +145,7 @@ func init() {
 	addIndex("pikabu_users", "added_timestamp", "")
 	addIndex("pikabu_users", "last_update_timestamp", "")
 	addIndex("pikabu_users", "next_update_timestamp", "")
+
+	addIndex("pikabu_deleted_or_never_existed_users", "last_update_timestamp", "")
+	addIndex("pikabu_deleted_or_never_existed_users", "next_update_timestamp", "")
 }
