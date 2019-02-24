@@ -1,14 +1,15 @@
-package main
+package tests
 
 import (
+	"sync"
+	"testing"
+
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/core/results_processor"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-pg/pg/orm"
 	"github.com/stretchr/testify/assert"
-	"sync"
-	"testing"
 )
 
 func TestCommunityParsing(t *testing.T) {

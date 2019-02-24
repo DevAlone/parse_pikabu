@@ -1,11 +1,12 @@
-package main
+package tests
 
 import (
+	"os"
+
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
-	"github.com/op/go-logging"
-	"os"
+	logging "github.com/op/go-logging"
 )
 
 func initLogs() {

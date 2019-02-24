@@ -5,18 +5,19 @@ import (
 	"sync"
 	"time"
 
+	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"github.com/go-pg/pg"
 )
 
 func Run() error {
 	var wg sync.WaitGroup
-	/*wg.Add(1)
+
+	wg.Add(1)
 	go func() {
 		err := addMissingTasksWorker()
 		helpers.PanicOnError(err)
 		wg.Done()
 	}()
-	*/
 
 	for true {
 		if err := processUserTasks(); err != nil {

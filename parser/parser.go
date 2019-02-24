@@ -39,6 +39,7 @@ func NewParser(parserConfig *ParserConfig) (*Parser, error) {
 	proxyProvider, err := pikago.GetProxyPyProxyProvider(
 		parser.Config.ProxyProviderAPIURL,
 		parser.Config.ProxyProviderTimeout,
+		pikago.ProxyGettingPoliceRandom,
 	)
 	if err != nil {
 		return nil, err
@@ -97,58 +98,6 @@ func (this *Parser) doAPIRequest(method string, url string, body io.Reader) (*ht
 	req.Header.Set("Session-Id", this.Config.ApiSessionId)
 	return this.httpClient.Do(req)
 }
-
-/*
-func (this *Parser) pullTask() (interface{}, error) {
-	resp, err := this.doAPIRequest("get", "/get/tasks/any", nil)
-	if err != nil {
-		return nil, err
-	}
-
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, errors.New(err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		switch resp.StatusCode {
-		case http.StatusNotFound:
-			return nil, NoTaskError{}
-		case http.StatusUnauthorized:
-			return nil, errors.Errorf("Unauthorized: %v", string(body))
-		}
-
-		return nil, errors.Errorf("%v", string(body))
-	}
-
-	var task struct {
-		Name string           `json:"name"`
-		Data *json.RawMessage `json:"data"`
-	}
-	err = pikago.JsonUnmarshal(body, &task)
-	if err != nil {
-		return nil, errors.New(err)
-	}
-
-	switch task.Name {
-	case "parse_user_by_id":
-		res := models.ParseUserByIdTask{}
-		err = json.Unmarshal(*task.Data, &res)
-		return res, err
-	case "parse_user_by_username":
-		res := models.ParseUserByUsernameTask{}
-		err = json.Unmarshal(*task.Data, &res)
-		return res, err
-	case "simple":
-		res := models.SimpleTask{}
-		err = json.Unmarshal(*task.Data, &res)
-		return res, err
-	}
-
-	return nil, errors.Errorf("bad task name: %v", task.Name)
-}
-*/
 
 func Main() {
 	file, err := os.OpenFile("logs/parser.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)

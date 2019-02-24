@@ -19,25 +19,25 @@ import (
 	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )
 
-func (this *Parser) Loop() {
+func (p *Parser) Loop() {
 	for true {
-		err := this.ListenForTasks()
+		err := p.ListenForTasks()
 		if err != nil {
-			this.handleError(err)
-			time.Sleep(time.Duration(this.Config.WaitAfterErrorSeconds) * time.Second)
+			p.handleError(err)
+			time.Sleep(time.Duration(p.Config.WaitAfterErrorSeconds) * time.Second)
 		}
 	}
 }
 
-func (this *Parser) ListenForTasks() error {
+func (p *Parser) ListenForTasks() error {
 	defer func() {
 		if r := recover(); r != nil {
-			this.handleError(errors.Errorf("panic: %v", r))
+			p.handleError(errors.Errorf("panic: %v", r))
 		}
 	}()
 
 	logger.Log.Debug("connecting to amqp server...")
-	connection, err := amqp_helper.GetAMQPConnection(this.Config.AMQPAddress)
+	connection, err := amqp_helper.GetAMQPConnection(p.Config.AMQPAddress)
 	if err != nil {
 		return errors.New(err)
 	}
@@ -48,33 +48,12 @@ func (this *Parser) ListenForTasks() error {
 	}
 	defer func() { _ = ch.Close() }()
 
-	err = ch.ExchangeDeclare(
-		"parser_tasks",
-		"fanout",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
+	err = amqp_helper.DeclareExchanges(ch)
 	if err != nil {
 		return errors.New(err)
 	}
 
-	// TODO: move to another file
-	q, err := ch.QueueDeclare(
-		"bitbucket.org/d3dev/parse_pikabu/parser_tasks",
-		true,
-		false,
-		false,
-		false,
-		nil,
-		/*
-			amqp.Table{
-				"x-queue-mode": "lazy",
-			},
-		*/
-	)
+	q, err := amqp_helper.DeclareParserTasksQueue(ch)
 	if err != nil {
 		return errors.New(err)
 	}
@@ -97,7 +76,7 @@ func (this *Parser) ListenForTasks() error {
 
 	messages, err := ch.Consume(
 		q.Name,
-		// TODO: process only those tasks that can be processed by this parser
+		// TODO: process only those tasks that can be processed by p parser
 		"", // routing key
 		false,
 		false,
@@ -117,7 +96,7 @@ func (this *Parser) ListenForTasks() error {
 		if err != nil {
 			return err
 		}
-		err = this.processMessage(message)
+		err = p.processMessage(message)
 		if err != nil {
 			return err
 		}
@@ -126,7 +105,7 @@ func (this *Parser) ListenForTasks() error {
 	return nil
 }
 
-func (this *Parser) processMessage(message amqp.Delivery) error {
+func (p *Parser) processMessage(message amqp.Delivery) error {
 	logger.Log.Debugf("got message: %v", string(message.Body))
 
 	switch message.RoutingKey {
@@ -136,9 +115,9 @@ func (this *Parser) processMessage(message amqp.Delivery) error {
 		if err != nil {
 			return errors.New(err)
 		}
-		return this.processParseUserTask(task)
+		return p.processParseUserTask(task)
 	case "parse_communities_pages":
-		return this.processParseCommunitiesPagesTask()
+		return p.processParseCommunitiesPagesTask()
 	default:
 		logger.Log.Warningf(
 			"Unregistered task type \"%v\". Message: \"%v\"",
@@ -149,33 +128,38 @@ func (this *Parser) processMessage(message amqp.Delivery) error {
 	}
 }
 
-func (this *Parser) processParseUserTask(task models.ParseUserTask) error {
+func (p *Parser) processParseUserTask(task models.ParseUserTask) error {
 	var res *struct {
 		User *pikago_models.UserProfile `json:"user"`
 	}
 	var err error
 
 	if len(task.Username) > 0 {
-		res, err = this.processParseUserTaskByUsername(task)
-		if pikabuErr, ok := err.(pikago.PikabuError); err != nil && ok && strings.Contains(pikabuErr.Message, "could not be found") {
-			res, err = this.processParseUserTaskById(task)
-			if err != nil {
-				return err
-			}
+		res, err = p.processParseUserTaskByUsername(task)
+		if _, ok := err.(pikago.PikabuErrorRequestedPageNotFound); err != nil && ok {
+			res, err = p.ProcessParseUserTaskById(task)
 		} else if err != nil {
 			return go_errors.New(fmt.Sprintf("Error while processing task %v. Error: %v", task, err))
 		}
 	} else {
-		res, err = this.processParseUserTaskById(task)
-		if err != nil {
-			return err
-		}
+		res, err = p.ProcessParseUserTaskById(task)
 	}
 
-	return this.PutResultsToQueue("user_profile", res)
+	if err != nil {
+		if pe, ok := err.(pikago.PikabuErrorRequestedPageNotFound); ok {
+			return p.PutResultsToQueue("user_profile_not_found", models.ParserUserProfileNotFoundResultData{
+				PikabuId:    task.PikabuId,
+				Username:    task.Username,
+				PikabuError: pe,
+			})
+		}
+		return err
+	}
+
+	return p.PutResultsToQueue("user_profile", res)
 }
 
-func (this *Parser) processParseUserTaskById(task models.ParseUserTask) (*struct {
+func (p *Parser) ProcessParseUserTaskById(task models.ParseUserTask) (*struct {
 	User *pikago_models.UserProfile `json:"user"`
 }, error) {
 	// parse by id
@@ -189,7 +173,7 @@ func (this *Parser) processParseUserTaskById(task models.ParseUserTask) (*struct
 	httpReq.Header.Add("Cookie", fmt.Sprintf("PHPSESS=%v;", token))
 	httpReq.Header.Add("X-Requested-With", "XMLHttpRequest")
 
-	body, httpResp, err := this.pikagoClient.DoHttpRequest(httpReq)
+	body, httpResp, err := p.pikagoClient.DoHttpRequest(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -213,6 +197,8 @@ func (this *Parser) processParseUserTaskById(task models.ParseUserTask) (*struct
 		return nil, pikago.NewPikabuError(fmt.Sprintf("req: %v, resp: %v", httpReq, resp))
 	}
 
+	resp.Data.Html = strings.Replace(resp.Data.Html, "\n", "", -1)
+
 	regex, err := regexp.Compile(`@.+?"`)
 	if err != nil {
 		return nil, err
@@ -224,13 +210,13 @@ func (this *Parser) processParseUserTaskById(task models.ParseUserTask) (*struct
 	username = username[1 : len(username)-1]
 
 	task.Username = username
-	return this.processParseUserTaskByUsername(task)
+	return p.processParseUserTaskByUsername(task)
 }
 
-func (this *Parser) processParseUserTaskByUsername(task models.ParseUserTask) (*struct {
+func (p *Parser) processParseUserTaskByUsername(task models.ParseUserTask) (*struct {
 	User *pikago_models.UserProfile `json:"user"`
 }, error) {
-	userProfile, err := this.pikagoClient.UserProfileGet(task.Username)
+	userProfile, err := p.pikagoClient.UserProfileGet(task.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -242,12 +228,12 @@ func (this *Parser) processParseUserTaskByUsername(task models.ParseUserTask) (*
 	return &res, nil
 }
 
-func (this *Parser) processParseCommunitiesPagesTask() error {
+func (p *Parser) processParseCommunitiesPagesTask() error {
 	results := []pikago_models.CommunitiesPage{}
 
 	page := 0
 	for true {
-		communitiesPage, err := this.pikagoClient.CommunitiesGet(page)
+		communitiesPage, err := p.pikagoClient.CommunitiesGet(page)
 		if err != nil {
 			return err
 		}
@@ -257,8 +243,8 @@ func (this *Parser) processParseCommunitiesPagesTask() error {
 		results = append(results, *communitiesPage)
 
 		page++
-		time.Sleep(time.Duration(this.Config.PikagoWaitBetweenProcessingPages) * time.Second)
+		time.Sleep(time.Duration(p.Config.PikagoWaitBetweenProcessingPages) * time.Second)
 	}
 
-	return this.PutResultsToQueue("communities_pages", results)
+	return p.PutResultsToQueue("communities_pages", results)
 }

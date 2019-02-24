@@ -63,6 +63,8 @@ func ProcessNumberOfUsersInQueue() error {
 
 func ProcessDistributions() error {
 	for true {
+		// TODO: save last timestamp on redis
+		time.Sleep(10 * time.Minute)
 		for _, distributionFieldModel := range models.GeneratedDistributionFields {
 			baseTableNameSnakeCase := strcase.ToSnake(distributionFieldModel.BaseTableName)
 			baseColumnNameSnakeCase := strcase.ToSnake(distributionFieldModel.BaseColumnName)

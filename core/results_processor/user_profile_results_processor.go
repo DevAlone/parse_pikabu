@@ -14,8 +14,6 @@ import (
 	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )
 
-var processUserProfileMutex = &sync.Mutex{}
-
 func processUserProfiles(parsingTimestamp models.TimestampType, userProfiles []*pikago_models.UserProfile) error {
 	for _, userProfile := range userProfiles {
 		// TODO: make it concurrent
@@ -31,14 +29,14 @@ func processUserProfiles(parsingTimestamp models.TimestampType, userProfiles []*
 var userProfileIdLocks = map[uint64]bool{}
 var userProfileIdLocksMutex = sync.Mutex{}
 
-func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago_models.UserProfile) error {
+func lockUserById(userId uint64) {
 	// lock results with the same id
 	found := true
 	for found {
 		userProfileIdLocksMutex.Lock()
-		_, found = userProfileIdLocks[userProfile.UserId.Value]
+		_, found = userProfileIdLocks[userId]
 		if !found {
-			userProfileIdLocks[userProfile.UserId.Value] = true
+			userProfileIdLocks[userId] = true
 			userProfileIdLocksMutex.Unlock()
 			break
 		}
@@ -46,12 +44,17 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 
 		time.Sleep(10 * time.Millisecond)
 	}
-	// unlock
-	defer func() {
-		userProfileIdLocksMutex.Lock()
-		delete(userProfileIdLocks, userProfile.UserId.Value)
-		userProfileIdLocksMutex.Unlock()
-	}()
+}
+
+func unlockUserById(userId uint64) {
+	userProfileIdLocksMutex.Lock()
+	delete(userProfileIdLocks, userId)
+	userProfileIdLocksMutex.Unlock()
+}
+
+func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago_models.UserProfile) error {
+	lockUserById(userProfile.UserId.Value)
+	defer unlockUserById(userProfile.UserId.Value)
 
 	if userProfile == nil {
 		return errors.New("nil user profile")
@@ -126,7 +129,7 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 		IsRatingHidden:      userProfile.IsRatingBanned,
 		IsBanned:            userProfile.IsUserBanned,
 		IsPermanentlyBanned: userProfile.IsUserPermanentlyBanned,
-		// IsDeleted: false,
+		IsDeleted:           false,
 		AddedTimestamp:      parsingTimestamp,
 		LastUpdateTimestamp: parsingTimestamp,
 		NextUpdateTimestamp: 0,

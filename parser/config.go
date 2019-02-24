@@ -51,9 +51,11 @@ func NewParserConfigFromBytes(configData []byte) (*ParserConfig, error) {
 	config.ApiSessionId = "put parser's session id here"
 	config.AMQPAddress = "amqp://guest:guest@localhost:5672"
 
-	err := json.Unmarshal([]byte(configData), config)
-	if err != nil {
-		return nil, errors.New(err)
+	if len(configData) > 0 {
+		err := json.Unmarshal([]byte(configData), config)
+		if err != nil {
+			return nil, errors.New(err)
+		}
 	}
 
 	return config, nil

@@ -46,32 +46,12 @@ func startListener() error {
 	}
 	defer func() { _ = ch.Close() }()
 
-	err = ch.ExchangeDeclare(
-		"parser_results",
-		"fanout",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
+	err = amqp_helper.DeclareExchanges(ch)
 	if err != nil {
 		return errors.New(err)
 	}
 
-	q, err := ch.QueueDeclare(
-		"bitbucket.org/d3dev/parse_pikabu/parser_results",
-		true,
-		false,
-		false,
-		false,
-		nil,
-		/*
-			amqp.Table{
-				"x-queue-mode": "lazy",
-			},
-		*/
-	)
+	q, err := amqp_helper.DeclareParserResultsQueue(ch)
 	if err != nil {
 		return errors.New(err)
 	}
@@ -157,6 +137,21 @@ func processMessage(message amqp.Delivery) error {
 		}
 
 		err = processUserProfiles(resp.ParsingTimestamp, userProfiles)
+		if err != nil {
+			return err
+		}
+	case "user_profile_not_found":
+		var resp models.ParserUserProfileNotFoundResult
+		err := pikago.JsonUnmarshal(message.Body, &resp, true)
+		if err != nil {
+			return errors.New(err)
+		}
+
+		if len(resp.Results) < 1 {
+			return errors.Errorf("bad result: %v", resp)
+		}
+
+		err = processUserProfileNotFoundResults(&resp)
 		if err != nil {
 			return err
 		}

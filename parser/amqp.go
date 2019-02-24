@@ -1,18 +1,18 @@
 package parser
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/core/config"
-	"bitbucket.org/d3dev/parse_pikabu/models"
-	"bitbucket.org/d3dev/parse_pikabu/parser/logger"
 	"encoding/json"
-	"github.com/go-errors/errors"
-	"github.com/streadway/amqp"
 	"reflect"
 	"strings"
 	"time"
-)
 
-var amqpConnections = map[string]*amqp.Connection{}
+	"bitbucket.org/d3dev/parse_pikabu/amqp_helper"
+	"bitbucket.org/d3dev/parse_pikabu/core/config"
+	"bitbucket.org/d3dev/parse_pikabu/models"
+	"bitbucket.org/d3dev/parse_pikabu/parser/logger"
+	"github.com/go-errors/errors"
+	"github.com/streadway/amqp"
+)
 
 func (this *Parser) Cleanup() error {
 	return this.CleanupAMQP()
@@ -27,29 +27,16 @@ func (this *Parser) CleanupAMQP() error {
 		}
 	}
 
-	if connection, ok := amqpConnections[this.Config.AMQPAddress]; ok {
+	if c, ok := amqp_helper.AmqpConnections.Get(this.Config.AMQPAddress); ok {
+		connection := c.(*amqp.Connection)
 		err := connection.Close()
-		delete(amqpConnections, this.Config.AMQPAddress)
+		amqp_helper.AmqpConnections.Remove(this.Config.AMQPAddress)
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
-}
-
-func getAMQPConnection(amqpAddress string) (*amqp.Connection, error) {
-	if connection, ok := amqpConnections[amqpAddress]; ok {
-		return connection, nil
-	}
-
-	connection, err := amqp.Dial(amqpAddress)
-	if err != nil {
-		return nil, err
-	}
-	amqpConnections[amqpAddress] = connection
-
-	return connection, nil
 }
 
 func (this *Parser) initChannel(connection *amqp.Connection) error {
@@ -63,15 +50,7 @@ func (this *Parser) initChannel(connection *amqp.Connection) error {
 		return err
 	}
 
-	err = this.amqpChannel.ExchangeDeclare(
-		"parser_results",
-		"fanout",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
+	err = amqp_helper.DeclareExchanges(this.amqpChannel)
 	if err != nil {
 		return err
 	}
@@ -81,7 +60,7 @@ func (this *Parser) initChannel(connection *amqp.Connection) error {
 
 func (this *Parser) PutResultsToQueue(routingKey string, result interface{}) error {
 	for i := 0; i < 2; i++ {
-		connection, err := getAMQPConnection(this.Config.AMQPAddress)
+		connection, err := amqp_helper.GetAMQPConnection(this.Config.AMQPAddress)
 		if err != nil {
 			return err
 		}
@@ -124,7 +103,7 @@ func (this *Parser) PutResultsToQueue(routingKey string, result interface{}) err
 			false,
 			amqp.Publishing{
 				ContentType:  "application/json",
-				DeliveryMode: amqp.Persistent,
+				DeliveryMode: amqp.Transient,
 				Body:         message,
 			},
 		)

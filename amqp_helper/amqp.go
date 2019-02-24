@@ -1,49 +1,56 @@
 package amqp_helper
 
 import (
-	"github.com/orcaman/concurrent-map"
 	"github.com/streadway/amqp"
 )
 
-// TODO: fix
-// var amqpConnections = map[string]*amqp.Connection{}
-// var amqpConnectionsMutex = sync.RWMutex{}
-var amqpConnections = cmap.New()
-
-func Cleanup() error {
-	// amqpConnectionsMutex.Lock()
-	// defer amqpConnectionsMutex.Unlock()
-
-	/*
-		for address, conn := range amqpConnections {
-			connection := conn.(*amqp.Connection)
-			err := connection.Close()
-			delete(amqpConnections, address)
-			if err != nil {
-				return err
-			}
-		}
-	*/
+func DeclareExchanges(ch *amqp.Channel) error {
+	err := ch.ExchangeDeclare(
+		"parser_results",
+		"fanout",
+		false,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+	err = ch.ExchangeDeclare(
+		"parser_tasks",
+		"fanout",
+		false,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
-func GetAMQPConnection(amqpAddress string) (*amqp.Connection, error) {
-	// amqpConnectionsMutex.RLock()
-	if connection, ok := amqpConnections.Get(amqpAddress); ok {
-		// amqpConnectionsMutex.RUnlock()
-		return connection.(*amqp.Connection), nil
-	}
-	// amqpConnectionsMutex.RUnlock()
+func DeclareParserResultsQueue(ch *amqp.Channel) (amqp.Queue, error) {
+	return ch.QueueDeclare(
+		"bitbucket.org/d3dev/parse_pikabu/parser_results",
+		false,
+		false,
+		false,
+		false,
+		nil,
+	)
+}
 
-	connection, err := amqp.Dial(amqpAddress)
-	if err != nil {
-		return nil, err
-	}
-	// amqpConnectionsMutex.Lock()
-	amqpConnections.Set(amqpAddress, connection)
-	// fmt.Println("%v", amqpConnections)
-	// amqpConnectionsMutex.Unlock()
-
-	return connection, nil
+func DeclareParserTasksQueue(ch *amqp.Channel) (amqp.Queue, error) {
+	return ch.QueueDeclare(
+		"bitbucket.org/d3dev/parse_pikabu/parser_tasks",
+		false,
+		false,
+		false,
+		false,
+		nil,
+	)
 }

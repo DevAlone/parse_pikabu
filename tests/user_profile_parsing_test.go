@@ -1,6 +1,11 @@
-package main
+package tests
 
 import (
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/core/results_processor"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
@@ -8,10 +13,6 @@ import (
 	"github.com/go-pg/pg/orm"
 	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"
-	"strings"
-	"sync"
-	"testing"
-	"time"
 )
 
 func TestUserProfileParsing(t *testing.T) {

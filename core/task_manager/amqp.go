@@ -1,15 +1,16 @@
 package task_manager
 
 import (
+	"encoding/json"
+	"strings"
+	"time"
+
 	"bitbucket.org/d3dev/parse_pikabu/amqp_helper"
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
-	"encoding/json"
 	"github.com/go-errors/errors"
 	"github.com/streadway/amqp"
-	"strings"
-	"time"
 )
 
 var amqpChannel *amqp.Channel
@@ -37,15 +38,7 @@ func initChannel(connection *amqp.Connection) error {
 		return err
 	}
 
-	err = amqpChannel.ExchangeDeclare(
-		"parser_tasks",
-		"fanout",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
+	err = amqp_helper.DeclareExchanges(amqpChannel)
 	if err != nil {
 		return err
 	}
@@ -93,7 +86,7 @@ func PushTaskToQueue(taskPtr interface{}) error {
 			false,
 			amqp.Publishing{
 				ContentType:  "application/json",
-				DeliveryMode: amqp.Persistent,
+				DeliveryMode: amqp.Transient,
 				Body:         message,
 			},
 		)

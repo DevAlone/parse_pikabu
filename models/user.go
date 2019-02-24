@@ -26,6 +26,7 @@ type PikabuUser struct {
 	// ?
 	// IsDeleted bool `sql:",notnull,default:false"`
 
+	IsDeleted           bool          `sql:",notnull,default:false" json:"is_deleted" api:"order,filter"`
 	AddedTimestamp      TimestampType `sql:",notnull" json:"added_timestamp" api:"order"`
 	LastUpdateTimestamp TimestampType `sql:",notnull" json:"last_update_timestamp" gen_distributions:"86400" api:"order"`
 	NextUpdateTimestamp TimestampType `sql:",notnull" json:"next_update_timestamp" gen_distributions:"86400" api:"order"`
@@ -133,6 +134,7 @@ func init() {
 	addIndex("pikabu_users", "is_banned", "")
 	addIndex("pikabu_users", "is_permanently_banned", "")
 
+	addIndex("pikabu_users", "is_deleted", "")
 	addIndex("pikabu_users", "added_timestamp", "")
 	addIndex("pikabu_users", "last_update_timestamp", "")
 	addIndex("pikabu_users", "next_update_timestamp", "")
