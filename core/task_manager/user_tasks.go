@@ -31,7 +31,7 @@ func addMissingTasksWorker() error {
 			}
 		}
 
-		time.Sleep(10 * time.Minute)
+		time.Sleep(1 * time.Hour)
 	}
 
 	return nil
@@ -112,7 +112,7 @@ WHERE pikabu_id + 1 <> next_nr LIMIT 10;
 
 		// parse new users
 
-		time.Sleep(10 * time.Minute)
+		time.Sleep(30 * time.Minute)
 	}
 
 	return nil

@@ -34,7 +34,7 @@ func Run() error {
 			return err
 		}
 
-		time.Sleep(10 * time.Millisecond)
+		time.Sleep(1 * time.Second)
 	}
 
 	wg.Wait()
