@@ -46,12 +46,22 @@ func startListener() error {
 }
 
 func startListenerChannels() error {
-	for message := range globals.ParserResults {
-		err := processMessage(message)
-		if err != nil {
-			return err
-		}
+	var wg sync.WaitGroup
+	for i := 0; i < config.Settings.NumberOfTasksProcessorsMultiplier*runtime.GOMAXPROCS(0); i++ {
+		wg.Add(1)
+		go func() {
+			for message := range globals.ParserResults {
+				err := processMessage(message)
+				if err != nil {
+					logger.Log.Error(err)
+				}
+			}
+
+			wg.Done()
+		}()
 	}
+	wg.Wait()
+
 	return nil
 }
 
@@ -130,6 +140,7 @@ func startListenerAMQP() error {
 					// panic(err)
 				}
 			}
+			wg.Done()
 		}()
 	}
 	wg.Wait()
