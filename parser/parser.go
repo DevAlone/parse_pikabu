@@ -38,8 +38,8 @@ func NewParser(parserConfig *ParserConfig) (*Parser, error) {
 	switch parserConfig.ProxyGettingPolicy {
 	case "ProxyGettingPoliceRandom":
 		proxyGettingPolicy = pikago.ProxyGettingPoliceRandom
-	case "ProxyGettingPoliceBestResponseTime":
-		proxyGettingPolicy = pikago.ProxyGettingPoliceBestResponseTime
+	case "ProxyGettingPolice1024BestResponseTime":
+		proxyGettingPolicy = pikago.ProxyGettingPolice1024BestResponseTime
 	default:
 		return nil, errors.Errorf("bad proxy getting policy %v", parserConfig.ProxyGettingPolicy)
 	}

@@ -43,9 +43,9 @@ func NewParserConfigFromBytes(configData []byte) (*ParserConfig, error) {
 	config.ApiURL = "http://localhost:8080/api/v1"
 	config.ProxyProviderAPIURL = ""
 	config.ProxyProviderTimeout = 2 * 60
-	config.PikagoTimeout = 15
-	config.PikagoNumberOfRequestTries = 24
-	config.PikagoChangeProxyOnNthBadTry = 4
+	config.PikagoTimeout = 45
+	config.PikagoNumberOfRequestTries = 25
+	config.PikagoChangeProxyOnNthBadTry = 5
 	config.PikagoWaitBetweenProcessingPages = 1
 	config.PikagoWaitBeforeNextRequestMs = 1000
 	config.ApiTimeout = 60
