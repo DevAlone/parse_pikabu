@@ -38,7 +38,7 @@ func lockUserById(userId uint64) {
 		if !found {
 			userProfileIdLocks[userId] = true
 			userProfileIdLocksMutex.Unlock()
-			break
+			return
 		}
 		userProfileIdLocksMutex.Unlock()
 
