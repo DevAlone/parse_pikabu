@@ -4,10 +4,11 @@ import (
 	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )
 
-type ParserBaseResult struct  {
+type ParserBaseResult struct {
 	ParsingTimestamp TimestampType `json:"parsing_timestamp"`
 	ParserId         string        `json:"parser_id"`
 	NumberOfResults  int           `json:"number_of_results"`
+	// TypeOfResult     string        `json:"type_of_result"`
 }
 
 type ParserResult struct {
@@ -15,11 +16,13 @@ type ParserResult struct {
 	Results interface{} `json:"results"`
 }
 
+type ParserUserProfileResultData struct {
+	User *pikago_models.UserProfile `json:"user"`
+}
+
 type ParserUserProfileResult struct {
 	ParserBaseResult
-	Results []struct {
-		User *pikago_models.UserProfile `json:"user"`
-	} `json:"results"`
+	Results []ParserUserProfileResultData `json:"results"`
 }
 
 type ParserCommunitiesPageResult struct {
@@ -28,8 +31,8 @@ type ParserCommunitiesPageResult struct {
 }
 
 type ParserUserProfileNotFoundResultData struct {
-	PikabuId uint64 `json:"pikabu_id"`
-	Username string `json:"username"`
+	PikabuId    uint64      `json:"pikabu_id"`
+	Username    string      `json:"username"`
 	PikabuError interface{} `json:"pikabu_error"`
 }
 

@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"bitbucket.org/d3dev/parse_pikabu/globals"
+
 	"bitbucket.org/d3dev/parse_pikabu/amqp_helper"
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
@@ -26,7 +28,9 @@ func Run() error {
 			} else {
 				logger.Log.Error(err.Error())
 			}
-			_ = amqp_helper.Cleanup()
+			if !globals.SingleProcessMode {
+				_ = amqp_helper.Cleanup()
+			}
 		}
 		time.Sleep(5 * time.Second)
 	}
@@ -34,6 +38,24 @@ func Run() error {
 	return nil
 }
 func startListener() error {
+	if globals.SingleProcessMode {
+		return startListenerChannels()
+	} else {
+		return startListenerAMQP()
+	}
+}
+
+func startListenerChannels() error {
+	for message := range globals.ParserResults {
+		err := processMessage(message)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func startListenerAMQP() error {
 	logger.Log.Debug("connecting to amqp server...")
 	connection, err := amqp_helper.GetAMQPConnection(config.Settings.AMQPAddress)
 	if err != nil {
@@ -91,7 +113,7 @@ func startListener() error {
 		wg.Add(1)
 		go func() {
 			for message := range messages {
-				err = processMessage(message)
+				err = processAMQPMessage(message)
 				if err != nil {
 					logger.Log.Error(err)
 					if e, ok := err.(*errors.Error); ok {
@@ -116,7 +138,7 @@ func startListener() error {
 	return nil
 }
 
-func processMessage(message amqp.Delivery) error {
+func processAMQPMessage(message amqp.Delivery) error {
 	logger.Log.Debugf("got message: %v", string(message.Body))
 
 	switch message.RoutingKey {
@@ -151,7 +173,7 @@ func processMessage(message amqp.Delivery) error {
 			return errors.Errorf("bad result: %v", resp)
 		}
 
-		err = processUserProfileNotFoundResults(&resp)
+		err = processUserProfileNotFoundResults(resp.ParsingTimestamp, resp.Results)
 		if err != nil {
 			return err
 		}
@@ -175,6 +197,30 @@ func processMessage(message amqp.Delivery) error {
 			"Unregistered result type \"%v\". Message: \"%v\"",
 			message.RoutingKey,
 			string(message.Body),
+		)
+	}
+
+	return nil
+}
+
+func processMessage(message *models.ParserResult) error {
+	switch m := message.Results.(type) {
+	case []models.ParserUserProfileResultData:
+		userProfiles := []*pikago_models.UserProfile{}
+		for _, result := range m {
+			userProfiles = append(userProfiles, result.User)
+		}
+		return processUserProfiles(message.ParsingTimestamp, userProfiles)
+	case []models.ParserUserProfileNotFoundResultData:
+		return processUserProfileNotFoundResults(message.ParsingTimestamp, m)
+	case []pikago_models.CommunitiesPage:
+		return processCommunitiesPages(message.ParsingTimestamp, m)
+	default:
+		logger.Log.Warningf(
+			"processMessage(): Unregistered result type \"%v\". Message: \"%v\". m: \"%v\"",
+			reflect.TypeOf(m),
+			message,
+			m,
 		)
 	}
 

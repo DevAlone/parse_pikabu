@@ -7,9 +7,8 @@ import (
 	"github.com/go-pg/pg"
 )
 
-func processUserProfileNotFoundResults(res *models.ParserUserProfileNotFoundResult) error {
-	parsingTimestamp := res.ParsingTimestamp
-	for _, result := range res.Results {
+func processUserProfileNotFoundResults(parsingTimestamp models.TimestampType, res []models.ParserUserProfileNotFoundResultData) error {
+	for _, result := range res {
 		err := processUserProfileNotFoundResult(parsingTimestamp, &result)
 		if err != nil {
 			// TODO: log

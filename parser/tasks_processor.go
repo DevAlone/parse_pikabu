@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"bitbucket.org/d3dev/parse_pikabu/globals"
+
 	"gogsweb.2-47.ru/d3dev/pikago"
 
 	"bitbucket.org/d3dev/parse_pikabu/amqp_helper"
@@ -36,6 +38,32 @@ func (p *Parser) ListenForTasks() error {
 		}
 	}()
 
+	if globals.SingleProcessMode {
+		return p.ListenForChannelTasks()
+	} else {
+		return p.ListenForAMQPTasks()
+	}
+}
+
+func (p *Parser) ListenForChannelTasks() error {
+	for true {
+		select {
+		case task := <-globals.ParserParseUserTasks:
+			return p.processParseUserTask(task)
+		case task := <-globals.ParserSimpleTasks:
+			switch task.Name {
+			case "parse_communities_pages":
+				return p.processParseCommunitiesPagesTask()
+			default:
+				return errors.Errorf("unknown type of simple task %v", task)
+			}
+		}
+	}
+
+	return nil
+}
+
+func (p *Parser) ListenForAMQPTasks() error {
 	logger.Log.Debug("connecting to amqp server...")
 	connection, err := amqp_helper.GetAMQPConnection(p.Config.AMQPAddress)
 	if err != nil {
@@ -115,7 +143,7 @@ func (p *Parser) processMessage(message amqp.Delivery) error {
 		if err != nil {
 			return errors.New(err)
 		}
-		return p.processParseUserTask(task)
+		return p.processParseUserTask(&task)
 	case "parse_communities_pages":
 		return p.processParseCommunitiesPagesTask()
 	default:
@@ -128,10 +156,8 @@ func (p *Parser) processMessage(message amqp.Delivery) error {
 	}
 }
 
-func (p *Parser) processParseUserTask(task models.ParseUserTask) error {
-	var res *struct {
-		User *pikago_models.UserProfile `json:"user"`
-	}
+func (p *Parser) processParseUserTask(task *models.ParseUserTask) error {
+	var res *models.ParserUserProfileResultData
 	var err error
 
 	if len(task.Username) > 0 {
@@ -147,21 +173,23 @@ func (p *Parser) processParseUserTask(task models.ParseUserTask) error {
 
 	if err != nil {
 		if pe, ok := err.(pikago.PikabuErrorRequestedPageNotFound); ok {
-			return p.PutResultsToQueue("user_profile_not_found", models.ParserUserProfileNotFoundResultData{
-				PikabuId:    task.PikabuId,
-				Username:    task.Username,
-				PikabuError: pe,
+			return p.PutResultsToQueue("user_profile_not_found", []models.ParserUserProfileNotFoundResultData{
+				{
+					PikabuId:    task.PikabuId,
+					Username:    task.Username,
+					PikabuError: pe,
+				},
 			})
 		}
 		return err
 	}
 
-	return p.PutResultsToQueue("user_profile", res)
+	return p.PutResultsToQueue("user_profile", []models.ParserUserProfileResultData{
+		*res,
+	})
 }
 
-func (p *Parser) ProcessParseUserTaskById(task models.ParseUserTask) (*struct {
-	User *pikago_models.UserProfile `json:"user"`
-}, error) {
+func (p *Parser) ProcessParseUserTaskById(task *models.ParseUserTask) (*models.ParserUserProfileResultData, error) {
 	// parse by id
 	url := fmt.Sprintf("https://pikabu.ru/ajax/user_info.php?action=get_short_profile&user_id=%v", task.PikabuId)
 	httpReq, err := http.NewRequest("GET", url, nil)
@@ -213,16 +241,12 @@ func (p *Parser) ProcessParseUserTaskById(task models.ParseUserTask) (*struct {
 	return p.processParseUserTaskByUsername(task)
 }
 
-func (p *Parser) processParseUserTaskByUsername(task models.ParseUserTask) (*struct {
-	User *pikago_models.UserProfile `json:"user"`
-}, error) {
+func (p *Parser) processParseUserTaskByUsername(task *models.ParseUserTask) (*models.ParserUserProfileResultData, error) {
 	userProfile, err := p.pikagoClient.UserProfileGet(task.Username)
 	if err != nil {
 		return nil, err
 	}
-	var res struct {
-		User *pikago_models.UserProfile `json:"user"`
-	}
+	res := models.ParserUserProfileResultData{}
 	res.User = userProfile
 
 	return &res, nil

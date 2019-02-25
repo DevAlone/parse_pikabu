@@ -6,6 +6,9 @@ import (
 	"os"
 	"runtime/pprof"
 	"strings"
+	"sync"
+
+	"bitbucket.org/d3dev/parse_pikabu/globals"
 
 	"github.com/pkg/profile"
 
@@ -22,6 +25,15 @@ import (
 )
 
 var commands = map[string]func(){
+	"single_process_mode": func() {
+		globals.SingleProcessMode = true
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func() { core.Main() }()
+		wg.Add(1)
+		go func() { parser.Main() }()
+		wg.Wait()
+	},
 	"core": func() {
 		core.Main()
 	},
@@ -107,6 +119,9 @@ Available commands are:
 	if err != nil {
 		helpers.PanicOnError(err)
 	}
+
+	err = globals.Init()
+	helpers.PanicOnError(err)
 
 	if handler, found := commands[command]; found {
 		handler()

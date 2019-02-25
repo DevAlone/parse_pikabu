@@ -2,8 +2,11 @@ package task_manager
 
 import (
 	"encoding/json"
+	"reflect"
 	"strings"
 	"time"
+
+	"bitbucket.org/d3dev/parse_pikabu/globals"
 
 	"bitbucket.org/d3dev/parse_pikabu/amqp_helper"
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
@@ -47,6 +50,23 @@ func initChannel(connection *amqp.Connection) error {
 }
 
 func PushTaskToQueue(taskPtr interface{}) error {
+	if globals.SingleProcessMode {
+		switch t := taskPtr.(type) {
+		case *models.ParseUserTask:
+			globals.ParserParseUserTasks <- t
+			return nil
+		case *models.SimpleTask:
+			globals.ParserSimpleTasks <- t
+			return nil
+		default:
+			return errors.Errorf("trying to push undeclared type of task %v %v", reflect.TypeOf(t), t)
+		}
+	} else {
+		return PushTaskToAMQPQueue(taskPtr)
+	}
+}
+
+func PushTaskToAMQPQueue(taskPtr interface{}) error {
 	// TODO: limit number of tasks in queue
 	for i := 0; i < 2; i++ {
 		connection, err := amqp_helper.GetAMQPConnection(config.Settings.AMQPAddress)
