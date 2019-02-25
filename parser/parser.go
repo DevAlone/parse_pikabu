@@ -49,6 +49,12 @@ func NewParser(parserConfig *ParserConfig) (*Parser, error) {
 	requestsSender.ChangeProxyOnNthBadTry = parser.Config.PikagoChangeProxyOnNthBadTry
 	requestsSender.WaitBeforeNextRequestMs = parser.Config.PikagoWaitBeforeNextRequestMs
 	requestsSender.SetTimeout(time.Duration(parser.Config.PikagoTimeout) * time.Second)
+	if len(parser.Config.FileToStoreSSLKeys) > 0 {
+		err := requestsSender.SetFileToStoreSSLKeys(parser.Config.FileToStoreSSLKeys)
+		if err != nil {
+			return nil, err
+		}
+	}
 	parser.pikagoClient, err = pikago.NewClient(requestsSender)
 	if err != nil {
 		return nil, err

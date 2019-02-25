@@ -3,3 +3,4 @@
 *.config.json
 parse_pikabu
 *.pprof
+ssl.keys

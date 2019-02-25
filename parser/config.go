@@ -27,6 +27,7 @@ type ParserConfig struct {
 	WaitNoTaskSeconds                int
 	AMQPAddress                      string
 	LogHTTPQueries                   bool
+	FileToStoreSSLKeys               string
 }
 
 type ParsersConfig struct {
@@ -52,6 +53,7 @@ func NewParserConfigFromBytes(configData []byte) (*ParserConfig, error) {
 	config.ApiSessionId = "put parser's session id here"
 	config.AMQPAddress = "amqp://guest:guest@localhost:5672"
 	config.LogHTTPQueries = false
+	config.FileToStoreSSLKeys = ""
 
 	if len(configData) > 0 {
 		err := json.Unmarshal([]byte(configData), config)
