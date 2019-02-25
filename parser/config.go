@@ -28,6 +28,7 @@ type ParserConfig struct {
 	AMQPAddress                      string
 	LogHTTPQueries                   bool
 	FileToStoreSSLKeys               string
+	ProxyGettingPolicy               string
 }
 
 type ParsersConfig struct {
@@ -54,6 +55,7 @@ func NewParserConfigFromBytes(configData []byte) (*ParserConfig, error) {
 	config.AMQPAddress = "amqp://guest:guest@localhost:5672"
 	config.LogHTTPQueries = false
 	config.FileToStoreSSLKeys = ""
+	config.ProxyGettingPolicy = "ProxyGettingPoliceRandom"
 
 	if len(configData) > 0 {
 		err := json.Unmarshal([]byte(configData), config)

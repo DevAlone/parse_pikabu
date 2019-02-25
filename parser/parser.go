@@ -33,11 +33,23 @@ func NewParser(parserConfig *ParserConfig) (*Parser, error) {
 	parser.httpClient = &http.Client{
 		Timeout: time.Duration(parser.Config.ApiTimeout) * time.Second,
 	}
+
+	proxyGettingPolicy := pikago.ProxyGettingPoliceRandom
+	switch parserConfig.ProxyGettingPolicy {
+	case "ProxyGettingPoliceRandom":
+		proxyGettingPolicy = pikago.ProxyGettingPoliceRandom
+	case "ProxyGettingPoliceBestResponseTime":
+		proxyGettingPolicy = pikago.ProxyGettingPoliceBestResponseTime
+	default:
+		return nil, errors.Errorf("bad proxy getting policy %v", parserConfig.ProxyGettingPolicy)
+	}
+
 	proxyProvider, err := pikago.GetProxyPyProxyProvider(
 		parser.Config.ProxyProviderAPIURL,
 		parser.Config.ProxyProviderTimeout,
-		pikago.ProxyGettingPoliceRandom,
+		proxyGettingPolicy,
 	)
+
 	if err != nil {
 		return nil, err
 	}
