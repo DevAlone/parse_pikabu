@@ -7,6 +7,7 @@ import (
 
 var Settings struct {
 	Debug                      bool
+	LogSQLQueries              bool
 	Database                   map[string]string
 	ProxyProviderClientTimeout int
 	ProxyProviderBaseURL       string
@@ -43,6 +44,7 @@ func UpdateSettingsFromFile(filename string) error {
 
 func init() {
 	Settings.Debug = false
+	Settings.LogSQLQueries = false
 	Settings.Database = map[string]string{
 		"Name":     "test",
 		"Username": "test",

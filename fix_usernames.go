@@ -4,15 +4,12 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"os"
 	"strings"
 	"sync"
 	"time"
 
-	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
-	logging "github.com/op/go-logging"
 
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-pg/pg"
@@ -26,27 +23,12 @@ func printTimeSinceStart() {
 }
 
 func fixUsernames() {
-	file, err := os.OpenFile("logs/fix_usernames.log", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
-	if err != nil {
-		helpers.PanicOnError(err)
-	}
-	loggingBackend := logging.NewLogBackend(file, "", 0)
-	loggingBackendFormatter := logging.NewBackendFormatter(loggingBackend, logger.LogFormat)
-
-	logging.SetBackend(loggingBackend, loggingBackendFormatter)
-
-	if config.Settings.Debug {
-		logging.SetLevel(logging.DEBUG, "parse_pikabu")
-	} else {
-		logging.SetLevel(logging.WARNING, "parse_pikabu")
-	}
-
 	logger.Log.Debug("load_from_old_db started")
 
 	fmt.Println("fixing usernames...")
 	printTimeSinceStart()
 
-	err = models.InitDb()
+	err := models.InitDb()
 	if err != nil {
 		helpers.PanicOnError(err)
 	}

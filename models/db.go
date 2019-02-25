@@ -25,11 +25,10 @@ type QueryHook struct{}
 
 func (this QueryHook) BeforeQuery(event *pg.QueryEvent) {}
 func (this QueryHook) AfterQuery(event *pg.QueryEvent) {
-	// TODO: make option in settings
-	if config.Settings.Debug {
+	if config.Settings.Debug && config.Settings.LogSQLQueries {
 		query, err := event.FormattedQuery()
 		if err != nil {
-			logger.Log.Critical(err)
+			logger.Log.Fatal(err)
 			return
 		}
 		// logger.Log.Debug(fmt.Sprintf("SQL: %s %s\n", time.Since(event.Time), query))

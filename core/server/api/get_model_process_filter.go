@@ -1,9 +1,12 @@
 package api
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"encoding/json"
 	"fmt"
+	"reflect"
+	"strings"
+
+	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg/orm"
 	"github.com/google/cel-go/checker"
@@ -12,10 +15,8 @@ import (
 	"github.com/google/cel-go/common/packages"
 	"github.com/google/cel-go/common/types"
 	"github.com/google/cel-go/parser"
-	"google.golang.org/genproto/googleapis/api/expr/v1alpha1"
+	expr "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 	exprpb "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
-	"reflect"
-	"strings"
 )
 
 func processFilter(req *orm.Query, resultType reflect.Type, filter string) (*orm.Query, error) {
@@ -150,7 +151,7 @@ func getFieldsToFilter(modelType reflect.Type) []*exprpb.Decl {
 				if item == "filter" {
 					decl, err := fieldToDecl(fieldType)
 					if err != nil {
-						logger.Log.Criticalf("Forgot to create decl for type %v", fieldType.Type)
+						logger.Log.Errorf("Forgot to create decl for type %v", fieldType.Type)
 					} else {
 						result = append(result, decl)
 					}

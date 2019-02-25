@@ -53,6 +53,7 @@ func NewParser(parserConfig *ParserConfig) (*Parser, error) {
 	if err != nil {
 		return nil, err
 	}
+	parser.pikagoClient.SetLog(logger.PikagoLog, logger.PikagoHttpLog)
 	parser.pikagoClient.AddBeforeRequestMiddleware(func(req *http.Request) *http.Request {
 		_ = parser.pikagoClient.ResetState()
 		return req

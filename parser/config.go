@@ -26,6 +26,7 @@ type ParserConfig struct {
 	WaitAfterErrorSeconds            int
 	WaitNoTaskSeconds                int
 	AMQPAddress                      string
+	LogHTTPQueries                   bool
 }
 
 type ParsersConfig struct {
@@ -44,12 +45,13 @@ func NewParserConfigFromBytes(configData []byte) (*ParserConfig, error) {
 	config.PikagoNumberOfRequestTries = 21
 	config.PikagoChangeProxyOnNthBadTry = 3
 	config.PikagoWaitBetweenProcessingPages = 1
-	config.PikagoWaitBeforeNextRequestMs = 1
+	config.PikagoWaitBeforeNextRequestMs = 500
 	config.ApiTimeout = 60
 	config.WaitAfterErrorSeconds = 10
 	config.WaitNoTaskSeconds = 5
 	config.ApiSessionId = "put parser's session id here"
 	config.AMQPAddress = "amqp://guest:guest@localhost:5672"
+	config.LogHTTPQueries = false
 
 	if len(configData) > 0 {
 		err := json.Unmarshal([]byte(configData), config)
