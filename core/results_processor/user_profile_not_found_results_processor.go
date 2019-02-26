@@ -23,15 +23,9 @@ func processUserProfileNotFoundResult(parsingTimestamp models.TimestampType, res
 	lockUserById(res.PikabuId)
 	defer unlockUserById(res.PikabuId)
 
-	tx, err := models.Db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
 	// complete tasks
-	err = task_manager.CompleteTask(
-		tx,
+	err := task_manager.CompleteTask(
+		nil,
 		"parse_user_tasks",
 		"pikabu_id",
 		res.PikabuId,
@@ -41,7 +35,7 @@ func processUserProfileNotFoundResult(parsingTimestamp models.TimestampType, res
 	}
 
 	err = task_manager.CompleteTask(
-		tx,
+		nil,
 		"parse_user_tasks",
 		"username",
 		res.Username,
@@ -51,7 +45,7 @@ func processUserProfileNotFoundResult(parsingTimestamp models.TimestampType, res
 	}
 
 	var user models.PikabuUser
-	err = tx.Model(&user).
+	err = models.Db.Model(&user).
 		Where("pikabu_id = ?", res.PikabuId).
 		Select()
 	if err != nil && err != pg.ErrNoRows {
@@ -63,14 +57,14 @@ func processUserProfileNotFoundResult(parsingTimestamp models.TimestampType, res
 		user.NextUpdateTimestamp = user.LastUpdateTimestamp + models.TimestampType(config.Settings.UsersMaxUpdatingPeriod)
 		user.IsDeleted = true
 
-		err := tx.Update(&user)
+		err := models.Db.Update(&user)
 		if err != nil {
 			return err
 		}
 	}
 
 	var deletedUser models.PikabuDeletedOrNeverExistedUser
-	_, err = tx.Model(&deletedUser).
+	_, err = models.Db.Model(&deletedUser).
 		Where("pikabu_id = ?", res.PikabuId).
 		SelectOrInsert()
 	if err != pg.ErrNoRows && err != nil {
@@ -89,11 +83,11 @@ func processUserProfileNotFoundResult(parsingTimestamp models.TimestampType, res
 
 		deletedUser.NextUpdateTimestamp = parsingTimestamp + updatingPeriod
 		deletedUser.LastUpdateTimestamp = parsingTimestamp
-		err := tx.Update(&deletedUser)
+		err := models.Db.Update(&deletedUser)
 		if err != nil {
 			return err
 		}
 	}
 
-	return tx.Commit()
+	return nil
 }

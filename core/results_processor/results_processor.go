@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-pg/pg/orm"
+
 	"bitbucket.org/d3dev/parse_pikabu/globals"
 
 	"bitbucket.org/d3dev/parse_pikabu/amqp_helper"
@@ -243,11 +245,12 @@ type OldParserResultError struct{}
 func (this OldParserResultError) Error() string { return "old parser result error" }
 
 func processModelFieldsVersions(
-	tx *pg.Tx,
+	transaction *pg.Tx,
 	oldModelPtr interface{},
 	newModelPtr interface{},
 	parsingTimestamp models.TimestampType,
 ) (bool, error) {
+	// TODO: consider adding lock here
 	wasDataChanged := false
 
 	if reflect.TypeOf(oldModelPtr) != reflect.TypeOf(newModelPtr) {
@@ -306,11 +309,21 @@ func processModelFieldsVersions(
 
 			var err error
 			if ignoreIfExists {
-				_, err = tx.Model(versionTable).
+				var q *orm.Query
+				if transaction == nil {
+					q = models.Db.Model(versionTable)
+				} else {
+					q = transaction.Model(versionTable)
+				}
+				_, err = q.
 					OnConflict("DO NOTHING").
 					Insert(versionTable)
 			} else {
-				err = tx.Insert(versionTable)
+				if transaction == nil {
+					err = models.Db.Insert(versionTable)
+				} else {
+					err = transaction.Insert(versionTable)
+				}
 			}
 			if err != nil {
 				return errors.New(err)
@@ -319,7 +332,13 @@ func processModelFieldsVersions(
 			return nil
 		}
 
-		count, err := tx.Model(versionTable).Where("item_id = ?", oldId).Count()
+		var q *orm.Query
+		if transaction == nil {
+			q = models.Db.Model(versionTable)
+		} else {
+			q = transaction.Model(versionTable)
+		}
+		count, err := q.Where("item_id = ?", oldId).Count()
 		if err != nil {
 			return false, errors.New(err)
 		}

@@ -59,15 +59,17 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 	if userProfile == nil {
 		return errors.New("nil user profile")
 	}
-	tx, err := models.Db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
+	/*
+		tx, err := models.Db.Begin()
+		if err != nil {
+			return err
+		}
+		defer tx.Rollback()
+	*/
 
 	// complete tasks
-	err = task_manager.CompleteTask(
-		tx,
+	err := task_manager.CompleteTask(
+		nil,
 		"parse_user_tasks",
 		"pikabu_id",
 		userProfile.UserId.Value,
@@ -77,7 +79,7 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 	}
 
 	err = task_manager.CompleteTask(
-		tx,
+		nil,
 		"parse_user_tasks",
 		"username",
 		userProfile.Username,
@@ -86,7 +88,7 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 		return err
 	}
 
-	_, err = tx.Model(&models.PikabuDeletedOrNeverExistedUser{
+	_, err = models.Db.Model(&models.PikabuDeletedOrNeverExistedUser{
 		PikabuId: userProfile.UserId.Value,
 	}).WherePK().Delete()
 	if err != nil && err != pg.ErrNoRows {
@@ -94,24 +96,24 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 	}
 
 	// save results
-	err = saveUserProfile(tx, parsingTimestamp, userProfile)
+	err = saveUserProfile(parsingTimestamp, userProfile)
 	if err != nil {
 		return err
 	}
 
-	return tx.Commit()
+	return nil
 }
 
-func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfile *pikago_models.UserProfile) error {
-	awardIds, err := CreateAwardIdsArray(tx, userProfile.Awards, parsingTimestamp)
+func saveUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago_models.UserProfile) error {
+	awardIds, err := CreateAwardIdsArray(userProfile.Awards, parsingTimestamp)
 	if err != nil {
 		return err
 	}
-	communityIds, err := createCommunityIdsArray(tx, userProfile.Communities, parsingTimestamp)
+	communityIds, err := createCommunityIdsArray(userProfile.Communities, parsingTimestamp)
 	if err != nil {
 		return err
 	}
-	banHistoryIds, err := createBanHistoryIdsArray(tx, userProfile.BanHistory, parsingTimestamp)
+	banHistoryIds, err := createBanHistoryIdsArray(userProfile.BanHistory, parsingTimestamp)
 	if err != nil {
 		return err
 	}
@@ -141,15 +143,15 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 		LastUpdateTimestamp: parsingTimestamp,
 		NextUpdateTimestamp: 0,
 	}
-	newUser.NextUpdateTimestamp = calculateNextUpdateTimestamp(tx, newUser, false)
+	newUser.NextUpdateTimestamp = calculateNextUpdateTimestamp(newUser, false)
 
 	user := &models.PikabuUser{
 		PikabuId: userProfile.UserId.Value,
 	}
-	err = tx.Select(user)
+	err = models.Db.Select(user)
 
 	if err == pg.ErrNoRows {
-		err := tx.Insert(newUser)
+		err := models.Db.Insert(newUser)
 		if err != nil {
 			return errors.New(err)
 		}
@@ -158,7 +160,7 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 		return err
 	}
 
-	wasDataChanged, err := processModelFieldsVersions(tx, user, newUser, parsingTimestamp)
+	wasDataChanged, err := processModelFieldsVersions(nil, user, newUser, parsingTimestamp)
 	if _, ok := err.(OldParserResultError); ok {
 		logger.Log.Warning("skipping user %v because of old parsing result", user.Username)
 		return nil
@@ -166,11 +168,11 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 		return errors.New(err)
 	}
 
-	nextUpdateTimestamp := calculateNextUpdateTimestamp(tx, user, wasDataChanged)
+	nextUpdateTimestamp := calculateNextUpdateTimestamp(user, wasDataChanged)
 	user.LastUpdateTimestamp = parsingTimestamp
 	user.NextUpdateTimestamp = nextUpdateTimestamp
 
-	err = tx.Update(user)
+	err = models.Db.Update(user)
 	if err != nil {
 		return errors.New(err)
 	}
@@ -179,7 +181,6 @@ func saveUserProfile(tx *pg.Tx, parsingTimestamp models.TimestampType, userProfi
 }
 
 func CreateAwardIdsArray(
-	tx *pg.Tx,
 	parsedAwards []pikago_models.UserProfileAward,
 	parsingTimestamp models.TimestampType,
 ) ([]uint64, error) {
@@ -204,7 +205,7 @@ func CreateAwardIdsArray(
 		awardFromDb := &models.PikabuUserAward{
 			PikabuId: parsedAward.Id.Value,
 		}
-		err := tx.Select(awardFromDb)
+		err := models.Db.Select(awardFromDb)
 		if err != pg.ErrNoRows && err != nil {
 			return nil, err
 		}
@@ -212,7 +213,7 @@ func CreateAwardIdsArray(
 		found := err != pg.ErrNoRows
 
 		if found {
-			_, err := processModelFieldsVersions(tx, awardFromDb, award, parsingTimestamp)
+			_, err := processModelFieldsVersions(nil, awardFromDb, award, parsingTimestamp)
 			if _, ok := err.(OldParserResultError); ok {
 				logger.Log.Warning("skipping item %v because of old parsing result", award)
 			} else {
@@ -220,13 +221,13 @@ func CreateAwardIdsArray(
 					return nil, err
 				}
 				awardFromDb.LastUpdateTimestamp = parsingTimestamp
-				err = tx.Update(awardFromDb)
+				err = models.Db.Update(awardFromDb)
 				if err != nil {
 					return nil, errors.New(err)
 				}
 			}
 		} else {
-			err := tx.Insert(award)
+			err := models.Db.Insert(award)
 			if err != nil {
 				return nil, err
 			}
@@ -237,7 +238,6 @@ func CreateAwardIdsArray(
 }
 
 func createCommunityIdsArray(
-	tx *pg.Tx,
 	parsedCommunities []pikago_models.UserProfileCommunity,
 	parsingTimestamp models.TimestampType,
 ) ([]uint64, error) {
@@ -251,7 +251,7 @@ func createCommunityIdsArray(
 			LastUpdateTimestamp: parsingTimestamp,
 		}
 		communityFromDb := &models.PikabuUserCommunity{}
-		err := tx.Model(communityFromDb).
+		err := models.Db.Model(communityFromDb).
 			Where("link = ?", parsedCommunity.Link).
 			Select()
 		if err != pg.ErrNoRows && err != nil {
@@ -262,12 +262,14 @@ func createCommunityIdsArray(
 		if found {
 			community.Id = communityFromDb.Id
 			community.AddedTimestamp = communityFromDb.AddedTimestamp
-			err := tx.Update(community)
+			err := models.Db.Update(community)
 			if err != nil {
 				return nil, errors.New(err)
 			}
 		} else {
-			_, err := tx.Model(community).Returning("*").Insert()
+			_, err := models.Db.Model(community).
+				Returning("*").
+				Insert()
 			if err != nil {
 				return nil, err
 			}
@@ -279,7 +281,6 @@ func createCommunityIdsArray(
 }
 
 func createBanHistoryIdsArray(
-	tx *pg.Tx,
 	parsedBanHistoryItems []pikago_models.UserProfileBanHistory,
 	parsingTimestamp models.TimestampType,
 ) ([]uint64, error) {
@@ -308,14 +309,14 @@ func createBanHistoryIdsArray(
 		dbBanHistoryItem := &models.PikabuUserBanHistoryItem{
 			PikabuId: banHistoryItem.PikabuId,
 		}
-		err := tx.Select(dbBanHistoryItem)
+		err := models.Db.Select(dbBanHistoryItem)
 		if err != pg.ErrNoRows && err != nil {
 			return nil, err
 		}
 
 		found := err != pg.ErrNoRows
 		if found {
-			_, err := processModelFieldsVersions(tx, dbBanHistoryItem, banHistoryItem, parsingTimestamp)
+			_, err := processModelFieldsVersions(nil, dbBanHistoryItem, banHistoryItem, parsingTimestamp)
 			if _, ok := err.(OldParserResultError); ok {
 				logger.Log.Warning("skipping item %v because of old parsing result", banHistoryItem)
 			} else {
@@ -323,13 +324,13 @@ func createBanHistoryIdsArray(
 					return nil, err
 				}
 				dbBanHistoryItem.LastUpdateTimestamp = parsingTimestamp
-				err = tx.Update(dbBanHistoryItem)
+				err = models.Db.Update(dbBanHistoryItem)
 				if err != nil {
 					return nil, errors.New(err)
 				}
 			}
 		} else {
-			err := tx.Insert(banHistoryItem)
+			err := models.Db.Insert(banHistoryItem)
 			if err != nil {
 				return nil, err
 			}
@@ -341,7 +342,6 @@ func createBanHistoryIdsArray(
 }
 
 func calculateNextUpdateTimestamp(
-	tx *pg.Tx,
 	user *models.PikabuUser,
 	wasDataChanged bool,
 ) models.TimestampType {

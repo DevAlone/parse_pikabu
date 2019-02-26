@@ -16,13 +16,7 @@ func processCommunitiesPages(parsingTimestamp models.TimestampType, communitiesP
 	processCommunitiesPagesMutex.Lock()
 	defer processCommunitiesPagesMutex.Unlock()
 
-	tx, err := models.Db.Begin()
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	_, err = tx.Model().Exec(`
+	_, err := models.Db.Model().Exec(`
 		UPDATE simple_tasks
 		SET is_done = true
 		WHERE name = 'parse_communities'
@@ -36,19 +30,19 @@ func processCommunitiesPages(parsingTimestamp models.TimestampType, communitiesP
 	logger.Log.Debugf("processing community pages. number of pages is %v", len(communitiesPages))
 	for _, communitiesPage := range communitiesPages {
 		for _, community := range communitiesPage.List {
-			err := processCommunity(parsingTimestamp, tx, &community)
+			err := processCommunity(parsingTimestamp, &community)
 			if err != nil {
 				return err
 			}
 		}
 	}
 
-	return tx.Commit()
+	return nil
 }
 
 func processCommunity(
 	parsingTimestamp models.TimestampType,
-	tx *pg.Tx, parsedCommunity *pikago_models.Community,
+	parsedCommunity *pikago_models.Community,
 ) error {
 	moderatorIds := []uint64{}
 	for _, moderator := range parsedCommunity.CommunityModerators {
@@ -78,9 +72,9 @@ func processCommunity(
 		PikabuId: newCommunity.PikabuId,
 	}
 
-	err := tx.Select(community)
+	err := models.Db.Select(community)
 	if err == pg.ErrNoRows {
-		err := tx.Insert(newCommunity)
+		err := models.Db.Insert(newCommunity)
 		if err != nil {
 			return errors.New(err)
 		}
@@ -95,14 +89,14 @@ func processCommunity(
 		return nil
 	}
 
-	_, err = processModelFieldsVersions(tx, community, newCommunity, parsingTimestamp)
+	_, err = processModelFieldsVersions(nil, community, newCommunity, parsingTimestamp)
 	if err != nil {
 		return err
 	}
 
 	community.LastUpdateTimestamp = parsingTimestamp
 
-	err = tx.Update(community)
+	err = models.Db.Update(community)
 	if err != nil {
 		return errors.New(err)
 	}
