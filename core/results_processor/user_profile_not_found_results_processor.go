@@ -59,6 +59,7 @@ func processUserProfileNotFoundResult(parsingTimestamp models.TimestampType, res
 	}
 
 	if err != pg.ErrNoRows {
+		user.LastUpdateTimestamp = parsingTimestamp
 		user.NextUpdateTimestamp = user.LastUpdateTimestamp + models.TimestampType(config.Settings.UsersMaxUpdatingPeriod)
 		user.IsDeleted = true
 
