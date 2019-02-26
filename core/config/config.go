@@ -64,6 +64,6 @@ func init() {
 	Settings.UsersMinUpdatingPeriod = 3600 * 12
 	Settings.UsersMaxUpdatingPeriod = 3600 * 24 * 7
 	Settings.MaxNumberOfTasksInQueue = 128
-	Settings.NumberOfTasksProcessorsMultiplier = 4
+	Settings.NumberOfTasksProcessorsMultiplier = 1
 	Settings.NumberOfNewUsersGap = 128
 }
