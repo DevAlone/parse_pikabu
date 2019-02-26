@@ -162,7 +162,7 @@ func (p *Parser) processParseUserTask(task *models.ParseUserTask) error {
 
 	if len(task.Username) > 0 {
 		res, err = p.processParseUserTaskByUsername(task)
-		if _, ok := err.(pikago.PikabuErrorRequestedPageNotFound); err != nil && ok {
+		if _, ok := err.(*pikago.PikabuErrorRequestedPageNotFound); err != nil && ok {
 			res, err = p.ProcessParseUserTaskById(task)
 		} else if err != nil {
 			return go_errors.New(fmt.Sprintf("Error while processing task %v. Error: %v", task, err))
@@ -172,7 +172,7 @@ func (p *Parser) processParseUserTask(task *models.ParseUserTask) error {
 	}
 
 	if err != nil {
-		if pe, ok := err.(pikago.PikabuErrorRequestedPageNotFound); ok {
+		if pe, ok := err.(*pikago.PikabuErrorRequestedPageNotFound); ok {
 			return p.PutResultsToQueue("user_profile_not_found", []models.ParserUserProfileNotFoundResultData{
 				{
 					PikabuId:    task.PikabuId,
@@ -191,22 +191,46 @@ func (p *Parser) processParseUserTask(task *models.ParseUserTask) error {
 
 func (p *Parser) ProcessParseUserTaskById(task *models.ParseUserTask) (*models.ParserUserProfileResultData, error) {
 	// parse by id
-	url := fmt.Sprintf("https://pikabu.ru/ajax/user_info.php?action=get_short_profile&user_id=%v", task.PikabuId)
-	httpReq, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-	token := helpers.GetRandomString([]rune("abcdefghijklmnopqrstuvwxyz0123456789"), 32)
-	httpReq.Header.Add("X-Csrf-Token", token)
-	httpReq.Header.Add("Cookie", fmt.Sprintf("PHPSESS=%v;", token))
-	httpReq.Header.Add("X-Requested-With", "XMLHttpRequest")
+	makeRequest := func(id uint64) (*http.Request, error) {
+		url := fmt.Sprintf("https://pikabu.ru/ajax/user_info.php?action=get_short_profile&user_id=%v", id)
+		httpReq, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			return nil, err
+		}
+		token := helpers.GetRandomString([]rune("abcdefghijklmnopqrstuvwxyz0123456789"), 32)
+		httpReq.Header.Add("X-Csrf-Token", token)
+		httpReq.Header.Add("Cookie", fmt.Sprintf("PHPSESS=%v;", token))
+		httpReq.Header.Add("X-Requested-With", "XMLHttpRequest")
 
-	body, httpResp, err := p.pikagoClient.DoHttpRequest(httpReq)
+		return httpReq, nil
+	}
+
+	httpReq, err := makeRequest(task.PikabuId)
 	if err != nil {
 		return nil, err
 	}
-	if httpResp.StatusCode != 403 {
-		// TODO: process deleted users somehow
+
+	body, _, err := p.pikagoClient.DoHttpRequest(httpReq)
+	if pikabuErr, ok := err.(*pikago.PikabuError); ok && pikabuErr.StatusCode == 403 {
+		// check that 403 was because user does not exist
+		httpReq, e := makeRequest(1)
+		if e != nil {
+			return nil, e
+		}
+		_, resp, e := p.pikagoClient.DoHttpRequest(httpReq)
+		// TODO: check actual data
+		if resp.StatusCode == 200 {
+			return nil, &pikago.PikabuErrorRequestedPageNotFound{
+				PikabuError: pikago.PikabuError{
+					StatusCode: 404,
+					Message:    "Not found by id",
+				},
+			}
+		} else {
+			return nil, err
+		}
+	} else if err != nil {
+		return nil, err
 	}
 
 	var resp struct {

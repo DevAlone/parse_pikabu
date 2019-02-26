@@ -120,6 +120,7 @@ WHERE pikabu_id + 1 <> next_nr LIMIT 10;
 
 func processUserTasks() error {
 	// update users
+	// TODO: iterate over all users here
 	users := []models.PikabuUser{}
 	err := models.Db.Model(&users).
 		ColumnExpr("pikabu_user.*").

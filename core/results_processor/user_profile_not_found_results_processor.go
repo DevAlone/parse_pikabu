@@ -52,7 +52,8 @@ func processUserProfileNotFoundResult(parsingTimestamp models.TimestampType, res
 
 	var user models.PikabuUser
 	err = tx.Model(&user).
-		Where("pikabu_id = ?", res.PikabuId).Select()
+		Where("pikabu_id = ?", res.PikabuId).
+		Select()
 	if err != nil && err != pg.ErrNoRows {
 		return err
 	}
