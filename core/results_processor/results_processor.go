@@ -121,7 +121,9 @@ func startListenerAMQP() error {
 
 	logger.Log.Debug("start waiting for parser results")
 	var wg sync.WaitGroup
-	for i := 0; i < config.Settings.NumberOfTasksProcessorsMultiplier*runtime.GOMAXPROCS(0); i++ {
+	// TODO: fix
+	// for i := 0; i < config.Settings.NumberOfTasksProcessorsMultiplier*runtime.GOMAXPROCS(0); i++ {
+	for i := 0; i < 1; i++ {
 		wg.Add(1)
 		go func() {
 			for message := range messages {
