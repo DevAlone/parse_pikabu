@@ -35,13 +35,21 @@ func Init() {
 
 	Log = logrus.New()
 	PikagoLog = logrus.New()
-	PikagoHttpLog = logrus.New()
+	if config.Settings.Debug {
+		PikagoHttpLog = nil
+	} else {
+		PikagoHttpLog = logrus.New()
+	}
 
 	for log, file := range map[*logrus.Logger]*os.File{
 		Log:           logFile,
 		PikagoLog:     pikagoLogFile,
 		PikagoHttpLog: pikagoHttpLogFile,
 	} {
+		if log == nil {
+			continue
+		}
+
 		log.SetOutput(file)
 		// log.SetFormatter(&logrus.JSONFormatter{})
 		log.SetFormatter(&logrus.TextFormatter{
