@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-pg/pg/orm"
 
@@ -37,7 +38,7 @@ func Run() error {
 			return err
 		}
 
-		time.Sleep(60 * time.Second)
+		time.Sleep(config.Settings.WaitBeforeAddingTasksSeconds * time.Second)
 	}
 
 	wg.Wait()
