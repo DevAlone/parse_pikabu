@@ -34,16 +34,6 @@ func processUserProfileNotFoundResult(parsingTimestamp models.TimestampType, res
 		return err
 	}
 
-	err = task_manager.CompleteTask(
-		nil,
-		"parse_user_tasks",
-		"username",
-		res.Username,
-	)
-	if err != nil {
-		return err
-	}
-
 	var user models.PikabuUser
 	err = models.Db.Model(&user).
 		Where("pikabu_id = ?", res.PikabuId).
