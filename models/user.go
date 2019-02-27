@@ -130,7 +130,7 @@ func init() {
 	addIndex("pikabu_users", "number_of_hot_stories", "")
 	addIndex("pikabu_users", "number_of_pluses", "")
 	addIndex("pikabu_users", "number_of_minuses", "")
-	addIndex("pikabu_users", "sigjapannup_timestamp", "")
+	addIndex("pikabu_users", "signup_timestamp", "")
 	// addIndex("pikabu_users", "avatar_url", "hash")
 	addIndex("pikabu_users", "approved_text", "") // TODO: consider removing
 	// addIndex("pikabu_users", "award_ids", "")
