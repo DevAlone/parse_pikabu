@@ -38,7 +38,7 @@ func Run() error {
 			return err
 		}
 
-		time.Sleep(config.Settings.WaitBeforeAddingTasksSeconds * time.Second)
+		time.Sleep(time.Duration(config.Settings.WaitBeforeAddingTasksSeconds) * time.Second)
 	}
 
 	wg.Wait()
