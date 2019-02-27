@@ -82,35 +82,42 @@ WHERE pikabu_id + 1 <> next_nr LIMIT 10;
 					if err != nil {
 						return err
 					}
-				}
-			}
-
-			// set offset to max value
-			var lastUser models.PikabuUser
-			err = models.Db.Model(&lastUser).
-				Order("pikabu_id DESC").
-				Limit(1).
-				Select()
-			if err != nil {
-				return err
-			}
-
-			for i := 0; i < config.Settings.NumberOfNewUsersGap; i++ {
-				deletedUser := models.PikabuDeletedOrNeverExistedUser{
-					PikabuId:            lastUser.PikabuId + 1 + uint64(i),
-					LastUpdateTimestamp: 0,
-					NextUpdateTimestamp: 0,
-				}
-				_, err := models.Db.Model(&deletedUser).
-					OnConflict("(pikabu_id) DO NOTHING").
-					Insert()
-				if err != nil {
-					return err
+					err = AddParseUserTaskIfNotExists(deletedUser.PikabuId, "")
+					if err != nil {
+						return err
+					}
 				}
 			}
 		}
 
 		// parse new users
+		// set offset to max value
+		var lastUser models.PikabuUser
+		err := models.Db.Model(&lastUser).
+			Order("pikabu_id DESC").
+			Limit(1).
+			Select()
+		if err != nil {
+			return err
+		}
+
+		for i := 0; i < config.Settings.NumberOfNewUsersGap; i++ {
+			deletedUser := models.PikabuDeletedOrNeverExistedUser{
+				PikabuId:            lastUser.PikabuId + 1 + uint64(i),
+				LastUpdateTimestamp: 0,
+				NextUpdateTimestamp: 0,
+			}
+			_, err := models.Db.Model(&deletedUser).
+				OnConflict("(pikabu_id) DO NOTHING").
+				Insert()
+			if err != nil {
+				return err
+			}
+			err = AddParseUserTaskIfNotExists(deletedUser.PikabuId, "")
+			if err != nil {
+				return err
+			}
+		}
 
 		time.Sleep(30 * time.Minute)
 	}
@@ -194,6 +201,36 @@ func AddParseUserTask(pikabuId uint64, username string) error {
 		if err != nil {
 			return errors.New(err)
 		}
+	}
+
+	return PushTaskToQueue(task)
+}
+
+func AddParseUserTaskIfNotExists(pikabuId uint64, username string) error {
+	task := &models.ParseUserTask{}
+
+	err := models.Db.Model(task).
+		Where("pikabu_id = ?", pikabuId).
+		Select()
+
+	if err != pg.ErrNoRows && err != nil {
+		return errors.New(err)
+	}
+
+	exists := err != pg.ErrNoRows
+	if exists {
+		return nil
+	}
+
+	task.PikabuId = pikabuId
+	task.AddedTimestamp = models.TimestampType(time.Now().Unix())
+	task.IsDone = false
+	task.IsTaken = true
+	task.Username = username
+
+	err = models.Db.Insert(task)
+	if err != nil {
+		return errors.New(err)
 	}
 
 	return PushTaskToQueue(task)
