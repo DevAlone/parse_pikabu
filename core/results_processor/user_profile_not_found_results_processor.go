@@ -66,7 +66,7 @@ func processUserProfileNotFoundResult(parsingTimestamp models.TimestampType, res
 			updatingPeriod = -updatingPeriod
 		}
 		if updatingPeriod == 0 {
-			updatingPeriod = models.TimestampType(config.Settings.UsersMaxUpdatingPeriod)
+			updatingPeriod = models.TimestampType(config.Settings.UsersMinUpdatingPeriod)
 		} else {
 			updatingPeriod = models.TimestampType(float32(updatingPeriod) * 1.5)
 		}
