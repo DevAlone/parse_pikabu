@@ -29,6 +29,7 @@ var Settings struct {
 	NumberOfTasksProcessorsMultiplier int
 	NumberOfNewUsersGap               int
 	WaitBeforeAddingTasksSeconds      int
+	AddNewUsersEachNMinutes           int
 }
 
 func UpdateSettingsFromFile(filename string) error {
@@ -68,4 +69,5 @@ func init() {
 	Settings.NumberOfTasksProcessorsMultiplier = 1
 	Settings.NumberOfNewUsersGap = 128
 	Settings.WaitBeforeAddingTasksSeconds = 10
+	Settings.AddNewUsersEachNMinutes = 10
 }

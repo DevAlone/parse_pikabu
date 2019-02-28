@@ -143,7 +143,7 @@ func addNewUsersWorker() error {
 			}
 		}
 
-		time.Sleep(10 * time.Minute)
+		time.Sleep(time.Duration(config.Settings.AddNewUsersEachNMinutes) * time.Minute)
 	}
 
 	return nil
