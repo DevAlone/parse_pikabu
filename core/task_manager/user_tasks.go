@@ -96,6 +96,9 @@ WHERE pikabu_id + 1 <> next_nr LIMIT 10;
 			Where("next_update_timestamp <= ?", time.Now().Unix()).
 			Limit(1024).
 			Select()
+		if err != nil {
+			return err
+		}
 		for _, deletedUser := range deletedUsers {
 			err := AddParseUserTask(deletedUser.PikabuId, "")
 			if err != nil {
