@@ -78,6 +78,21 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 		return err
 	}
 
+	task := models.ParseUserTask{
+		PikabuId: userProfile.UserId.Value,
+	}
+	err = models.Db.Select(&task)
+	if err != pg.ErrNoRows && err != nil {
+		return err
+	}
+	if err != pg.ErrNoRows {
+		task.Username = userProfile.Username
+		err = models.Db.Update(&task)
+		if err != nil {
+			return err
+		}
+	}
+
 	err = task_manager.CompleteTask(
 		nil,
 		"parse_user_tasks",

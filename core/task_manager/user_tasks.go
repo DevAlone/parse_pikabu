@@ -90,6 +90,27 @@ WHERE pikabu_id + 1 <> next_nr LIMIT 10;
 			}
 		}
 
+		// try to parse again
+		var deletedUsers []models.PikabuDeletedOrNeverExistedUser
+		err := models.Db.Model(&deletedUsers).
+			Where("next_update_timestamp <= ?", time.Now().Unix()).
+			Limit(1024).
+			Select()
+		for _, deletedUser := range deletedUsers {
+			err := AddParseUserTask(deletedUser.PikabuId, "")
+			if err != nil {
+				return err
+			}
+		}
+
+		time.Sleep(30 * time.Minute)
+	}
+
+	return nil
+}
+
+func addNewUsersWorker() error {
+	for true {
 		// parse new users
 		// set offset to max value
 		var lastUser models.PikabuUser
@@ -119,20 +140,7 @@ WHERE pikabu_id + 1 <> next_nr LIMIT 10;
 			}
 		}
 
-		// try to parse again
-		var deletedUsers []models.PikabuDeletedOrNeverExistedUser
-		err = models.Db.Model(&deletedUsers).
-			Where("next_update_timestamp <= ?", time.Now().Unix()).
-			Limit(1024).
-			Select()
-		for _, deletedUser := range deletedUsers {
-			err := AddParseUserTask(deletedUser.PikabuId, "")
-			if err != nil {
-				return err
-			}
-		}
-
-		time.Sleep(30 * time.Minute)
+		time.Sleep(10 * time.Minute)
 	}
 
 	return nil

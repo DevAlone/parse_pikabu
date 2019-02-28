@@ -30,6 +30,13 @@ func Run() error {
 		wg.Done()
 	}()
 
+	wg.Add(1)
+	go func() {
+		err := addNewUsersWorker()
+		helpers.PanicOnError(err)
+		wg.Done()
+	}()
+
 	for true {
 		if err := processUserTasks(); err != nil {
 			return err
