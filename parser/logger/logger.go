@@ -36,9 +36,9 @@ func Init() {
 	Log = logrus.New()
 	PikagoLog = logrus.New()
 	if config.Settings.Debug {
-		PikagoHttpLog = nil
-	} else {
 		PikagoHttpLog = logrus.New()
+	} else {
+		PikagoHttpLog = nil
 	}
 
 	for log, file := range map[*logrus.Logger]*os.File{

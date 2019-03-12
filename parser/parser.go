@@ -6,12 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"github.com/streadway/amqp"
 
 	"bitbucket.org/d3dev/parse_pikabu/parser/logger"
 	"github.com/go-errors/errors"
-	logging "github.com/op/go-logging"
 	"gogsweb.2-47.ru/d3dev/pikago"
 )
 
@@ -76,11 +74,6 @@ func NewParser(parserConfig *ParserConfig) (*Parser, error) {
 		_ = parser.pikagoClient.ResetState()
 		return req
 	})
-	if config.Settings.Debug {
-		logging.SetLevel(logging.DEBUG, "pikago")
-	} else {
-		logging.SetLevel(logging.WARNING, "pikago")
-	}
 
 	return parser, nil
 }
