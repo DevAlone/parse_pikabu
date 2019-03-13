@@ -1,0 +1,63 @@
+package models
+
+// PikabuStoryBlock // TODO: add doc
+type PikabuStoryBlock struct {
+	Type string      `json:"type"`
+	Data interface{} `json:"data"`
+}
+
+// PikabuStory // TODO: add doc
+type PikabuStory struct {
+	PikabuID uint64 `sql:",pk" json:"pikabu_id" api:"order,filter"`
+
+	Rating             int32              `sql:",notnull" json:"rating" gen_versions:""`
+	NumberOfPluses     int32              `sql:",notnull" json:"number_of_pluses" gen_versions:""`
+	NumberOfMinuses    int32              `sql:",notnull" json:"number_of_minuses" gen_versions:""`
+	Title              string             `sql:",notnull" json:"title" gen_versions:""`
+	ContentBlocks      []PikabuStoryBlock `sql:",notnull" json:"content_blocks" gen_versions:""`
+	CreatedAtTimestamp TimestampType      `sql:",notnull" json:"created_at_timestamp" gen_versions:""`
+	StoryURL           string             `sql:",notnull" json:"story_url" gen_versions:""`
+	Tags               []string           `sql:",notnull" json:"tags" gen_versions:""`
+	NumberOfComments   int32              `sql:",notnull" json:"number_of_comments" gen_versions:""`
+	IsDeleted          bool               `sql:",notnull" json:"is_deleted" gen_versions:""`
+	IsRatingHidden     bool               `sql:",notnull" json:"is_rating_hidden" gen_versions:""`
+	HasMineTag         bool               `sql:",notnull" json:"has_mine_tag" gen_versions:""`
+	HasAdultTag        bool               `sql:",notnull" json:"has_adult_tag" gen_versions:""`
+	IsLongpost         bool               `sql:",notnull" json:"is_longpost" gen_versions:""`
+	AuthorID           uint64             `sql:",notnull" json:"author_id" gen_versions:""`
+	AuthorUsername     string             `sql:",notnull" json:"author_username" gen_versions:""`
+	AuthorProfileURL   string             `sql:",notnull" json:"author_profile_url" gen_versions:""`
+	AuthorAvatarURL    string             `sql:",notnull" json:"author_avatar_url" gen_versions:""`
+	CommunityLink      string             `sql:",notnull" json:"community_link" gen_versions:""`
+	CommunityName      string             `sql:",notnull" json:"community_name" gen_versions:""`
+	CommentsAreHot     bool               `sql:",notnull" json:"comments_are_hot" gen_versions:""`
+
+	AddedTimestamp       TimestampType `sql:",notnull" json:"added_timestamp" api:"order"`
+	LastUpdateTimestamp  TimestampType `sql:",notnull" json:"last_update_timestamp" api:"order"`
+	NextUpdateTimestamp  TimestampType `sql:",notnull" json:"next_update_timestamp" api:"order"`
+	TaskTakenAtTimestamp TimestampType `sql:",notnull" json:"task_taken_at_timestamp" api:"order"`
+}
+
+// PikabuDeletedOrNeverExistedStory // TODO: add doc
+type PikabuDeletedOrNeverExistedStory struct {
+	PikabuID            uint64        `sql:",pk" json:"pikabu_id"`
+	LastUpdateTimestamp TimestampType `sql:",notnull" json:"last_update_timestamp"`
+	NextUpdateTimestamp TimestampType `sql:",notnull" json:"next_update_timestamp"`
+}
+
+func init() {
+	for _, item := range []interface{}{
+		&PikabuStory{},
+		&PikabuDeletedOrNeverExistedStory{},
+	} {
+		Tables = append(Tables, item)
+	}
+
+	addIndex("pikabu_stories", "added_timestamp", "")
+	addIndex("pikabu_stories", "last_update_timestamp", "")
+	addIndex("pikabu_stories", "next_update_timestamp", "")
+	addIndex("pikabu_stories", "task_taken_at_timestamp", "")
+
+	addIndex("pikabu_deleted_or_never_existed_stories", "last_update_timestamp", "")
+	addIndex("pikabu_deleted_or_never_existed_stories", "next_update_timestamp", "")
+}

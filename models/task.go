@@ -32,10 +32,20 @@ type ParseUserTask struct {
 	Username       string        `sql:",notnull" json:"username"`
 }
 
+/*
+type ParseStoryTask struct {
+	PikabuId       uint64        `sql:",pk" json:"pikabu_id"`
+	IsDone         bool          `sql:",notnull,default:false" json:"is_done"`
+	IsTaken        bool          `sql:",notnull,default:false" json:"is_taken"`
+	AddedTimestamp TimestampType `sql:",notnull" json:"added_timestamp"`
+}
+*/
+
 func init() {
 	for _, table := range []interface{}{
 		&SimpleTask{},
 		&ParseUserTask{},
+		// &ParseStoryTask{},
 	} {
 		Tables = append(Tables, table)
 	}
@@ -65,4 +75,10 @@ func init() {
 	addIndex("parse_user_tasks", "added_timestamp", "")
 	addIndex("parse_user_tasks", "username", "hash")
 	addIndex("parse_user_tasks", "LOWER(username)", "hash")
+
+	/*
+		addIndex("parse_story_tasks", "is_done", "")
+		addIndex("parse_story_tasks", "is_taken", "")
+		addIndex("parse_story_tasks", "added_timestamp", "")
+	*/
 }
