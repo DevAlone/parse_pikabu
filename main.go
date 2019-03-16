@@ -8,20 +8,17 @@ import (
 	"strings"
 	"sync"
 
-	"bitbucket.org/d3dev/parse_pikabu/globals"
-
-	"github.com/pkg/profile"
-
-	"bitbucket.org/d3dev/parse_pikabu/amqp_helper"
-
+	"bitbucket.org/d3dev/parse_pikabu/amqphelper"
 	"bitbucket.org/d3dev/parse_pikabu/core"
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/core/server/middlewares"
+	"bitbucket.org/d3dev/parse_pikabu/globals"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/parser"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg/orm"
+	"github.com/pkg/profile"
 )
 
 var commands = map[string]func(){
@@ -129,5 +126,5 @@ Available commands are:
 		helpers.PanicOnError(errors.Errorf("wrong command"))
 	}
 
-	helpers.PanicOnError(amqp_helper.Cleanup())
+	helpers.PanicOnError(amqphelper.Cleanup())
 }

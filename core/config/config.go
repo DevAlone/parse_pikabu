@@ -5,6 +5,7 @@ import (
 	"os"
 )
 
+// Settings is struct for global settings of app
 var Settings struct {
 	Debug                      bool
 	LogSQLQueries              bool
@@ -16,6 +17,7 @@ var Settings struct {
 	AMQPAddress                string
 	// in seconds
 	MaximumTaskProcessingTime           int
+	MaximumParseStoryTaskProcessingTime int
 	CommunitiesProcessingPeriod         int
 	ServerMaximumNumberOfResultsPerPage uint
 	// time in seconds to consider user as new
@@ -26,12 +28,16 @@ var Settings struct {
 	UsersMaxUpdatingPeriod             int
 	MaxNumberOfTasksInQueue            int
 	// actual number if number of thread multiplied by this value
-	NumberOfTasksProcessorsMultiplier int
-	NumberOfNewUsersGap               int
-	WaitBeforeAddingTasksSeconds      int
-	AddNewUsersEachNMinutes           int
+	NumberOfTasksProcessorsMultiplier    int
+	NumberOfNewUsersGap                  int
+	NumberOfNewStoriesGap                int
+	WaitBeforeAddingTasksSeconds         int
+	WaitBeforeAddingNewUserTasksSeconds  int
+	WaitBeforeAddingNewStoryTasksSeconds int
+	AddNewUsersEachNMinutes              int
 }
 
+// UpdateSettingsFromFile fills settings from the file
 func UpdateSettingsFromFile(filename string) error {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -58,6 +64,7 @@ func init() {
 	Settings.ServerListeningAddress = "0.0.0.0:8080"
 	Settings.AMQPAddress = "amqp://guest:guest@localhost:5672/"
 	Settings.MaximumTaskProcessingTime = 2 * 60
+	Settings.MaximumParseStoryTaskProcessingTime = 2 * 60
 	Settings.CommunitiesProcessingPeriod = 3600
 	Settings.ServerMaximumNumberOfResultsPerPage = 1024
 	Settings.NewUserTime = 3600 * 24 * 7
@@ -68,6 +75,8 @@ func init() {
 	Settings.MaxNumberOfTasksInQueue = 128
 	Settings.NumberOfTasksProcessorsMultiplier = 1
 	Settings.NumberOfNewUsersGap = 128
-	Settings.WaitBeforeAddingTasksSeconds = 10
+	Settings.NumberOfNewStoriesGap = 128
+	Settings.WaitBeforeAddingNewUserTasksSeconds = 10
+	Settings.WaitBeforeAddingNewStoryTasksSeconds = 60
 	Settings.AddNewUsersEachNMinutes = 10
 }

@@ -1,4 +1,4 @@
-package task_manager
+package taskmanager
 
 import (
 	"time"

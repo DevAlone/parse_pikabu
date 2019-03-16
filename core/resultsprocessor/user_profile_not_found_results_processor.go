@@ -1,8 +1,8 @@
-package results_processor
+package resultsprocessor
 
 import (
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
-	"bitbucket.org/d3dev/parse_pikabu/core/task_manager"
+	"bitbucket.org/d3dev/parse_pikabu/core/taskmanager"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-pg/pg"
 )
@@ -24,7 +24,7 @@ func processUserProfileNotFoundResult(parsingTimestamp models.TimestampType, res
 	defer unlockUserById(res.PikabuId)
 
 	// complete tasks
-	err := task_manager.CompleteTask(
+	err := taskmanager.CompleteTask(
 		nil,
 		"parse_user_tasks",
 		"pikabu_id",

@@ -8,7 +8,7 @@ import (
 
 	"bitbucket.org/d3dev/parse_pikabu/globals"
 
-	"bitbucket.org/d3dev/parse_pikabu/amqp_helper"
+	"bitbucket.org/d3dev/parse_pikabu/amqphelper"
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/parser/logger"
@@ -29,10 +29,10 @@ func (p *Parser) CleanupAMQP() error {
 		}
 	}
 
-	if c, ok := amqp_helper.AmqpConnections.Get(p.Config.AMQPAddress); ok {
+	if c, ok := amqphelper.AmqpConnections.Get(p.Config.AMQPAddress); ok {
 		connection := c.(*amqp.Connection)
 		err := connection.Close()
-		amqp_helper.AmqpConnections.Remove(p.Config.AMQPAddress)
+		amqphelper.AmqpConnections.Remove(p.Config.AMQPAddress)
 		if err != nil {
 			return err
 		}
@@ -52,7 +52,7 @@ func (p *Parser) initChannel(connection *amqp.Connection) error {
 		return err
 	}
 
-	err = amqp_helper.DeclareExchanges(p.amqpChannel)
+	err = amqphelper.DeclareExchanges(p.amqpChannel)
 	if err != nil {
 		return err
 	}
@@ -88,7 +88,7 @@ func (p *Parser) PutResultsToQueue(routingKey string, result interface{}) error 
 func (p *Parser) PutResultsToAMQPQueue(routingKey string, result interface{}) error {
 
 	for i := 0; i < 2; i++ {
-		connection, err := amqp_helper.GetAMQPConnection(p.Config.AMQPAddress)
+		connection, err := amqphelper.GetAMQPConnection(p.Config.AMQPAddress)
 		if err != nil {
 			return err
 		}

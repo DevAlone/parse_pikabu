@@ -40,9 +40,10 @@ type PikabuStory struct {
 
 // PikabuDeletedOrNeverExistedStory // TODO: add doc
 type PikabuDeletedOrNeverExistedStory struct {
-	PikabuID            uint64        `sql:",pk" json:"pikabu_id"`
-	LastUpdateTimestamp TimestampType `sql:",notnull" json:"last_update_timestamp"`
-	NextUpdateTimestamp TimestampType `sql:",notnull" json:"next_update_timestamp"`
+	PikabuID             uint64        `sql:",pk" json:"pikabu_id"`
+	LastUpdateTimestamp  TimestampType `sql:",notnull" json:"last_update_timestamp"`
+	NextUpdateTimestamp  TimestampType `sql:",notnull" json:"next_update_timestamp"`
+	TaskTakenAtTimestamp TimestampType `sql:",notnull" json:"task_taken_at_timestamp" api:"order"`
 }
 
 func init() {

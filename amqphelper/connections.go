@@ -1,4 +1,4 @@
-package amqp_helper
+package amqphelper
 
 import (
 	"sync"

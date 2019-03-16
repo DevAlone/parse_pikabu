@@ -1,4 +1,4 @@
-package results_processor
+package resultsprocessor
 
 import (
 	"sync"

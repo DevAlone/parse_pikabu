@@ -1,4 +1,4 @@
-package results_processor
+package resultsprocessor
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
-	"bitbucket.org/d3dev/parse_pikabu/core/task_manager"
+	"bitbucket.org/d3dev/parse_pikabu/core/taskmanager"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
@@ -68,7 +68,7 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 	*/
 
 	// complete tasks
-	err := task_manager.CompleteTask(
+	err := taskmanager.CompleteTask(
 		nil,
 		"parse_user_tasks",
 		"pikabu_id",
@@ -93,7 +93,7 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 		}
 	}
 
-	err = task_manager.CompleteTask(
+	err = taskmanager.CompleteTask(
 		nil,
 		"parse_user_tasks",
 		"username",

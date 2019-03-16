@@ -1,4 +1,4 @@
-package task_manager
+package taskmanager
 
 import (
 	"encoding/json"
@@ -6,11 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"bitbucket.org/d3dev/parse_pikabu/globals"
-
-	"bitbucket.org/d3dev/parse_pikabu/amqp_helper"
+	"bitbucket.org/d3dev/parse_pikabu/amqphelper"
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
+	"bitbucket.org/d3dev/parse_pikabu/globals"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-errors/errors"
 	"github.com/streadway/amqp"
@@ -41,7 +40,7 @@ func initChannel(connection *amqp.Connection) error {
 		return err
 	}
 
-	err = amqp_helper.DeclareExchanges(amqpChannel)
+	err = amqphelper.DeclareExchanges(amqpChannel)
 	if err != nil {
 		return err
 	}
@@ -69,7 +68,7 @@ func PushTaskToQueue(taskPtr interface{}) error {
 func PushTaskToAMQPQueue(taskPtr interface{}) error {
 	// TODO: limit number of tasks in queue
 	for i := 0; i < 2; i++ {
-		connection, err := amqp_helper.GetAMQPConnection(config.Settings.AMQPAddress)
+		connection, err := amqphelper.GetAMQPConnection(config.Settings.AMQPAddress)
 		if err != nil {
 			return errors.New(err)
 		}
@@ -114,7 +113,7 @@ func PushTaskToAMQPQueue(taskPtr interface{}) error {
 			return nil
 		} else {
 			_ = Cleanup()
-			_ = amqp_helper.Cleanup()
+			_ = amqphelper.Cleanup()
 			logger.Log.Error(err)
 		}
 	}

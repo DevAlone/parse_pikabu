@@ -1,4 +1,4 @@
-package results_processor
+package resultsprocessor
 
 import (
 	"reflect"
@@ -10,7 +10,7 @@ import (
 
 	"bitbucket.org/d3dev/parse_pikabu/globals"
 
-	"bitbucket.org/d3dev/parse_pikabu/amqp_helper"
+	"bitbucket.org/d3dev/parse_pikabu/amqphelper"
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
@@ -21,8 +21,9 @@ import (
 	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )
 
+// Run runs result processing
 func Run() error {
-	for true {
+	for {
 		err := startListener()
 		if err != nil {
 			if e, ok := err.(*errors.Error); ok {
@@ -31,7 +32,7 @@ func Run() error {
 				logger.Log.Error(err.Error())
 			}
 			if !globals.SingleProcessMode {
-				_ = amqp_helper.Cleanup()
+				_ = amqphelper.Cleanup()
 			}
 		}
 		time.Sleep(5 * time.Second)
@@ -42,9 +43,9 @@ func Run() error {
 func startListener() error {
 	if globals.SingleProcessMode {
 		return startListenerChannels()
-	} else {
-		return startListenerAMQP()
 	}
+
+	return startListenerAMQP()
 }
 
 func startListenerChannels() error {
@@ -69,7 +70,7 @@ func startListenerChannels() error {
 
 func startListenerAMQP() error {
 	logger.Log.Debug("connecting to amqp server...")
-	connection, err := amqp_helper.GetAMQPConnection(config.Settings.AMQPAddress)
+	connection, err := amqphelper.GetAMQPConnection(config.Settings.AMQPAddress)
 	if err != nil {
 		return errors.New(err)
 	}
@@ -80,12 +81,12 @@ func startListenerAMQP() error {
 	}
 	defer func() { _ = ch.Close() }()
 
-	err = amqp_helper.DeclareExchanges(ch)
+	err = amqphelper.DeclareExchanges(ch)
 	if err != nil {
 		return errors.New(err)
 	}
 
-	q, err := amqp_helper.DeclareParserResultsQueue(ch)
+	q, err := amqphelper.DeclareParserResultsQueue(ch)
 	if err != nil {
 		return errors.New(err)
 	}
@@ -228,6 +229,8 @@ func processMessage(message *models.ParserResult) error {
 		return processUserProfileNotFoundResults(message.ParsingTimestamp, m)
 	case []pikago_models.CommunitiesPage:
 		return processCommunitiesPages(message.ParsingTimestamp, m)
+	case []pikago_models.StoryGetResult:
+		return processStoryGetResults(message.ParsingTimestamp, m)
 	default:
 		logger.Log.Warningf(
 			"processMessage(): Unregistered result type \"%v\". Message: \"%v\". m: \"%v\"",
@@ -240,9 +243,11 @@ func processMessage(message *models.ParserResult) error {
 	return nil
 }
 
+// OldParserResultError shows that result of parser is too
+// old and will be ignored
 type OldParserResultError struct{}
 
-func (this OldParserResultError) Error() string { return "old parser result error" }
+func (e OldParserResultError) Error() string { return "old parser result error" }
 
 func processModelFieldsVersions(
 	transaction *pg.Tx,
@@ -260,10 +265,10 @@ func processModelFieldsVersions(
 	oldModel := reflect.ValueOf(oldModelPtr).Elem()
 	newModel := reflect.ValueOf(newModelPtr).Elem()
 
-	oldId := oldModel.FieldByName("PikabuId").Uint()
-	newId := newModel.FieldByName("PikabuId").Uint()
+	oldID := oldModel.FieldByName("PikabuId").Uint()
+	newID := newModel.FieldByName("PikabuId").Uint()
 
-	if oldId != newId {
+	if oldID != newID {
 		return false, errors.New("ids should be equal")
 	}
 
@@ -303,7 +308,7 @@ func processModelFieldsVersions(
 			ignoreIfExists bool,
 		) error {
 			e := reflect.ValueOf(versionTable).Elem()
-			e.FieldByName("ItemId").SetUint(oldId)
+			e.FieldByName("ItemId").SetUint(oldID)
 			e.FieldByName("Timestamp").Set(reflect.ValueOf(timestamp))
 			e.FieldByName("Value").Set(value)
 
@@ -338,7 +343,7 @@ func processModelFieldsVersions(
 		} else {
 			q = transaction.Model(versionTable)
 		}
-		count, err := q.Where("item_id = ?", oldId).Count()
+		count, err := q.Where("item_id = ?", oldID).Count()
 		if err != nil {
 			return false, errors.New(err)
 		}

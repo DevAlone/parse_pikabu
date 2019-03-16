@@ -12,7 +12,7 @@ import (
 
 	"gogsweb.2-47.ru/d3dev/pikago"
 
-	"bitbucket.org/d3dev/parse_pikabu/amqp_helper"
+	"bitbucket.org/d3dev/parse_pikabu/amqphelper"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"bitbucket.org/d3dev/parse_pikabu/parser/logger"
@@ -65,7 +65,7 @@ func (p *Parser) ListenForChannelTasks() error {
 
 func (p *Parser) ListenForAMQPTasks() error {
 	logger.Log.Debug("connecting to amqp server...")
-	connection, err := amqp_helper.GetAMQPConnection(p.Config.AMQPAddress)
+	connection, err := amqphelper.GetAMQPConnection(p.Config.AMQPAddress)
 	if err != nil {
 		return errors.New(err)
 	}
@@ -76,12 +76,12 @@ func (p *Parser) ListenForAMQPTasks() error {
 	}
 	defer func() { _ = ch.Close() }()
 
-	err = amqp_helper.DeclareExchanges(ch)
+	err = amqphelper.DeclareExchanges(ch)
 	if err != nil {
 		return errors.New(err)
 	}
 
-	q, err := amqp_helper.DeclareParserTasksQueue(ch)
+	q, err := amqphelper.DeclareParserTasksQueue(ch)
 	if err != nil {
 		return errors.New(err)
 	}

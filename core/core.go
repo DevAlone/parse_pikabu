@@ -4,10 +4,10 @@ import (
 	"sync"
 
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
-	"bitbucket.org/d3dev/parse_pikabu/core/results_processor"
+	"bitbucket.org/d3dev/parse_pikabu/core/resultsprocessor"
 	"bitbucket.org/d3dev/parse_pikabu/core/server"
 	"bitbucket.org/d3dev/parse_pikabu/core/statistics"
-	"bitbucket.org/d3dev/parse_pikabu/core/task_manager"
+	"bitbucket.org/d3dev/parse_pikabu/core/taskmanager"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 )
@@ -33,7 +33,7 @@ func Main() {
 	wg.Add(1)
 	// start task manager
 	go func() {
-		err := task_manager.Run()
+		err := taskmanager.Run()
 		helpers.PanicOnError(err)
 		wg.Done()
 	}()
@@ -41,7 +41,7 @@ func Main() {
 	wg.Add(1)
 	// start results processor
 	go func() {
-		err := results_processor.Run()
+		err := resultsprocessor.Run()
 		helpers.PanicOnError(err)
 		wg.Done()
 	}()

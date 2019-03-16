@@ -1,4 +1,4 @@
-package task_manager
+package taskmanager
 
 import (
 	"strings"
@@ -13,53 +13,38 @@ import (
 	"github.com/go-pg/pg"
 )
 
+// Run runs goroutines to process tasks
 func Run() error {
 	var wg sync.WaitGroup
 
-	wg.Add(1)
-	go func() {
-		err := addMissingTasksWorker()
-		helpers.PanicOnError(err)
-		wg.Done()
-	}()
-
-	wg.Add(1)
-	go func() {
-		err := addMissingUsersWorker()
-		helpers.PanicOnError(err)
-		wg.Done()
-	}()
-
-	wg.Add(1)
-	go func() {
-		err := addNewUsersWorker()
-		helpers.PanicOnError(err)
-		wg.Done()
-	}()
-
-	wg.Add(1)
-	go func() {
-		err := storyTasksWorker()
-		helpers.PanicOnError(err)
-		wg.Done()
-	}()
-
-	for true {
-		if err := processUserTasks(); err != nil {
-			return err
-		}
-		if err := processCommunityTasks(); err != nil {
-			return err
-		}
-
-		time.Sleep(time.Duration(config.Settings.WaitBeforeAddingTasksSeconds) * time.Second)
+	for _, f := range []func() error{
+		storyTasksWorker,
+		userTasksWorker,
+	} {
+		wg.Add(1)
+		go func(handler func() error) {
+			helpers.PanicOnError(handler())
+			wg.Done()
+		}(f)
 	}
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for {
+			helpers.PanicOnError(processUserTasks())
+			helpers.PanicOnError(processCommunityTasks())
+
+			time.Sleep(time.Duration(config.Settings.WaitBeforeAddingTasksSeconds) * time.Second)
+		}
+	}()
 
 	wg.Wait()
 
 	return Cleanup()
 }
 
+// CompleteTask completes a task
 func CompleteTask(tx *pg.Tx, tableName, fieldName string, fieldValue interface{}) error {
 	// TODO: refactor to be able to pass the actual model, not a table's name
 	var q *orm.Query

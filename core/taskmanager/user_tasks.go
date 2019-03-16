@@ -1,16 +1,38 @@
-package task_manager
+package taskmanager
 
 import (
+	"sync"
 	"time"
 
 	"github.com/go-errors/errors"
 
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
+	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-pg/pg"
 )
 
-func addMissingTasksWorker() error {
+func userTasksWorker() error {
+	var wg sync.WaitGroup
+
+	for _, f := range []func() error{
+		addMissingUserTasksWorker,
+		addMissingUsersWorker,
+		addNewUsersWorker,
+	} {
+		wg.Add(1)
+		go func(handler func() error) {
+			helpers.PanicOnError(handler())
+			wg.Done()
+		}(f)
+	}
+
+	wg.Wait()
+
+	return nil
+}
+
+func addMissingUserTasksWorker() error {
 	for true {
 		var users []models.PikabuUser
 		// very slow query

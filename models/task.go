@@ -1,5 +1,6 @@
 package models
 
+// Task is base task class
 type Task struct {
 	Id             uint64        `json:"id"`
 	IsDone         bool          `sql:",notnull,default:false" json:"is_done"`
@@ -7,6 +8,7 @@ type Task struct {
 	AddedTimestamp TimestampType `sql:",notnull" json:"added_timestamp"`
 }
 
+// SimpleTask is for tasks like "to parse communities"
 type SimpleTask struct {
 	Task
 	Name string `sql:",notnull"`
@@ -24,6 +26,7 @@ type ParseUserByIdTask struct {
 }
 */
 
+// ParseUserTask is a task for parsing users
 type ParseUserTask struct {
 	PikabuId       uint64        `sql:",pk" json:"pikabu_id"`
 	IsDone         bool          `sql:",notnull,default:false" json:"is_done"`
@@ -32,23 +35,17 @@ type ParseUserTask struct {
 	Username       string        `sql:",notnull" json:"username"`
 }
 
-/*
+// ParseStoryTask is a task for parsing stories by id
 type ParseStoryTask struct {
-	PikabuId       uint64        `sql:",pk" json:"pikabu_id"`
-	IsDone         bool          `sql:",notnull,default:false" json:"is_done"`
-	IsTaken        bool          `sql:",notnull,default:false" json:"is_taken"`
+	PikabuID       uint64        `sql:",pk" json:"pikabu_id"`
 	AddedTimestamp TimestampType `sql:",notnull" json:"added_timestamp"`
 }
-*/
 
 func init() {
-	for _, table := range []interface{}{
+	Tables = append(Tables, []interface{}{
 		&SimpleTask{},
 		&ParseUserTask{},
-		// &ParseStoryTask{},
-	} {
-		Tables = append(Tables, table)
-	}
+	})
 
 	/*
 		CustomQueries = append(CustomQueries, `
@@ -75,10 +72,4 @@ func init() {
 	addIndex("parse_user_tasks", "added_timestamp", "")
 	addIndex("parse_user_tasks", "username", "hash")
 	addIndex("parse_user_tasks", "LOWER(username)", "hash")
-
-	/*
-		addIndex("parse_story_tasks", "is_done", "")
-		addIndex("parse_story_tasks", "is_taken", "")
-		addIndex("parse_story_tasks", "added_timestamp", "")
-	*/
 }
