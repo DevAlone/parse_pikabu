@@ -79,7 +79,7 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 	}
 
 	task := models.ParseUserTask{
-		PikabuId: userProfile.UserId.Value,
+		PikabuID: userProfile.UserId.Value,
 	}
 	err = models.Db.Select(&task)
 	if err != pg.ErrNoRows && err != nil {
@@ -104,7 +104,7 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 	}
 
 	_, err = models.Db.Model(&models.PikabuDeletedOrNeverExistedUser{
-		PikabuId: userProfile.UserId.Value,
+		PikabuID: userProfile.UserId.Value,
 	}).WherePK().Delete()
 	if err != nil && err != pg.ErrNoRows {
 		return err
@@ -133,7 +133,7 @@ func saveUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago_
 		return err
 	}
 	newUser := &models.PikabuUser{
-		PikabuId:            userProfile.UserId.Value,
+		PikabuID:            userProfile.UserId.Value,
 		Username:            userProfile.Username,
 		Gender:              fmt.Sprint(userProfile.Gender.Value),
 		Rating:              int32(userProfile.Rating.Value),
@@ -161,7 +161,7 @@ func saveUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago_
 	newUser.NextUpdateTimestamp = calculateNextUpdateTimestamp(newUser, false)
 
 	user := &models.PikabuUser{
-		PikabuId: userProfile.UserId.Value,
+		PikabuID: userProfile.UserId.Value,
 	}
 	err = models.Db.Select(user)
 
@@ -203,7 +203,7 @@ func CreateAwardIdsArray(
 
 	for _, parsedAward := range parsedAwards {
 		award := &models.PikabuUserAward{
-			PikabuId:            parsedAward.Id.Value,
+			PikabuID:            parsedAward.Id.Value,
 			AddedTimestamp:      parsingTimestamp,
 			UserId:              parsedAward.UserId.Value,
 			AwardId:             parsedAward.AwardId.Value,
@@ -218,7 +218,7 @@ func CreateAwardIdsArray(
 			LastUpdateTimestamp: parsingTimestamp,
 		}
 		awardFromDb := &models.PikabuUserAward{
-			PikabuId: parsedAward.Id.Value,
+			PikabuID: parsedAward.Id.Value,
 		}
 		err := models.Db.Select(awardFromDb)
 		if err != pg.ErrNoRows && err != nil {
@@ -247,7 +247,7 @@ func CreateAwardIdsArray(
 				return nil, err
 			}
 		}
-		result = append(result, award.PikabuId)
+		result = append(result, award.PikabuID)
 	}
 	return result, nil
 }
@@ -302,7 +302,7 @@ func createBanHistoryIdsArray(
 	result := []uint64{}
 	for _, parsedBanHistoryItem := range parsedBanHistoryItems {
 		banHistoryItem := &models.PikabuUserBanHistoryItem{
-			PikabuId:                parsedBanHistoryItem.Id.Value,
+			PikabuID:                parsedBanHistoryItem.Id.Value,
 			BanStartTimestamp:       models.TimestampType(parsedBanHistoryItem.BanStartTimestamp.Value),
 			CommentId:               parsedBanHistoryItem.CommentId.Value,
 			CommentHtmlDeleteReason: parsedBanHistoryItem.CommentHtmlDeleteReason,
@@ -322,7 +322,7 @@ func createBanHistoryIdsArray(
 			LastUpdateTimestamp: parsingTimestamp,
 		}
 		dbBanHistoryItem := &models.PikabuUserBanHistoryItem{
-			PikabuId: banHistoryItem.PikabuId,
+			PikabuID: banHistoryItem.PikabuID,
 		}
 		err := models.Db.Select(dbBanHistoryItem)
 		if err != pg.ErrNoRows && err != nil {
@@ -350,7 +350,7 @@ func createBanHistoryIdsArray(
 				return nil, err
 			}
 		}
-		result = append(result, banHistoryItem.PikabuId)
+		result = append(result, banHistoryItem.PikabuID)
 	}
 
 	return result, nil

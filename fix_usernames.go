@@ -62,7 +62,7 @@ func fixUsernames() {
 		helpers.PanicOnError(err)
 
 		for _, user := range users {
-			offset = int(math.Max(float64(offset), float64(user.PikabuId)))
+			offset = int(math.Max(float64(offset), float64(user.PikabuID)))
 			helpers.PanicOnError(sem.Acquire(ctx, 1))
 			wg.Add(1)
 			go func(u models.PikabuUser) {
@@ -79,7 +79,7 @@ func fixUsernames() {
 func fixUsernameProcessUser(user *models.PikabuUser) {
 	var usernameVersions []models.PikabuUserUsernameVersion
 	err := models.Db.Model(&usernameVersions).
-		Where("item_id = ?", user.PikabuId).
+		Where("item_id = ?", user.PikabuID).
 		Order("timestamp").
 		Select()
 	helpers.PanicOnError(err)

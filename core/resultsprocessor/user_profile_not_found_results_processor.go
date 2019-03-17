@@ -20,15 +20,15 @@ func processUserProfileNotFoundResults(parsingTimestamp models.TimestampType, re
 }
 
 func processUserProfileNotFoundResult(parsingTimestamp models.TimestampType, res *models.ParserUserProfileNotFoundResultData) error {
-	lockUserById(res.PikabuId)
-	defer unlockUserById(res.PikabuId)
+	lockUserById(res.PikabuID)
+	defer unlockUserById(res.PikabuID)
 
 	// complete tasks
 	err := taskmanager.CompleteTask(
 		nil,
 		"parse_user_tasks",
 		"pikabu_id",
-		res.PikabuId,
+		res.PikabuID,
 	)
 	if err != nil {
 		return err
@@ -36,7 +36,7 @@ func processUserProfileNotFoundResult(parsingTimestamp models.TimestampType, res
 
 	var user models.PikabuUser
 	err = models.Db.Model(&user).
-		Where("pikabu_id = ?", res.PikabuId).
+		Where("pikabu_id = ?", res.PikabuID).
 		Select()
 	if err != nil && err != pg.ErrNoRows {
 		return err
@@ -55,7 +55,7 @@ func processUserProfileNotFoundResult(parsingTimestamp models.TimestampType, res
 
 	var deletedUser models.PikabuDeletedOrNeverExistedUser
 	_, err = models.Db.Model(&deletedUser).
-		Where("pikabu_id = ?", res.PikabuId).
+		Where("pikabu_id = ?", res.PikabuID).
 		SelectOrInsert()
 	if err != pg.ErrNoRows && err != nil {
 		return err

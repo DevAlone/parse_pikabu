@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
-	"bitbucket.org/d3dev/parse_pikabu/core/results_processor"
+	"bitbucket.org/d3dev/parse_pikabu/core/resultsprocessor"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-pg/pg/orm"
@@ -46,7 +46,7 @@ func TestUserProfileParsing(t *testing.T) {
 
 	// start results processor
 	go func() {
-		err := results_processor.Run()
+		err := resultsprocessor.Run()
 		if err != nil {
 			helpers.PanicOnError(err)
 		}
@@ -141,7 +141,7 @@ func TestUserProfileParsing(t *testing.T) {
 	waitForQueueEmpty()
 
 	user := &models.PikabuUser{
-		PikabuId: 2561615,
+		PikabuID: 2561615,
 	}
 	err = models.Db.Select(user)
 	if err != nil {
@@ -269,7 +269,7 @@ func TestUserProfileParsing(t *testing.T) {
 	waitForQueueEmpty()
 
 	user = &models.PikabuUser{
-		PikabuId: 2561615,
+		PikabuID: 2561615,
 	}
 	err = models.Db.Select(user)
 	if err != nil {
@@ -356,7 +356,7 @@ func TestUserProfileParsing(t *testing.T) {
 	waitForQueueEmpty()
 
 	user = &models.PikabuUser{
-		PikabuId: 2561615,
+		PikabuID: 2561615,
 	}
 	err = models.Db.Select(user)
 	if err != nil {
@@ -442,7 +442,7 @@ func TestUserProfileParsing(t *testing.T) {
 	waitForQueueEmpty()
 
 	user = &models.PikabuUser{
-		PikabuId: 2561615,
+		PikabuID: 2561615,
 	}
 	err = models.Db.Select(user)
 	if err != nil {
@@ -564,7 +564,7 @@ func TestUserProfileParsing(t *testing.T) {
 	waitForQueueEmpty()
 
 	user = &models.PikabuUser{
-		PikabuId: 2561615,
+		PikabuID: 2561615,
 	}
 	err = models.Db.Select(user)
 	if err != nil {
@@ -591,7 +591,7 @@ func TestUserProfileParsing(t *testing.T) {
 
 	usernameVersions := []models.PikabuUserUsernameVersion{}
 	err = models.Db.Model(&usernameVersions).
-		Where("item_id = ?", user.PikabuId).
+		Where("item_id = ?", user.PikabuID).
 		Order("timestamp").
 		Select()
 	if err != nil {
@@ -601,24 +601,24 @@ func TestUserProfileParsing(t *testing.T) {
 	assert.Equal(t, []models.PikabuUserUsernameVersion{
 		{
 			Timestamp: 100,
-			ItemId:    user.PikabuId,
+			ItemId:    user.PikabuID,
 			Value:     "Pisacavtor",
 		},
 		{
 			Timestamp: 201,
-			ItemId:    user.PikabuId,
+			ItemId:    user.PikabuID,
 			Value:     "Pisacavtor1",
 		},
 		{
 			Timestamp: 555,
-			ItemId:    user.PikabuId,
+			ItemId:    user.PikabuID,
 			Value:     "Pisacavtor",
 		},
 	}, usernameVersions)
 
 	ratingVersions := []models.PikabuUserRatingVersion{}
 	err = models.Db.Model(&ratingVersions).
-		Where("item_id = ?", user.PikabuId).
+		Where("item_id = ?", user.PikabuID).
 		Order("timestamp").
 		Select()
 	if err != nil {
@@ -626,14 +626,14 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 
 	assert.Equal(t, []models.PikabuUserRatingVersion{
-		{Timestamp: 100, ItemId: user.PikabuId, Value: -3},
-		{Timestamp: 201, ItemId: user.PikabuId, Value: 10},
-		{Timestamp: 555, ItemId: user.PikabuId, Value: 5},
+		{Timestamp: 100, ItemId: user.PikabuID, Value: -3},
+		{Timestamp: 201, ItemId: user.PikabuID, Value: 10},
+		{Timestamp: 555, ItemId: user.PikabuID, Value: 5},
 	}, ratingVersions)
 
 	isRatingHiddenVersions := []models.PikabuUserIsRatingHiddenVersion{}
 	err = models.Db.Model(&isRatingHiddenVersions).
-		Where("item_id = ?", user.PikabuId).
+		Where("item_id = ?", user.PikabuID).
 		Order("timestamp").
 		Select()
 	if err != nil {
@@ -641,15 +641,15 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 
 	assert.Equal(t, []models.PikabuUserIsRatingHiddenVersion{
-		{Timestamp: 100, ItemId: user.PikabuId, Value: true},
-		{Timestamp: 201, ItemId: user.PikabuId, Value: false},
-		{Timestamp: 1000, ItemId: user.PikabuId, Value: false},
-		{Timestamp: 1500, ItemId: user.PikabuId, Value: true},
+		{Timestamp: 100, ItemId: user.PikabuID, Value: true},
+		{Timestamp: 201, ItemId: user.PikabuID, Value: false},
+		{Timestamp: 1000, ItemId: user.PikabuID, Value: false},
+		{Timestamp: 1500, ItemId: user.PikabuID, Value: true},
 	}, isRatingHiddenVersions)
 
 	userBanEndTimeVersions := []models.PikabuUserBanEndTimestampVersion{}
 	err = models.Db.Model(&userBanEndTimeVersions).
-		Where("item_id = ?", user.PikabuId).
+		Where("item_id = ?", user.PikabuID).
 		Order("timestamp").
 		Select()
 	if err != nil {
@@ -657,9 +657,9 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 
 	assert.Equal(t, []models.PikabuUserBanEndTimestampVersion{
-		{Timestamp: 100, ItemId: user.PikabuId, Value: 1545459492},
-		{Timestamp: 201, ItemId: user.PikabuId, Value: 1545459492},
-		{Timestamp: 555, ItemId: user.PikabuId, Value: 100},
+		{Timestamp: 100, ItemId: user.PikabuID, Value: 1545459492},
+		{Timestamp: 201, ItemId: user.PikabuID, Value: 1545459492},
+		{Timestamp: 555, ItemId: user.PikabuID, Value: 100},
 	}, userBanEndTimeVersions)
 
 	// check awards
@@ -667,7 +667,7 @@ func TestUserProfileParsing(t *testing.T) {
 
 	awards := []models.PikabuUserAward{}
 	err = models.Db.Model(&awards).
-		Where("user_id = ?", user.PikabuId).
+		Where("user_id = ?", user.PikabuID).
 		Order("pikabu_id").
 		Select()
 	if err != nil {
@@ -676,7 +676,7 @@ func TestUserProfileParsing(t *testing.T) {
 
 	assert.Equal(t, []models.PikabuUserAward{
 		{
-			PikabuId:            252211,
+			PikabuID:            252211,
 			AddedTimestamp:      201,
 			UserId:              2561615,
 			AwardId:             0,
@@ -691,7 +691,7 @@ func TestUserProfileParsing(t *testing.T) {
 			LastUpdateTimestamp: 201,
 		},
 		{
-			PikabuId:            269145,
+			PikabuID:            269145,
 			AddedTimestamp:      100,
 			UserId:              2561615,
 			AwardId:             14,
@@ -706,7 +706,7 @@ func TestUserProfileParsing(t *testing.T) {
 			LastUpdateTimestamp: 201,
 		},
 		{
-			PikabuId:            287578,
+			PikabuID:            287578,
 			AddedTimestamp:      100,
 			UserId:              2561615,
 			AwardId:             0,
@@ -724,7 +724,7 @@ func TestUserProfileParsing(t *testing.T) {
 
 	awardVersions := []models.PikabuUserAwardIdsVersion{}
 	err = models.Db.Model(&awardVersions).
-		Where("item_id = ?", user.PikabuId).
+		Where("item_id = ?", user.PikabuID).
 		Order("timestamp").
 		Select()
 	if err != nil {
@@ -732,9 +732,9 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 
 	assert.Equal(t, []models.PikabuUserAwardIdsVersion{
-		{Timestamp: 100, ItemId: user.PikabuId, Value: []uint64{287578, 269145}},
-		{Timestamp: 201, ItemId: user.PikabuId, Value: []uint64{287578, 269145, 252211}},
-		{Timestamp: 555, ItemId: user.PikabuId, Value: []uint64{}},
+		{Timestamp: 100, ItemId: user.PikabuID, Value: []uint64{287578, 269145}},
+		{Timestamp: 201, ItemId: user.PikabuID, Value: []uint64{287578, 269145, 252211}},
+		{Timestamp: 555, ItemId: user.PikabuID, Value: []uint64{}},
 	}, awardVersions)
 
 	// award fields versions
@@ -796,7 +796,7 @@ func TestUserProfileParsing(t *testing.T) {
 
 	communityVersions := []models.PikabuUserCommunityIdsVersion{}
 	err = models.Db.Model(&communityVersions).
-		Where("item_id = ?", user.PikabuId).
+		Where("item_id = ?", user.PikabuID).
 		Order("timestamp").
 		Select()
 	if err != nil {
@@ -804,15 +804,15 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 
 	assert.Equal(t, []models.PikabuUserCommunityIdsVersion{
-		{Timestamp: 100, ItemId: user.PikabuId, Value: []uint64{}},
-		{Timestamp: 1000, ItemId: user.PikabuId, Value: []uint64{}},
-		{Timestamp: 1500, ItemId: user.PikabuId, Value: []uint64{1, 2, 3}},
+		{Timestamp: 100, ItemId: user.PikabuID, Value: []uint64{}},
+		{Timestamp: 1000, ItemId: user.PikabuID, Value: []uint64{}},
+		{Timestamp: 1500, ItemId: user.PikabuID, Value: []uint64{1, 2, 3}},
 	}, communityVersions)
 
 	// check public ban history
 	banHistoryItems := []models.PikabuUserBanHistoryItem{}
 	err = models.Db.Model(&banHistoryItems).
-		Where("user_id = ?", user.PikabuId).
+		Where("user_id = ?", user.PikabuID).
 		Order("added_timestamp").
 		Select()
 	if err != nil {
@@ -821,7 +821,7 @@ func TestUserProfileParsing(t *testing.T) {
 
 	assert.Equal(t, []models.PikabuUserBanHistoryItem{
 		{
-			PikabuId:                151513,
+			PikabuID:                151513,
 			BanStartTimestamp:       1544854692,
 			CommentId:               0,
 			CommentHtmlDeleteReason: "",
@@ -840,7 +840,7 @@ func TestUserProfileParsing(t *testing.T) {
 			LastUpdateTimestamp:     1500,
 		},
 		{
-			PikabuId:                151514,
+			PikabuID:                151514,
 			BanStartTimestamp:       1544854693,
 			CommentId:               15,
 			CommentHtmlDeleteReason: "",
@@ -862,16 +862,16 @@ func TestUserProfileParsing(t *testing.T) {
 
 	banHistoryItemVersions := []models.PikabuUserBanHistoryItemIdsVersion{}
 	err = models.Db.Model(&banHistoryItemVersions).
-		Where("item_id = ?", user.PikabuId).
+		Where("item_id = ?", user.PikabuID).
 		Select()
 	if err != nil {
 		helpers.PanicOnError(err)
 	}
 
 	assert.Equal(t, []models.PikabuUserBanHistoryItemIdsVersion{
-		{Timestamp: 100, ItemId: user.PikabuId, Value: []uint64{151513}},
-		{Timestamp: 1000, ItemId: user.PikabuId, Value: []uint64{151513}},
-		{Timestamp: 1500, ItemId: user.PikabuId, Value: []uint64{151513, 151514}},
+		{Timestamp: 100, ItemId: user.PikabuID, Value: []uint64{151513}},
+		{Timestamp: 1000, ItemId: user.PikabuID, Value: []uint64{151513}},
+		{Timestamp: 1500, ItemId: user.PikabuID, Value: []uint64{151513, 151514}},
 	}, banHistoryItemVersions)
 
 	err = pushTaskToQueue("user_profile", []byte(`
@@ -971,7 +971,7 @@ func TestUserProfileParsing(t *testing.T) {
 	waitForQueueEmpty()
 
 	user = &models.PikabuUser{
-		PikabuId: 2561615,
+		PikabuID: 2561615,
 	}
 	err = models.Db.Select(user)
 	if err != nil {
@@ -998,7 +998,7 @@ func TestUserProfileParsing(t *testing.T) {
 
 	ratingVersions = []models.PikabuUserRatingVersion{}
 	err = models.Db.Model(&ratingVersions).
-		Where("item_id = ?", user.PikabuId).
+		Where("item_id = ?", user.PikabuID).
 		Order("timestamp").
 		Select()
 	if err != nil {
@@ -1006,9 +1006,9 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 
 	assert.Equal(t, []models.PikabuUserRatingVersion{
-		{Timestamp: 100, ItemId: user.PikabuId, Value: -3},
-		{Timestamp: 201, ItemId: user.PikabuId, Value: 10},
-		{Timestamp: 555, ItemId: user.PikabuId, Value: 5},
+		{Timestamp: 100, ItemId: user.PikabuID, Value: -3},
+		{Timestamp: 201, ItemId: user.PikabuID, Value: 10},
+		{Timestamp: 555, ItemId: user.PikabuID, Value: 5},
 	}, ratingVersions)
 
 	err = pushTaskToQueue("user_profile", []byte(`
@@ -1108,7 +1108,7 @@ func TestUserProfileParsing(t *testing.T) {
 	waitForQueueEmpty()
 
 	user = &models.PikabuUser{
-		PikabuId: 2561615,
+		PikabuID: 2561615,
 	}
 	err = models.Db.Select(user)
 	if err != nil {
@@ -1135,7 +1135,7 @@ func TestUserProfileParsing(t *testing.T) {
 
 	ratingVersions = []models.PikabuUserRatingVersion{}
 	err = models.Db.Model(&ratingVersions).
-		Where("item_id = ?", user.PikabuId).
+		Where("item_id = ?", user.PikabuID).
 		Order("timestamp").
 		Select()
 	if err != nil {
@@ -1143,11 +1143,11 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 
 	assert.Equal(t, []models.PikabuUserRatingVersion{
-		{Timestamp: 100, ItemId: user.PikabuId, Value: -3},
-		{Timestamp: 201, ItemId: user.PikabuId, Value: 10},
-		{Timestamp: 555, ItemId: user.PikabuId, Value: 5},
-		{Timestamp: 1501, ItemId: user.PikabuId, Value: 5},
-		{Timestamp: 1502, ItemId: user.PikabuId, Value: 4},
+		{Timestamp: 100, ItemId: user.PikabuID, Value: -3},
+		{Timestamp: 201, ItemId: user.PikabuID, Value: 10},
+		{Timestamp: 555, ItemId: user.PikabuID, Value: 5},
+		{Timestamp: 1501, ItemId: user.PikabuID, Value: 5},
+		{Timestamp: 1502, ItemId: user.PikabuID, Value: 4},
 	}, ratingVersions)
 	// TODO: check pikabu user ban history items versions
 
@@ -1276,7 +1276,7 @@ func TestConcurrentUserProfileParsing(t *testing.T) {
 
 	// start results processor
 	go func() {
-		err := results_processor.Run()
+		err := resultsprocessor.Run()
 		if err != nil {
 			helpers.PanicOnError(err)
 		}
@@ -1312,7 +1312,7 @@ func TestConcurrentUserProfileParsing(t *testing.T) {
 	time.Sleep(5 * time.Second)
 
 	user := &models.PikabuUser{
-		PikabuId: 297508,
+		PikabuID: 297508,
 	}
 	err = models.Db.Select(user)
 	if err != nil {
@@ -1340,7 +1340,7 @@ func TestConcurrentUserProfileParsing(t *testing.T) {
 
 	ratingVersions := []models.PikabuUserRatingVersion{}
 	err = models.Db.Model(&ratingVersions).
-		Where("item_id = ?", user.PikabuId).
+		Where("item_id = ?", user.PikabuID).
 		Order("timestamp").
 		Select()
 	helpers.PanicOnError(err)

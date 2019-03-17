@@ -40,16 +40,18 @@ func (p *Parser) ListenForTasks() error {
 
 	if globals.SingleProcessMode {
 		return p.ListenForChannelTasks()
-	} else {
-		return p.ListenForAMQPTasks()
 	}
+
+	return p.ListenForAMQPTasks()
 }
 
 func (p *Parser) ListenForChannelTasks() error {
-	for true {
+	for {
 		select {
 		case task := <-globals.ParserParseUserTasks:
 			return p.processParseUserTask(task)
+		case task := <-globals.ParserParseStoryTasks:
+			return p.processParseStoryTask(task)
 		case task := <-globals.ParserSimpleTasks:
 			switch task.Name {
 			case "parse_communities_pages":
@@ -59,8 +61,6 @@ func (p *Parser) ListenForChannelTasks() error {
 			}
 		}
 	}
-
-	return nil
 }
 
 func (p *Parser) ListenForAMQPTasks() error {
@@ -175,7 +175,7 @@ func (p *Parser) processParseUserTask(task *models.ParseUserTask) error {
 		if pe, ok := err.(*pikago.PikabuErrorRequestedPageNotFound); ok {
 			return p.PutResultsToQueue("user_profile_not_found", []models.ParserUserProfileNotFoundResultData{
 				{
-					PikabuId:    task.PikabuId,
+					PikabuID:    task.PikabuID,
 					Username:    task.Username,
 					PikabuError: pe,
 				},
@@ -205,7 +205,7 @@ func (p *Parser) ProcessParseUserTaskById(task *models.ParseUserTask) (*models.P
 		return httpReq, nil
 	}
 
-	httpReq, err := makeRequest(task.PikabuId)
+	httpReq, err := makeRequest(task.PikabuID)
 	if err != nil {
 		return nil, err
 	}
@@ -280,7 +280,7 @@ func (p *Parser) processParseCommunitiesPagesTask() error {
 	results := []pikago_models.CommunitiesPage{}
 
 	page := 0
-	for true {
+	for {
 		communitiesPage, err := p.pikagoClient.CommunitiesGet(page)
 		if err != nil {
 			return err
@@ -295,4 +295,41 @@ func (p *Parser) processParseCommunitiesPagesTask() error {
 	}
 
 	return p.PutResultsToQueue("communities_pages", results)
+}
+
+func (p *Parser) processParseStoryTask(task *models.ParseStoryTask) error {
+	results := []pikago_models.StoryGetResult{}
+
+	for page := uint(0); page < 99; page++ {
+		res, err := p.pikagoClient.StoryGet(task.PikabuID, page, 0)
+		if pe, ok := err.(*pikago.PikabuErrorRequestedPageNotFound); ok {
+			return p.PutResultsToQueue("story_not_found", []models.ParserStoryNotFoundResultData{
+				{
+					PikabuID:    task.PikabuID,
+					PikabuError: pe,
+				},
+			})
+		}
+		if pe, ok := err.(*pikago.PikabuError); ok {
+			if strings.Contains(pe.Message, "Google Play Market") {
+				// consider as deleted
+				return p.PutResultsToQueue("story_not_found", []models.ParserStoryNotFoundResultData{
+					{
+						PikabuID:    task.PikabuID,
+						PikabuError: pe,
+					},
+				})
+			}
+		}
+
+		if err != nil {
+			return err
+		}
+		results = append(results, *res)
+		if !res.HasNextCommentsPage {
+			break
+		}
+	}
+
+	return p.PutResultsToQueue("story_get_result", results)
 }

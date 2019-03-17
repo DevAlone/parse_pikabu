@@ -1,7 +1,8 @@
 package models
 
+// PikabuUser is a model which represents pikabu user
 type PikabuUser struct {
-	PikabuId uint64 `sql:",pk" json:"pikabu_id" api:"order,filter"`
+	PikabuID uint64 `sql:",pk" json:"pikabu_id" api:"order,filter"`
 
 	Username            string        `sql:",notnull" gen_versions:"" json:"username" api:"order,filter"`
 	Gender              string        `sql:",notnull" gen_versions:"" json:"gender" api:"order"`
@@ -33,7 +34,7 @@ type PikabuUser struct {
 }
 
 type PikabuDeletedOrNeverExistedUser struct {
-	PikabuId            uint64        `sql:",pk" json:"pikabu_id"`
+	PikabuID            uint64        `sql:",pk" json:"pikabu_id"`
 	LastUpdateTimestamp TimestampType `sql:",notnull" json:"last_update_timestamp"`
 	NextUpdateTimestamp TimestampType `sql:",notnull" json:"next_update_timestamp"`
 }
@@ -44,7 +45,7 @@ type PikabuUserUpdatingPeriodDistribution_3600 struct {
 }
 
 type PikabuUserAward struct {
-	PikabuId uint64 `sql:",pk"`
+	PikabuID uint64 `sql:",pk"`
 
 	UserId uint64 `sql:",notnull" gen_versions:""`
 	// TODO: figure out what the heck it is,
@@ -77,7 +78,7 @@ type PikabuUserCommunity struct {
 }
 
 type PikabuUserBanHistoryItem struct {
-	PikabuId uint64 `sql:",pk"`
+	PikabuID uint64 `sql:",pk"`
 
 	BanStartTimestamp TimestampType `sql:",notnull" gen_versions:""`
 	// id of comment caused ban if there was such

@@ -11,10 +11,6 @@ import (
 	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )
 
-func test() {
-
-}
-
 func processStoryGetResults(parsingTimestamp models.TimestampType, storyGetResults []pikago_models.StoryGetResult) error {
 	// TODO: make it concurrent
 	for _, storyGetResult := range storyGetResults {
@@ -40,7 +36,7 @@ func processStoryGetResult(parsingTimestamp models.TimestampType, storyGetResult
 	return nil
 }
 
-var storyLocker helpers.IDLocker
+var storyLocker = helpers.NewIDLocker()
 
 func processStoryData(parsingTimestamp models.TimestampType, storyData *pikago_models.Story) error {
 	storyLocker.Lock(storyData.StoryID.Value)
@@ -93,7 +89,7 @@ func processStoryData(parsingTimestamp models.TimestampType, storyData *pikago_m
 	}
 	newStory.NextUpdateTimestamp = calculateStoryNextUpdateTimestamp(newStory, false)
 
-	story := models.PikabuStory{
+	story := &models.PikabuStory{
 		PikabuID: storyData.StoryID.Value,
 	}
 	err = models.Db.Select(story)
@@ -110,13 +106,13 @@ func processStoryData(parsingTimestamp models.TimestampType, storyData *pikago_m
 
 	wasDataChanged, err := processModelFieldsVersions(nil, story, newStory, parsingTimestamp)
 	if _, ok := err.(OldParserResultError); ok {
-		logger.Log.Warning("skipping story %v because of old parsing result", storyData.StoryID.Value)
+		logger.Log.Warningf("skipping story %v because of old parsing result", storyData.StoryID.Value)
 		return nil
 	} else if err != nil {
 		return errors.New(err)
 	}
 
-	nextUpdateTimestamp := calculateStoryNextUpdateTimestamp(&story, wasDataChanged)
+	nextUpdateTimestamp := calculateStoryNextUpdateTimestamp(story, wasDataChanged)
 	story.LastUpdateTimestamp = parsingTimestamp
 	story.NextUpdateTimestamp = nextUpdateTimestamp
 
@@ -133,16 +129,25 @@ func calculateStoryNextUpdateTimestamp(
 	wasDataChanged bool,
 ) models.TimestampType {
 	currentTimestamp := models.TimestampType(time.Now().Unix())
-	// updatingPeriod := user.NextUpdateTimestamp - user.LastUpdateTimestamp
-	// if updatingPeriod < 0 {
-	// 	updatingPeriod = 0
-	// }
 
 	nextUpdateTimestamp := currentTimestamp
 
 	storyTimeGap := currentTimestamp - story.CreatedAtTimestamp
-	if storyTimeGap < 3600 {
-		nextUpdateTimestamp += 3600
+	for gap, updatingPeriod := range map[int64]int64{
+		3600:               1800,
+		3600 * 3:           3600,
+		3600 * 12:          3600 * 6,
+		3600 * 24:          3600 * 12,
+		3600 * 24 * 7:      3600 * 24,
+		3600 * 24 * 30:     3600 * 24 * 7,
+		3600 * 24 * 30 * 3: 3600 * 24 * 30,
+		3600 * 24 * 30 * 6: 3600 * 24 * 30 * 2,
+		4294967296:         3600 * 24 * 30 * 12, // one year
+	} {
+		if storyTimeGap < models.TimestampType(gap) {
+			nextUpdateTimestamp += models.TimestampType(updatingPeriod)
+			break
+		}
 	}
 
 	return nextUpdateTimestamp

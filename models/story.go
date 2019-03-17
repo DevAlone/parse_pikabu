@@ -36,6 +36,7 @@ type PikabuStory struct {
 	LastUpdateTimestamp  TimestampType `sql:",notnull" json:"last_update_timestamp" api:"order"`
 	NextUpdateTimestamp  TimestampType `sql:",notnull" json:"next_update_timestamp" api:"order"`
 	TaskTakenAtTimestamp TimestampType `sql:",notnull" json:"task_taken_at_timestamp" api:"order"`
+	IsPermanentlyDeleted bool          `sql:",notnull,default:false" json:"is_permanently_deleted"`
 }
 
 // PikabuDeletedOrNeverExistedStory // TODO: add doc
@@ -47,18 +48,18 @@ type PikabuDeletedOrNeverExistedStory struct {
 }
 
 func init() {
-	for _, item := range []interface{}{
+	Tables = append(Tables, []interface{}{
 		&PikabuStory{},
 		&PikabuDeletedOrNeverExistedStory{},
-	} {
-		Tables = append(Tables, item)
-	}
+	}...)
 
 	addIndex("pikabu_stories", "added_timestamp", "")
 	addIndex("pikabu_stories", "last_update_timestamp", "")
 	addIndex("pikabu_stories", "next_update_timestamp", "")
 	addIndex("pikabu_stories", "task_taken_at_timestamp", "")
+	addIndex("pikabu_stories", "is_permanently_deleted", "")
 
 	addIndex("pikabu_deleted_or_never_existed_stories", "last_update_timestamp", "")
 	addIndex("pikabu_deleted_or_never_existed_stories", "next_update_timestamp", "")
+	addIndex("pikabu_deleted_or_never_existed_stories", "task_taken_at_timestamp", "")
 }

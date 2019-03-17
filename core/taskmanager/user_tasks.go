@@ -19,6 +19,7 @@ func userTasksWorker() error {
 		addMissingUserTasksWorker,
 		addMissingUsersWorker,
 		addNewUsersWorker,
+		updateDeletedOrNeverExistedUsersWorker,
 	} {
 		wg.Add(1)
 		go func(handler func() error) {
@@ -33,7 +34,9 @@ func userTasksWorker() error {
 }
 
 func addMissingUserTasksWorker() error {
-	for true {
+	for {
+		time.Sleep(5 * time.Minute)
+
 		var users []models.PikabuUser
 		// very slow query
 		err := models.Db.Model(&users).
@@ -43,11 +46,14 @@ func addMissingUserTasksWorker() error {
 			Where("parse_user_task.pikabu_id IS NULL").
 			Limit(1024).
 			Select()
+		if err == pg.ErrNoRows {
+			continue
+		}
 		if err != nil {
 			return err
 		}
 		for _, user := range users {
-			err := AddParseUserTask(user.PikabuId, user.Username)
+			err := AddParseUserTask(user.PikabuID, user.Username)
 			if err != nil {
 				return err
 			}
@@ -55,12 +61,12 @@ func addMissingUserTasksWorker() error {
 
 		time.Sleep(1 * time.Hour)
 	}
-
-	return nil
 }
 
 func addMissingUsersWorker() error {
-	for true {
+	for {
+		time.Sleep(10 * time.Minute)
+
 		// parse gaps
 		for offset := uint64(0); true; {
 			var gaps []struct {
@@ -82,7 +88,7 @@ FROM (
 WHERE pikabu_id + 1 <> next_nr LIMIT 10;
 `, offset)
 			if err == pg.ErrNoRows {
-				break
+				continue
 			} else if err != nil {
 				return err
 			}
@@ -94,7 +100,7 @@ WHERE pikabu_id + 1 <> next_nr LIMIT 10;
 
 				for i := gap.GapStart; i <= gap.GapEnd; i++ {
 					deletedUser := models.PikabuDeletedOrNeverExistedUser{
-						PikabuId:            i,
+						PikabuID:            i,
 						LastUpdateTimestamp: 0,
 						NextUpdateTimestamp: 0,
 					}
@@ -102,9 +108,9 @@ WHERE pikabu_id + 1 <> next_nr LIMIT 10;
 						OnConflict("(pikabu_id) DO NOTHING").
 						Insert()
 					if err != nil {
-						return err
+						return errors.New(err)
 					}
-					err = AddParseUserTaskIfNotExists(deletedUser.PikabuId, "")
+					err = AddParseUserTaskIfNotExists(deletedUser.PikabuID, "")
 					if err != nil {
 						return err
 					}
@@ -112,17 +118,28 @@ WHERE pikabu_id + 1 <> next_nr LIMIT 10;
 			}
 		}
 
+		time.Sleep(30 * time.Minute)
+	}
+}
+
+func updateDeletedOrNeverExistedUsersWorker() error {
+	for {
+		time.Sleep(1 * time.Minute)
+
 		// try to parse again
 		var deletedUsers []models.PikabuDeletedOrNeverExistedUser
 		err := models.Db.Model(&deletedUsers).
 			Where("next_update_timestamp <= ?", time.Now().Unix()).
 			Limit(1024).
 			Select()
+		if err == pg.ErrNoRows {
+			continue
+		}
 		if err != nil {
-			return err
+			return errors.New(err)
 		}
 		for _, deletedUser := range deletedUsers {
-			err := AddParseUserTask(deletedUser.PikabuId, "")
+			err := AddParseUserTask(deletedUser.PikabuID, "")
 			if err != nil {
 				return err
 			}
@@ -130,12 +147,12 @@ WHERE pikabu_id + 1 <> next_nr LIMIT 10;
 
 		time.Sleep(30 * time.Minute)
 	}
-
-	return nil
 }
 
 func addNewUsersWorker() error {
-	for true {
+	for {
+		time.Sleep(time.Duration(config.Settings.AddNewUsersEachNMinutes) * time.Minute)
+
 		// parse new users
 		// set offset to max value
 		var lastUser models.PikabuUser
@@ -143,13 +160,16 @@ func addNewUsersWorker() error {
 			Order("pikabu_id DESC").
 			Limit(1).
 			Select()
+		if err == pg.ErrNoRows {
+			continue
+		}
 		if err != nil {
-			return err
+			return errors.New(err)
 		}
 
 		for i := 0; i < config.Settings.NumberOfNewUsersGap; i++ {
 			deletedUser := models.PikabuDeletedOrNeverExistedUser{
-				PikabuId:            lastUser.PikabuId + 1 + uint64(i),
+				PikabuID:            lastUser.PikabuID + 1 + uint64(i),
 				LastUpdateTimestamp: 0,
 				NextUpdateTimestamp: 0,
 			}
@@ -159,16 +179,12 @@ func addNewUsersWorker() error {
 			if err != nil {
 				return err
 			}
-			err = AddParseUserTaskIfNotExists(deletedUser.PikabuId, "")
+			err = AddParseUserTaskIfNotExists(deletedUser.PikabuID, "")
 			if err != nil {
 				return err
 			}
 		}
-
-		time.Sleep(time.Duration(config.Settings.AddNewUsersEachNMinutes) * time.Minute)
 	}
-
-	return nil
 }
 
 func processUserTasks() error {
@@ -189,7 +205,7 @@ func processUserTasks() error {
 	}
 
 	for _, user := range users {
-		err = AddParseUserTask(user.PikabuId, user.Username)
+		err = AddParseUserTask(user.PikabuID, user.Username)
 		if err != nil {
 			return err
 		}
@@ -207,7 +223,7 @@ func processUserTasks() error {
 		return errors.New(err)
 	}
 	for _, task := range parseUserTasks {
-		err := AddParseUserTask(task.PikabuId, task.Username)
+		err := AddParseUserTask(task.PikabuID, task.Username)
 		if err != nil {
 			return err
 		}
@@ -231,7 +247,7 @@ func AddParseUserTask(pikabuId uint64, username string) error {
 
 	exists := err != pg.ErrNoRows
 
-	task.PikabuId = pikabuId
+	task.PikabuID = pikabuId
 	task.AddedTimestamp = models.TimestampType(time.Now().Unix())
 	task.IsDone = false
 	task.IsTaken = true
@@ -268,7 +284,7 @@ func AddParseUserTaskIfNotExists(pikabuId uint64, username string) error {
 		return nil
 	}
 
-	task.PikabuId = pikabuId
+	task.PikabuID = pikabuId
 	task.AddedTimestamp = models.TimestampType(time.Now().Unix())
 	task.IsDone = false
 	task.IsTaken = true

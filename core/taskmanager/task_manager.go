@@ -1,26 +1,33 @@
 package taskmanager
 
 import (
+	"flag"
 	"strings"
 	"sync"
 	"time"
 
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
-	"bitbucket.org/d3dev/parse_pikabu/models"
-	"github.com/go-pg/pg/orm"
-
+	"bitbucket.org/d3dev/parse_pikabu/globals"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
+	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-pg/pg"
+	"github.com/go-pg/pg/orm"
 )
 
 // Run runs goroutines to process tasks
 func Run() error {
 	var wg sync.WaitGroup
 
-	for _, f := range []func() error{
+	workers := []func() error{
 		storyTasksWorker,
-		userTasksWorker,
-	} {
+	}
+
+	if !globals.DoNotParseUsers {
+		workers = append(workers, userTasksWorker)
+	}
+	flag.Parse()
+
+	for _, f := range workers {
 		wg.Add(1)
 		go func(handler func() error) {
 			helpers.PanicOnError(handler())
@@ -32,10 +39,12 @@ func Run() error {
 	go func() {
 		defer wg.Done()
 		for {
-			helpers.PanicOnError(processUserTasks())
+			if !globals.DoNotParseUsers {
+				helpers.PanicOnError(processUserTasks())
+			}
 			helpers.PanicOnError(processCommunityTasks())
 
-			time.Sleep(time.Duration(config.Settings.WaitBeforeAddingTasksSeconds) * time.Second)
+			time.Sleep(time.Duration(config.Settings.WaitBeforeAddingNewUserTasksSeconds) * time.Second)
 		}
 	}()
 

@@ -57,6 +57,9 @@ func PushTaskToQueue(taskPtr interface{}) error {
 		case *models.SimpleTask:
 			globals.ParserSimpleTasks <- t
 			return nil
+		case *models.ParseStoryTask:
+			globals.ParserParseStoryTasks <- t
+			return nil
 		default:
 			return errors.Errorf("trying to push undeclared type of task %v %v", reflect.TypeOf(t), t)
 		}

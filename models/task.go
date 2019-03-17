@@ -22,13 +22,13 @@ type ParseUserByUsernameTask struct {
 
 type ParseUserByIdTask struct {
 	Task
-	PikabuId uint64 `sql:",notnull" json:"pikabu_id"`
+	PikabuID uint64 `sql:",notnull" json:"pikabu_id"`
 }
 */
 
 // ParseUserTask is a task for parsing users
 type ParseUserTask struct {
-	PikabuId       uint64        `sql:",pk" json:"pikabu_id"`
+	PikabuID       uint64        `sql:",pk" json:"pikabu_id"`
 	IsDone         bool          `sql:",notnull,default:false" json:"is_done"`
 	IsTaken        bool          `sql:",notnull,default:false" json:"is_taken"`
 	AddedTimestamp TimestampType `sql:",notnull" json:"added_timestamp"`
@@ -45,7 +45,7 @@ func init() {
 	Tables = append(Tables, []interface{}{
 		&SimpleTask{},
 		&ParseUserTask{},
-	})
+	}...)
 
 	/*
 		CustomQueries = append(CustomQueries, `

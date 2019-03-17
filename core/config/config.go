@@ -31,7 +31,6 @@ var Settings struct {
 	NumberOfTasksProcessorsMultiplier    int
 	NumberOfNewUsersGap                  int
 	NumberOfNewStoriesGap                int
-	WaitBeforeAddingTasksSeconds         int
 	WaitBeforeAddingNewUserTasksSeconds  int
 	WaitBeforeAddingNewStoryTasksSeconds int
 	AddNewUsersEachNMinutes              int
@@ -75,7 +74,7 @@ func init() {
 	Settings.MaxNumberOfTasksInQueue = 128
 	Settings.NumberOfTasksProcessorsMultiplier = 1
 	Settings.NumberOfNewUsersGap = 128
-	Settings.NumberOfNewStoriesGap = 128
+	Settings.NumberOfNewStoriesGap = 1024
 	Settings.WaitBeforeAddingNewUserTasksSeconds = 10
 	Settings.WaitBeforeAddingNewStoryTasksSeconds = 60
 	Settings.AddNewUsersEachNMinutes = 10

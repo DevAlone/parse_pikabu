@@ -11,6 +11,14 @@ type IDLocker struct {
 	mutex sync.Mutex
 }
 
+// NewIDLocker creates new id locker
+func NewIDLocker() *IDLocker {
+	return &IDLocker{
+		locks: map[uint64]bool{},
+		mutex: sync.Mutex{},
+	}
+}
+
 // Lock locks item with id
 func (l *IDLocker) Lock(id uint64) {
 	found := true

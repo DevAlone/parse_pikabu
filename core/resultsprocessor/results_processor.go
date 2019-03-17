@@ -37,8 +37,6 @@ func Run() error {
 		}
 		time.Sleep(5 * time.Second)
 	}
-
-	return nil
 }
 func startListener() error {
 	if globals.SingleProcessMode {
@@ -54,10 +52,7 @@ func startListenerChannels() error {
 		wg.Add(1)
 		go func() {
 			for message := range globals.ParserResults {
-				err := processMessage(message)
-				if err != nil {
-					logger.Log.Error(err)
-				}
+				logger.LogError(processMessage(message))
 			}
 
 			wg.Done()
@@ -231,6 +226,8 @@ func processMessage(message *models.ParserResult) error {
 		return processCommunitiesPages(message.ParsingTimestamp, m)
 	case []pikago_models.StoryGetResult:
 		return processStoryGetResults(message.ParsingTimestamp, m)
+	case []models.ParserStoryNotFoundResultData:
+		return processStoryNotFoundResults(message.ParsingTimestamp, m)
 	default:
 		logger.Log.Warningf(
 			"processMessage(): Unregistered result type \"%v\". Message: \"%v\". m: \"%v\"",
@@ -265,8 +262,8 @@ func processModelFieldsVersions(
 	oldModel := reflect.ValueOf(oldModelPtr).Elem()
 	newModel := reflect.ValueOf(newModelPtr).Elem()
 
-	oldID := oldModel.FieldByName("PikabuId").Uint()
-	newID := newModel.FieldByName("PikabuId").Uint()
+	oldID := oldModel.FieldByName("PikabuID").Uint()
+	newID := newModel.FieldByName("PikabuID").Uint()
 
 	if oldID != newID {
 		return false, errors.New("ids should be equal")

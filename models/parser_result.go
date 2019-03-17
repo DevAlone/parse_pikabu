@@ -31,7 +31,7 @@ type ParserCommunitiesPageResult struct {
 }
 
 type ParserUserProfileNotFoundResultData struct {
-	PikabuId    uint64      `json:"pikabu_id"`
+	PikabuID    uint64      `json:"pikabu_id"`
 	Username    string      `json:"username"`
 	PikabuError interface{} `json:"pikabu_error"`
 }
@@ -39,4 +39,9 @@ type ParserUserProfileNotFoundResultData struct {
 type ParserUserProfileNotFoundResult struct {
 	ParserBaseResult
 	Results []ParserUserProfileNotFoundResultData `json:"results"`
+}
+
+type ParserStoryNotFoundResultData struct {
+	PikabuID    uint64      `json:"pikabu_id"`
+	PikabuError interface{} `json:"pikabu_error"`
 }

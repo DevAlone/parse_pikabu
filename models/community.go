@@ -1,7 +1,7 @@
 package models
 
 type PikabuCommunity struct {
-	PikabuId            uint64   `sql:",pk" json:"pikabu_id" api:"order,filter"`
+	PikabuID            uint64   `sql:",pk" json:"pikabu_id" api:"order,filter"`
 	Name                string   `sql:",notnull" gen_versions:"" json:"name" api:"order,filter"`
 	LinkName            string   `sql:",notnull" gen_versions:"" json:"link_name" api:"filter"`
 	URL                 string   `sql:",notnull" gen_versions:"" json:"url" api:"filter"`

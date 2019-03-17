@@ -11,6 +11,7 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/amqphelper"
 	"bitbucket.org/d3dev/parse_pikabu/core"
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
+	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/core/server/middlewares"
 	"bitbucket.org/d3dev/parse_pikabu/globals"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
@@ -38,10 +39,10 @@ var commands = map[string]func(){
 		parser.Main()
 	},
 	"clean_db": func() {
+		logger.Init()
+
 		err := models.InitDb()
-		if err != nil {
-			helpers.PanicOnError(err)
-		}
+		helpers.PanicOnError(err)
 
 		// clear tables
 		for _, table := range models.Tables {
@@ -49,9 +50,7 @@ var commands = map[string]func(){
 				IfExists: true,
 				Cascade:  true,
 			})
-			if err != nil {
-				helpers.PanicOnError(err)
-			}
+			helpers.PanicOnError(err)
 		}
 	},
 	"add_parser": func() {
@@ -92,6 +91,7 @@ Available commands are:
 	configFilePath := flag.String("config", "core.config.json", "config file")
 	cpuProfile := flag.String("cpuprofile", "", "set to true to profile cpu")
 	memProfile := flag.String("memprofile", "", "set to true to profile memory")
+	globals.DoNotParseUsers = strings.HasPrefix(strings.ToLower(*flag.String("do-not-parse-users", "false", "do not parse users")), "t")
 
 	flag.Parse()
 

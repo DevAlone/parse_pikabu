@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"os"
 	"reflect"
+	"strings"
 	"time"
 
 	"bitbucket.org/d3dev/parse_pikabu/models"
@@ -98,6 +99,10 @@ func getVersionsTables(typeName string, versionsFields []reflect.StructField) []
 			fieldTypeName = field.Type.String()
 		default:
 			fieldTypeName = field.Type.Name()
+		}
+
+		if strings.HasPrefix(fieldTypeName, "[]models.") {
+			fieldTypeName = "[]" + fieldTypeName[9:]
 		}
 
 		name := typeName + fieldName + "Version"

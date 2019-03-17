@@ -50,7 +50,7 @@ func processCommunity(
 	}
 
 	newCommunity := &models.PikabuCommunity{
-		PikabuId:            parsedCommunity.Id.Value,
+		PikabuID:            parsedCommunity.Id.Value,
 		Name:                parsedCommunity.Name,
 		LinkName:            parsedCommunity.Link,
 		URL:                 parsedCommunity.URL,
@@ -69,7 +69,7 @@ func processCommunity(
 	}
 
 	community := &models.PikabuCommunity{
-		PikabuId: newCommunity.PikabuId,
+		PikabuID: newCommunity.PikabuID,
 	}
 
 	err := models.Db.Select(community)

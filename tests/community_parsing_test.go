@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
-	"bitbucket.org/d3dev/parse_pikabu/core/results_processor"
+	"bitbucket.org/d3dev/parse_pikabu/core/resultsprocessor"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-pg/pg/orm"
@@ -44,7 +44,7 @@ func TestCommunityParsing(t *testing.T) {
 
 	// start results processor
 	go func() {
-		err := results_processor.Run()
+		err := resultsprocessor.Run()
 		if err != nil {
 			helpers.PanicOnError(err)
 		}
@@ -119,7 +119,7 @@ func TestCommunityParsing(t *testing.T) {
 
 	assert.Equal(t, []models.PikabuCommunity{
 		{
-			PikabuId:            1,
+			PikabuID:            1,
 			Name:                "name1",
 			LinkName:            "link_name1",
 			URL:                 "url1",
@@ -210,7 +210,7 @@ func TestCommunityParsing(t *testing.T) {
 
 	assert.Equal(t, []models.PikabuCommunity{
 		{
-			PikabuId:            1,
+			PikabuID:            1,
 			Name:                "name2",
 			LinkName:            "link_name2",
 			URL:                 "url2",

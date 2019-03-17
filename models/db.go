@@ -14,17 +14,23 @@ import (
 //go:generate bash -c "cd ..; go run models_versions_fields.generator.go; go fmt models/models_versions_fields.generated.go"
 //go:generate bash -c "cd ..; go run models_distributions_fields.generator.go; go fmt models/models_distributions_fields.generated.go"
 
+// TimestampType - type for timestamp fields
 type TimestampType int64
 
+// Db is a database of project
 var Db *pg.DB
+
+// Tables - tables in db
 var Tables []interface{}
+
+// CustomQueries - use for custom queries like creating materiazed view
 var CustomQueries []string
 var createIndexQueries []string
 
-type QueryHook struct{}
+type queryHook struct{}
 
-func (this QueryHook) BeforeQuery(event *pg.QueryEvent) {}
-func (this QueryHook) AfterQuery(event *pg.QueryEvent) {
+func (qh queryHook) BeforeQuery(event *pg.QueryEvent) {}
+func (qh queryHook) AfterQuery(event *pg.QueryEvent) {
 	if config.Settings.Debug && config.Settings.LogSQLQueries {
 		query, err := event.FormattedQuery()
 		if err != nil {
@@ -36,6 +42,7 @@ func (this QueryHook) AfterQuery(event *pg.QueryEvent) {
 	}
 }
 
+// InitDb initializes the database
 func InitDb() error {
 	logger.Log.Info("start initializing database")
 
@@ -46,7 +53,7 @@ func InitDb() error {
 		Password: dbConfig["Password"],
 	})
 
-	Db.AddQueryHook(QueryHook{})
+	Db.AddQueryHook(queryHook{})
 
 	logger.Log.Info("creating schema")
 	err := createSchema()
@@ -82,6 +89,7 @@ func createSchema() error {
 			return err
 		}
 	}
+	logger.Log.Debugf("number of CustomQueries is %d", len(CustomQueries))
 
 	for i, query := range CustomQueries {
 		_, err := Db.Exec(query)
@@ -98,9 +106,11 @@ func addIndex(tableName string, _columns interface{}, method string) {
 	_addIndex(tableName, _columns, method, false)
 }
 
+/*
 func addUniqueIndex(tableName string, _columns interface{}, method string) {
 	_addIndex(tableName, _columns, method, true)
 }
+*/
 
 func _addIndex(tableName string, _columns interface{}, method string, unique bool) {
 	columns := []string{}

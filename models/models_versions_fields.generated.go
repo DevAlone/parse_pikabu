@@ -1,7 +1,121 @@
 package models
 
 // generated code, do not touch!
-// generated at timestamp 2019-02-23 13:42:17.190722676 &#43;0000 UTC m=&#43;0.003251001
+// generated at timestamp 2019-03-17 19:36:54.345722117 &#43;0000 UTC m=&#43;0.003478521
+
+type PikabuCommentParentIDVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     uint64        `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentCreatedAtTimestampVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     TimestampType `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentTextVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentImagesVersion struct {
+	ItemId    uint64               `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType        `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     []PikabuCommentImage `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentRatingVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int32         `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentNumberOfPlusesVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int32         `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentNumberOfMinusesVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int32         `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentStoryIDVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     uint64        `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentStoryURLVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentStoryTitleVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentAuthorIDVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     uint64        `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentAuthorUsernameVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentAuthorGenderVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int32         `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentAuthorAvatarURLVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentIsAuthorProfileDeletedVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     bool          `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentIsDeletedVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     bool          `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentIsAuthorCommunityModeratorVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     bool          `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentIsAuthorPikabuTeamVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     bool          `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentIsAuthorOfficialVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     bool          `sql:",notnull" json:"value" api:"order,filter"`
+}
 
 type PikabuCommunityNameVersion struct {
 	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
@@ -79,6 +193,132 @@ type PikabuCommunityModeratorIdsVersion struct {
 	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
 	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
 	Value     []uint64      `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryRatingVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int32         `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryNumberOfPlusesVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int32         `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryNumberOfMinusesVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int32         `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryTitleVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryContentBlocksVersion struct {
+	ItemId    uint64             `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType      `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     []PikabuStoryBlock `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryCreatedAtTimestampVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     TimestampType `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryStoryURLVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryTagsVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     []string      `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryNumberOfCommentsVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int32         `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryIsDeletedVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     bool          `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryIsRatingHiddenVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     bool          `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryHasMineTagVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     bool          `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryHasAdultTagVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     bool          `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryIsLongpostVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     bool          `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryAuthorIDVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     uint64        `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryAuthorUsernameVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryAuthorProfileURLVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryAuthorAvatarURLVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryCommunityLinkVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryCommunityNameVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuStoryCommentsAreHotVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     bool          `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuUserUsernameVersion struct {
@@ -340,6 +580,25 @@ type PikabuUserBanHistoryItemReasonTitleVersion struct {
 }
 
 var FieldsVersionTablesMap = map[string]interface{}{
+	"PikabuCommentParentIDVersion":                           &PikabuCommentParentIDVersion{},
+	"PikabuCommentCreatedAtTimestampVersion":                 &PikabuCommentCreatedAtTimestampVersion{},
+	"PikabuCommentTextVersion":                               &PikabuCommentTextVersion{},
+	"PikabuCommentImagesVersion":                             &PikabuCommentImagesVersion{},
+	"PikabuCommentRatingVersion":                             &PikabuCommentRatingVersion{},
+	"PikabuCommentNumberOfPlusesVersion":                     &PikabuCommentNumberOfPlusesVersion{},
+	"PikabuCommentNumberOfMinusesVersion":                    &PikabuCommentNumberOfMinusesVersion{},
+	"PikabuCommentStoryIDVersion":                            &PikabuCommentStoryIDVersion{},
+	"PikabuCommentStoryURLVersion":                           &PikabuCommentStoryURLVersion{},
+	"PikabuCommentStoryTitleVersion":                         &PikabuCommentStoryTitleVersion{},
+	"PikabuCommentAuthorIDVersion":                           &PikabuCommentAuthorIDVersion{},
+	"PikabuCommentAuthorUsernameVersion":                     &PikabuCommentAuthorUsernameVersion{},
+	"PikabuCommentAuthorGenderVersion":                       &PikabuCommentAuthorGenderVersion{},
+	"PikabuCommentAuthorAvatarURLVersion":                    &PikabuCommentAuthorAvatarURLVersion{},
+	"PikabuCommentIsAuthorProfileDeletedVersion":             &PikabuCommentIsAuthorProfileDeletedVersion{},
+	"PikabuCommentIsDeletedVersion":                          &PikabuCommentIsDeletedVersion{},
+	"PikabuCommentIsAuthorCommunityModeratorVersion":         &PikabuCommentIsAuthorCommunityModeratorVersion{},
+	"PikabuCommentIsAuthorPikabuTeamVersion":                 &PikabuCommentIsAuthorPikabuTeamVersion{},
+	"PikabuCommentIsAuthorOfficialVersion":                   &PikabuCommentIsAuthorOfficialVersion{},
 	"PikabuCommunityNameVersion":                             &PikabuCommunityNameVersion{},
 	"PikabuCommunityLinkNameVersion":                         &PikabuCommunityLinkNameVersion{},
 	"PikabuCommunityURLVersion":                              &PikabuCommunityURLVersion{},
@@ -353,6 +612,27 @@ var FieldsVersionTablesMap = map[string]interface{}{
 	"PikabuCommunityRestrictionsVersion":                     &PikabuCommunityRestrictionsVersion{},
 	"PikabuCommunityAdminIdVersion":                          &PikabuCommunityAdminIdVersion{},
 	"PikabuCommunityModeratorIdsVersion":                     &PikabuCommunityModeratorIdsVersion{},
+	"PikabuStoryRatingVersion":                               &PikabuStoryRatingVersion{},
+	"PikabuStoryNumberOfPlusesVersion":                       &PikabuStoryNumberOfPlusesVersion{},
+	"PikabuStoryNumberOfMinusesVersion":                      &PikabuStoryNumberOfMinusesVersion{},
+	"PikabuStoryTitleVersion":                                &PikabuStoryTitleVersion{},
+	"PikabuStoryContentBlocksVersion":                        &PikabuStoryContentBlocksVersion{},
+	"PikabuStoryCreatedAtTimestampVersion":                   &PikabuStoryCreatedAtTimestampVersion{},
+	"PikabuStoryStoryURLVersion":                             &PikabuStoryStoryURLVersion{},
+	"PikabuStoryTagsVersion":                                 &PikabuStoryTagsVersion{},
+	"PikabuStoryNumberOfCommentsVersion":                     &PikabuStoryNumberOfCommentsVersion{},
+	"PikabuStoryIsDeletedVersion":                            &PikabuStoryIsDeletedVersion{},
+	"PikabuStoryIsRatingHiddenVersion":                       &PikabuStoryIsRatingHiddenVersion{},
+	"PikabuStoryHasMineTagVersion":                           &PikabuStoryHasMineTagVersion{},
+	"PikabuStoryHasAdultTagVersion":                          &PikabuStoryHasAdultTagVersion{},
+	"PikabuStoryIsLongpostVersion":                           &PikabuStoryIsLongpostVersion{},
+	"PikabuStoryAuthorIDVersion":                             &PikabuStoryAuthorIDVersion{},
+	"PikabuStoryAuthorUsernameVersion":                       &PikabuStoryAuthorUsernameVersion{},
+	"PikabuStoryAuthorProfileURLVersion":                     &PikabuStoryAuthorProfileURLVersion{},
+	"PikabuStoryAuthorAvatarURLVersion":                      &PikabuStoryAuthorAvatarURLVersion{},
+	"PikabuStoryCommunityLinkVersion":                        &PikabuStoryCommunityLinkVersion{},
+	"PikabuStoryCommunityNameVersion":                        &PikabuStoryCommunityNameVersion{},
+	"PikabuStoryCommentsAreHotVersion":                       &PikabuStoryCommentsAreHotVersion{},
 	"PikabuUserUsernameVersion":                              &PikabuUserUsernameVersion{},
 	"PikabuUserGenderVersion":                                &PikabuUserGenderVersion{},
 	"PikabuUserRatingVersion":                                &PikabuUserRatingVersion{},
@@ -399,6 +679,25 @@ var FieldsVersionTablesMap = map[string]interface{}{
 }
 
 var FieldsVersionAPITablesMap = map[string]interface{}{
+	"PikabuCommentParentIDVersion":                           []PikabuCommentParentIDVersion{},
+	"PikabuCommentCreatedAtTimestampVersion":                 []PikabuCommentCreatedAtTimestampVersion{},
+	"PikabuCommentTextVersion":                               []PikabuCommentTextVersion{},
+	"PikabuCommentImagesVersion":                             []PikabuCommentImagesVersion{},
+	"PikabuCommentRatingVersion":                             []PikabuCommentRatingVersion{},
+	"PikabuCommentNumberOfPlusesVersion":                     []PikabuCommentNumberOfPlusesVersion{},
+	"PikabuCommentNumberOfMinusesVersion":                    []PikabuCommentNumberOfMinusesVersion{},
+	"PikabuCommentStoryIDVersion":                            []PikabuCommentStoryIDVersion{},
+	"PikabuCommentStoryURLVersion":                           []PikabuCommentStoryURLVersion{},
+	"PikabuCommentStoryTitleVersion":                         []PikabuCommentStoryTitleVersion{},
+	"PikabuCommentAuthorIDVersion":                           []PikabuCommentAuthorIDVersion{},
+	"PikabuCommentAuthorUsernameVersion":                     []PikabuCommentAuthorUsernameVersion{},
+	"PikabuCommentAuthorGenderVersion":                       []PikabuCommentAuthorGenderVersion{},
+	"PikabuCommentAuthorAvatarURLVersion":                    []PikabuCommentAuthorAvatarURLVersion{},
+	"PikabuCommentIsAuthorProfileDeletedVersion":             []PikabuCommentIsAuthorProfileDeletedVersion{},
+	"PikabuCommentIsDeletedVersion":                          []PikabuCommentIsDeletedVersion{},
+	"PikabuCommentIsAuthorCommunityModeratorVersion":         []PikabuCommentIsAuthorCommunityModeratorVersion{},
+	"PikabuCommentIsAuthorPikabuTeamVersion":                 []PikabuCommentIsAuthorPikabuTeamVersion{},
+	"PikabuCommentIsAuthorOfficialVersion":                   []PikabuCommentIsAuthorOfficialVersion{},
 	"PikabuCommunityNameVersion":                             []PikabuCommunityNameVersion{},
 	"PikabuCommunityLinkNameVersion":                         []PikabuCommunityLinkNameVersion{},
 	"PikabuCommunityURLVersion":                              []PikabuCommunityURLVersion{},
@@ -412,6 +711,27 @@ var FieldsVersionAPITablesMap = map[string]interface{}{
 	"PikabuCommunityRestrictionsVersion":                     []PikabuCommunityRestrictionsVersion{},
 	"PikabuCommunityAdminIdVersion":                          []PikabuCommunityAdminIdVersion{},
 	"PikabuCommunityModeratorIdsVersion":                     []PikabuCommunityModeratorIdsVersion{},
+	"PikabuStoryRatingVersion":                               []PikabuStoryRatingVersion{},
+	"PikabuStoryNumberOfPlusesVersion":                       []PikabuStoryNumberOfPlusesVersion{},
+	"PikabuStoryNumberOfMinusesVersion":                      []PikabuStoryNumberOfMinusesVersion{},
+	"PikabuStoryTitleVersion":                                []PikabuStoryTitleVersion{},
+	"PikabuStoryContentBlocksVersion":                        []PikabuStoryContentBlocksVersion{},
+	"PikabuStoryCreatedAtTimestampVersion":                   []PikabuStoryCreatedAtTimestampVersion{},
+	"PikabuStoryStoryURLVersion":                             []PikabuStoryStoryURLVersion{},
+	"PikabuStoryTagsVersion":                                 []PikabuStoryTagsVersion{},
+	"PikabuStoryNumberOfCommentsVersion":                     []PikabuStoryNumberOfCommentsVersion{},
+	"PikabuStoryIsDeletedVersion":                            []PikabuStoryIsDeletedVersion{},
+	"PikabuStoryIsRatingHiddenVersion":                       []PikabuStoryIsRatingHiddenVersion{},
+	"PikabuStoryHasMineTagVersion":                           []PikabuStoryHasMineTagVersion{},
+	"PikabuStoryHasAdultTagVersion":                          []PikabuStoryHasAdultTagVersion{},
+	"PikabuStoryIsLongpostVersion":                           []PikabuStoryIsLongpostVersion{},
+	"PikabuStoryAuthorIDVersion":                             []PikabuStoryAuthorIDVersion{},
+	"PikabuStoryAuthorUsernameVersion":                       []PikabuStoryAuthorUsernameVersion{},
+	"PikabuStoryAuthorProfileURLVersion":                     []PikabuStoryAuthorProfileURLVersion{},
+	"PikabuStoryAuthorAvatarURLVersion":                      []PikabuStoryAuthorAvatarURLVersion{},
+	"PikabuStoryCommunityLinkVersion":                        []PikabuStoryCommunityLinkVersion{},
+	"PikabuStoryCommunityNameVersion":                        []PikabuStoryCommunityNameVersion{},
+	"PikabuStoryCommentsAreHotVersion":                       []PikabuStoryCommentsAreHotVersion{},
 	"PikabuUserUsernameVersion":                              []PikabuUserUsernameVersion{},
 	"PikabuUserGenderVersion":                                []PikabuUserGenderVersion{},
 	"PikabuUserRatingVersion":                                []PikabuUserRatingVersion{},
@@ -459,6 +779,25 @@ var FieldsVersionAPITablesMap = map[string]interface{}{
 
 func init() {
 	for _, item := range []interface{}{
+		&PikabuCommentParentIDVersion{},
+		&PikabuCommentCreatedAtTimestampVersion{},
+		&PikabuCommentTextVersion{},
+		&PikabuCommentImagesVersion{},
+		&PikabuCommentRatingVersion{},
+		&PikabuCommentNumberOfPlusesVersion{},
+		&PikabuCommentNumberOfMinusesVersion{},
+		&PikabuCommentStoryIDVersion{},
+		&PikabuCommentStoryURLVersion{},
+		&PikabuCommentStoryTitleVersion{},
+		&PikabuCommentAuthorIDVersion{},
+		&PikabuCommentAuthorUsernameVersion{},
+		&PikabuCommentAuthorGenderVersion{},
+		&PikabuCommentAuthorAvatarURLVersion{},
+		&PikabuCommentIsAuthorProfileDeletedVersion{},
+		&PikabuCommentIsDeletedVersion{},
+		&PikabuCommentIsAuthorCommunityModeratorVersion{},
+		&PikabuCommentIsAuthorPikabuTeamVersion{},
+		&PikabuCommentIsAuthorOfficialVersion{},
 		&PikabuCommunityNameVersion{},
 		&PikabuCommunityLinkNameVersion{},
 		&PikabuCommunityURLVersion{},
@@ -472,6 +811,27 @@ func init() {
 		&PikabuCommunityRestrictionsVersion{},
 		&PikabuCommunityAdminIdVersion{},
 		&PikabuCommunityModeratorIdsVersion{},
+		&PikabuStoryRatingVersion{},
+		&PikabuStoryNumberOfPlusesVersion{},
+		&PikabuStoryNumberOfMinusesVersion{},
+		&PikabuStoryTitleVersion{},
+		&PikabuStoryContentBlocksVersion{},
+		&PikabuStoryCreatedAtTimestampVersion{},
+		&PikabuStoryStoryURLVersion{},
+		&PikabuStoryTagsVersion{},
+		&PikabuStoryNumberOfCommentsVersion{},
+		&PikabuStoryIsDeletedVersion{},
+		&PikabuStoryIsRatingHiddenVersion{},
+		&PikabuStoryHasMineTagVersion{},
+		&PikabuStoryHasAdultTagVersion{},
+		&PikabuStoryIsLongpostVersion{},
+		&PikabuStoryAuthorIDVersion{},
+		&PikabuStoryAuthorUsernameVersion{},
+		&PikabuStoryAuthorProfileURLVersion{},
+		&PikabuStoryAuthorAvatarURLVersion{},
+		&PikabuStoryCommunityLinkVersion{},
+		&PikabuStoryCommunityNameVersion{},
+		&PikabuStoryCommentsAreHotVersion{},
 		&PikabuUserUsernameVersion{},
 		&PikabuUserGenderVersion{},
 		&PikabuUserRatingVersion{},
