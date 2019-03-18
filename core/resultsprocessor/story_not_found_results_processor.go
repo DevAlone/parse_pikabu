@@ -24,7 +24,6 @@ func processStoryNotFoundResult(
 ) error {
 	storyLocker.Lock(res.PikabuID)
 	defer storyLocker.Unlock(res.PikabuID)
-	lockUserById(res.PikabuID)
 
 	deletedOrNeverExistedStory := models.PikabuDeletedOrNeverExistedStory{
 		PikabuID: res.PikabuID,
