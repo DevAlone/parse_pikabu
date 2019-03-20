@@ -8,3 +8,40 @@ fix -1000 in iuint issue
 process deleted
 fix user with id 2159282 and 1834991
 save last used proxy in redis
+fix stories content blocks versions comparison
+internal.Error pg: no rows in result set
+/home/pikagraphs/go/src/bitbucket.org/d3dev/parse_pikabu/core/taskmanager/story_tasks.go:166 (0xacc197)
+        AddParseStoryTask: return errors.New(err)
+/home/pikagraphs/go/src/bitbucket.org/d3dev/parse_pikabu/core/taskmanager/story_tasks.go:124 (0xacbec0)
+        updateStoriesWorker: err := AddParseStoryTask(story.PikabuID)
+/home/pikagraphs/go/src/bitbucket.org/d3dev/parse_pikabu/core/taskmanager/story_tasks.go:25 (0xacf2b7)
+        storyTasksWorker.func1: helpers.PanicOnError(handler())
+/opt/go/src/runtime/asm_amd64.s:1333 (0x45de51)
+        goexit: BYTE    $0x90   // NOP
+panic: pg: no rows in result set
+
+goroutine 589 [running]:
+bitbucket.org/d3dev/parse_pikabu/helpers.PanicOnError(0xfcb2c0, 0xc005e435e0)
+        /home/pikagraphs/go/src/bitbucket.org/d3dev/parse_pikabu/helpers/error_handling.go:19 +0xaa
+bitbucket.org/d3dev/parse_pikabu/core/taskmanager.storyTasksWorker.func1(0xc00039e710, 0xee1860)
+        /home/pikagraphs/go/src/bitbucket.org/d3dev/parse_pikabu/core/taskmanager/story_tasks.go:25 +0x2c
+created by bitbucket.org/d3dev/parse_pikabu/core/taskmanager.storyTasksWorker
+        /home/pikagraphs/go/src/bitbucket.org/d3dev/parse_pikabu/core/taskmanager/story_tasks.go:24 +0xc1
+internal.Error pg: no rows in result set
+/home/pikagraphs/go/src/bitbucket.org/d3dev/parse_pikabu/core/taskmanager/story_tasks.go:166 (0xacc197)
+        AddParseStoryTask: return errors.New(err)
+/home/pikagraphs/go/src/bitbucket.org/d3dev/parse_pikabu/core/taskmanager/story_tasks.go:124 (0xacbec0)
+        updateStoriesWorker: err := AddParseStoryTask(story.PikabuID)
+/home/pikagraphs/go/src/bitbucket.org/d3dev/parse_pikabu/core/taskmanager/story_tasks.go:25 (0xacf2b7)
+        storyTasksWorker.func1: helpers.PanicOnError(handler())
+/opt/go/src/runtime/asm_amd64.s:1333 (0x45de51)
+        goexit: BYTE    $0x90   // NOP
+panic: pg: no rows in result set 
+
+goroutine 463 [running]:
+bitbucket.org/d3dev/parse_pikabu/helpers.PanicOnError(0xfcb2c0, 0xc007d9acd0)
+        /home/pikagraphs/go/src/bitbucket.org/d3dev/parse_pikabu/helpers/error_handling.go:19 +0xaa
+bitbucket.org/d3dev/parse_pikabu/core/taskmanager.storyTasksWorker.func1(0xc0009ae000, 0xee1860)
+        /home/pikagraphs/go/src/bitbucket.org/d3dev/parse_pikabu/core/taskmanager/story_tasks.go:25 +0x2c
+created by bitbucket.org/d3dev/parse_pikabu/core/taskmanager.storyTasksWorker
+        /home/pikagraphs/go/src/bitbucket.org/d3dev/parse_pikabu/core/taskmanager/story_tasks.go:24 +0xc1
