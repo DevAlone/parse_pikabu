@@ -85,7 +85,7 @@ func processCommunity(
 
 	if parsingTimestamp <= community.LastUpdateTimestamp {
 		// TODO: find a better way
-		logger.Log.Warning("skipping community %v because of old parsing result", community.LinkName)
+		logger.Log.Warningf("skipping community %v because of old parsing result", community.LinkName)
 		return nil
 	}
 

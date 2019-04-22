@@ -17,9 +17,7 @@ var ParserParseStoryTasks chan *models.ParseStoryTask
 // ParserSimpleTasks is a channel for SimpleTasks
 var ParserSimpleTasks chan *models.SimpleTask
 
-// SingleProcessMode - test feature, uses go channels instead of amqp
-var SingleProcessMode = false
-
+// DoNotParseUsers -
 var DoNotParseUsers = false
 
 // Init initializes channels

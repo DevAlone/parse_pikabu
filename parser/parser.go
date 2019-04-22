@@ -6,24 +6,24 @@ import (
 	"strings"
 	"time"
 
-	"github.com/streadway/amqp"
-
 	"bitbucket.org/d3dev/parse_pikabu/parser/logger"
 	"github.com/go-errors/errors"
 	"gogsweb.2-47.ru/d3dev/pikago"
 )
 
+// NoTaskError -
 type NoTaskError struct{}
 
-func (this NoTaskError) Error() string { return "there is no any task" }
+func (e NoTaskError) Error() string { return "there is no any task" }
 
+// Parser -
 type Parser struct {
 	Config       *ParserConfig
 	httpClient   *http.Client
 	pikagoClient *pikago.MobileClient
-	amqpChannel  *amqp.Channel
 }
 
+// NewParser - creates new parser
 func NewParser(parserConfig *ParserConfig) (*Parser, error) {
 	parser := &Parser{}
 	var err error
@@ -78,14 +78,14 @@ func NewParser(parserConfig *ParserConfig) (*Parser, error) {
 	return parser, nil
 }
 
-func (this *Parser) handleError(err error) {
+func (p *Parser) handleError(err error) {
 	if err == nil {
 		return
 	}
 
 	if _, ok := err.(NoTaskError); ok {
 		// logger.ParserLog.Debug("there is no task, waiting...")
-		time.Sleep(time.Duration(this.Config.WaitNoTaskSeconds) * time.Second)
+		time.Sleep(time.Duration(p.Config.WaitNoTaskSeconds) * time.Second)
 		return
 	}
 
@@ -95,15 +95,16 @@ func (this *Parser) handleError(err error) {
 		logger.Log.Error(err.Error())
 	}
 
-	time.Sleep(time.Duration(this.Config.WaitAfterErrorSeconds) * time.Second)
+	time.Sleep(time.Duration(p.Config.WaitAfterErrorSeconds) * time.Second)
 }
 
-func (this *Parser) doAPIRequest(method string, url string, body io.Reader) (*http.Response, error) {
+// TODO: consider removing
+func (p *Parser) doAPIRequest(method string, url string, body io.Reader) (*http.Response, error) {
 	method = strings.ToUpper(method)
-	req, err := http.NewRequest(method, this.Config.ApiURL+url, body)
+	req, err := http.NewRequest(method, p.Config.ApiURL+url, body)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Session-Id", this.Config.ApiSessionId)
-	return this.httpClient.Do(req)
+	req.Header.Set("Session-Id", p.Config.ApiSessionId)
+	return p.httpClient.Do(req)
 }

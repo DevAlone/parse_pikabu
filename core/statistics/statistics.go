@@ -5,22 +5,47 @@ import (
 	"sync"
 	"time"
 
-	"github.com/iancoleman/strcase"
-
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/go-errors/errors"
+	"github.com/iancoleman/strcase"
 )
 
+// Run -
 func Run() error {
 	var wg sync.WaitGroup
 
-	wg.Add(1)
-	go func() {
-		err := ProcessNumberOfUsersInQueue()
-		helpers.PanicOnError(err)
-		wg.Done()
-	}()
+	type ProcessNumberOfItemsInQueueConfig struct {
+		TableName             string
+		StatTableName         string
+		UpdatingPeriodSeconds int
+	}
+
+	for _, config := range []ProcessNumberOfItemsInQueueConfig{
+		{
+			TableName:             "pikabu_users",
+			StatTableName:         "number_of_users_to_process_entries",
+			UpdatingPeriodSeconds: 60,
+		},
+		{
+			TableName:             "pikabu_stories",
+			StatTableName:         "number_of_stories_to_process_entries",
+			UpdatingPeriodSeconds: 10 * 60,
+		},
+		{
+			TableName:             "pikabu_comments",
+			StatTableName:         "number_of_comments_to_process_entries",
+			UpdatingPeriodSeconds: 60 * 60,
+		},
+	} {
+		wg.Add(1)
+		go func(config ProcessNumberOfItemsInQueueConfig) {
+			err := ProcessNumberOfItemsInQueue(config.TableName, config.StatTableName, config.UpdatingPeriodSeconds)
+			helpers.PanicOnError(err)
+			wg.Done()
+		}(config)
+	}
 
 	wg.Add(1)
 	go func() {
@@ -34,33 +59,34 @@ func Run() error {
 	return nil
 }
 
-func ProcessNumberOfUsersInQueue() error {
-	// number_of_users_to_process
-	for true {
-		_, err := models.Db.Exec(`
+// ProcessNumberOfItemsInQueue -
+func ProcessNumberOfItemsInQueue(tableName string, statTableName string, updatingPeriod int) error {
+	for {
+		query := `
 			WITH constants (curr_timestamp) AS (
 				VALUES (extract(epoch from now())::int)
-			) INSERT INTO number_of_users_to_process_entries (timestamp, value)
+			) INSERT INTO ` + statTableName + ` (timestamp, value)
 			SELECT 
 				constants.curr_timestamp, 
 				(
-					SELECT COUNT(*) FROM pikabu_users
+					SELECT COUNT(*) FROM ` + tableName + `
 					WHERE 
 						next_update_timestamp <= constants.curr_timestamp
 				)
 			FROM constants
 			ON CONFLICT (timestamp) DO NOTHING;
-		`)
+		`
+		_, err := models.Db.Exec(query)
 		if err != nil {
-			logger.Log.Error(err)
+			logger.Log.Errorf("error during processing query %v\n", query)
+			logger.LogError(errors.New(err))
 		}
 
-		time.Sleep(60 * time.Second)
+		time.Sleep(time.Duration(updatingPeriod) * time.Second)
 	}
-
-	return nil
 }
 
+// ProcessDistributions -
 func ProcessDistributions() error {
 	for true {
 		// TODO: save last timestamp on redis
@@ -85,6 +111,7 @@ func ProcessDistributions() error {
 	return nil
 }
 
+// ProcessDistribution -
 func ProcessDistribution(tableName string, columnName string, bucketSize int) error {
 	distributionTableName := tableName + "_" + columnName + "_distribution_" + fmt.Sprint(bucketSize)
 	if columnName == "updating_period" {

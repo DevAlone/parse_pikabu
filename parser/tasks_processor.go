@@ -12,15 +12,13 @@ import (
 
 	"gogsweb.2-47.ru/d3dev/pikago"
 
-	"bitbucket.org/d3dev/parse_pikabu/amqphelper"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
-	"bitbucket.org/d3dev/parse_pikabu/parser/logger"
 	"github.com/go-errors/errors"
-	"github.com/streadway/amqp"
 	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )
 
+// Loop - parser's loop
 func (p *Parser) Loop() {
 	for true {
 		err := p.ListenForTasks()
@@ -31,6 +29,7 @@ func (p *Parser) Loop() {
 	}
 }
 
+// ListenForTasks -
 func (p *Parser) ListenForTasks() error {
 	defer func() {
 		if r := recover(); r != nil {
@@ -38,14 +37,6 @@ func (p *Parser) ListenForTasks() error {
 		}
 	}()
 
-	if globals.SingleProcessMode {
-		return p.ListenForChannelTasks()
-	}
-
-	return p.ListenForAMQPTasks()
-}
-
-func (p *Parser) ListenForChannelTasks() error {
 	for {
 		select {
 		case task := <-globals.ParserParseUserTasks:
@@ -60,99 +51,6 @@ func (p *Parser) ListenForChannelTasks() error {
 				return errors.Errorf("unknown type of simple task %v", task)
 			}
 		}
-	}
-}
-
-func (p *Parser) ListenForAMQPTasks() error {
-	logger.Log.Debug("connecting to amqp server...")
-	connection, err := amqphelper.GetAMQPConnection(p.Config.AMQPAddress)
-	if err != nil {
-		return errors.New(err)
-	}
-
-	ch, err := connection.Channel()
-	if err != nil {
-		return errors.New(err)
-	}
-	defer func() { _ = ch.Close() }()
-
-	err = amqphelper.DeclareExchanges(ch)
-	if err != nil {
-		return errors.New(err)
-	}
-
-	q, err := amqphelper.DeclareParserTasksQueue(ch)
-	if err != nil {
-		return errors.New(err)
-	}
-
-	err = ch.QueueBind(
-		q.Name,
-		"",
-		"parser_tasks",
-		false,
-		nil,
-	)
-	if err != nil {
-		return errors.New(err)
-	}
-
-	err = ch.Qos(1, 0, false)
-	if err != nil {
-		return errors.New(err)
-	}
-
-	messages, err := ch.Consume(
-		q.Name,
-		// TODO: process only those tasks that can be processed by p parser
-		"", // routing key
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		return errors.New(err)
-	}
-
-	logger.Log.Debug("start waiting for tasks")
-	defer logger.Log.Debug("stop waiting for parser results")
-
-	for message := range messages {
-		err = message.Ack(false)
-		if err != nil {
-			return err
-		}
-		err = p.processMessage(message)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (p *Parser) processMessage(message amqp.Delivery) error {
-	logger.Log.Debugf("got message: %v", string(message.Body))
-
-	switch message.RoutingKey {
-	case "parse_user":
-		var task models.ParseUserTask
-		err := pikago.JsonUnmarshal(message.Body, &task, true)
-		if err != nil {
-			return errors.New(err)
-		}
-		return p.processParseUserTask(&task)
-	case "parse_communities_pages":
-		return p.processParseCommunitiesPagesTask()
-	default:
-		logger.Log.Warningf(
-			"Unregistered task type \"%v\". Message: \"%v\"",
-			message.RoutingKey,
-			string(message.Body),
-		)
-		return nil
 	}
 }
 
@@ -189,6 +87,7 @@ func (p *Parser) processParseUserTask(task *models.ParseUserTask) error {
 	})
 }
 
+// ProcessParseUserTaskById -
 func (p *Parser) ProcessParseUserTaskById(task *models.ParseUserTask) (*models.ParserUserProfileResultData, error) {
 	// parse by id
 	makeRequest := func(id uint64) (*http.Request, error) {
@@ -226,9 +125,8 @@ func (p *Parser) ProcessParseUserTaskById(task *models.ParseUserTask) (*models.P
 					Message:    "Not found by id",
 				},
 			}
-		} else {
-			return nil, err
 		}
+		return nil, err
 	} else if err != nil {
 		return nil, err
 	}

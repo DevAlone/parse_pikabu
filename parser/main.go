@@ -8,6 +8,7 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/parser/logger"
 )
 
+// Main - parser's entry point
 func Main() {
 	logger.Init()
 
@@ -35,8 +36,6 @@ func Main() {
 			go func() {
 				parser.Loop()
 				wg.Done()
-				err := parser.Cleanup()
-				helpers.PanicOnError(err)
 			}()
 		}
 	}

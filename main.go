@@ -24,7 +24,6 @@ import (
 
 var commands = map[string]func(){
 	"single_process_mode": func() {
-		globals.SingleProcessMode = true
 		var wg sync.WaitGroup
 		wg.Add(1)
 		go func() { core.Main() }()
@@ -36,6 +35,7 @@ var commands = map[string]func(){
 		core.Main()
 	},
 	"parser": func() {
+		// TODO: modify to fetch tasks from amqp or something
 		parser.Main()
 	},
 	"clean_db": func() {
@@ -113,9 +113,7 @@ Available commands are:
 	}
 
 	err := config.UpdateSettingsFromFile(*configFilePath)
-	if err != nil {
-		helpers.PanicOnError(err)
-	}
+	helpers.PanicOnError(err)
 
 	err = globals.Init()
 	helpers.PanicOnError(err)

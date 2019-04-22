@@ -1,12 +1,12 @@
 package models
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
+	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
 )
@@ -70,9 +70,12 @@ func InitDb() error {
 		logger.Log.Info("creating index:", query)
 		_, err = Db.Exec(query)
 		if err != nil {
-			return err
+			print("shit during creating index ", query, "\n")
+			return errors.New(err)
 		}
 	}
+
+	logger.Log.Info("Database created successfully")
 
 	return err
 }
@@ -86,7 +89,7 @@ func createSchema() error {
 		})
 		if err != nil {
 			print(i, model, "\n")
-			return err
+			return errors.New(err)
 		}
 	}
 	logger.Log.Debugf("number of CustomQueries is %d", len(CustomQueries))
@@ -95,7 +98,7 @@ func createSchema() error {
 		_, err := Db.Exec(query)
 		if err != nil {
 			print(i, query, "\n")
-			return err
+			return errors.New(err)
 		}
 	}
 

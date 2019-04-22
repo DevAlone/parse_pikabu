@@ -1,6 +1,7 @@
 package resultsprocessor
 
 import (
+	"encoding/json"
 	"time"
 
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
@@ -45,25 +46,33 @@ func processStoryData(parsingTimestamp models.TimestampType, storyData *pikago_m
 	err := models.Db.Delete(&models.PikabuDeletedOrNeverExistedStory{
 		PikabuID: storyData.StoryID.Value,
 	})
-	if err != nil {
-		return err
+	if err != nil && err != pg.ErrNoRows {
+		return errors.New(err)
 	}
 
 	contentBlocks := []models.PikabuStoryBlock{}
 	for _, block := range storyData.ContentBlocks {
+		bytes, err := json.Marshal(block.Data)
+		if err != nil {
+			return errors.New(err)
+		}
+		var data interface{}
+		err = json.Unmarshal(bytes, &data)
+		if err != nil {
+			return errors.New(err)
+		}
 		contentBlocks = append(contentBlocks, models.PikabuStoryBlock{
 			Type: block.Type,
-			Data: block.Data,
+			Data: data,
 		})
 	}
 
 	newStory := &models.PikabuStory{
-		PikabuID:        storyData.StoryID.Value,
-		Rating:          int32(storyData.Rating.Value),
-		NumberOfPluses:  int32(storyData.NumberOfPluses.Value),
-		NumberOfMinuses: int32(storyData.NumberOfMinuses.Value),
-		Title:           storyData.Title,
-		// TODO: check that RawData is not bytes
+		PikabuID:           storyData.StoryID.Value,
+		Rating:             int32(storyData.Rating.Value),
+		NumberOfPluses:     int32(storyData.NumberOfPluses.Value),
+		NumberOfMinuses:    int32(storyData.NumberOfMinuses.Value),
+		Title:              storyData.Title,
 		ContentBlocks:      contentBlocks,
 		CreatedAtTimestamp: models.TimestampType(storyData.CreatedAtTimestamp.Value),
 		StoryURL:           storyData.StoryURL,
@@ -101,7 +110,7 @@ func processStoryData(parsingTimestamp models.TimestampType, storyData *pikago_m
 		}
 		return nil
 	} else if err != nil {
-		return err
+		return errors.New(err)
 	}
 
 	wasDataChanged, err := processModelFieldsVersions(nil, story, newStory, parsingTimestamp)

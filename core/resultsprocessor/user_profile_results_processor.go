@@ -177,7 +177,7 @@ func saveUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago_
 
 	wasDataChanged, err := processModelFieldsVersions(nil, user, newUser, parsingTimestamp)
 	if _, ok := err.(OldParserResultError); ok {
-		logger.Log.Warning("skipping user %v because of old parsing result", user.Username)
+		logger.Log.Warningf("skipping user %v because of old parsing result", user.Username)
 		return nil
 	} else if err != nil {
 		return errors.New(err)
@@ -230,7 +230,7 @@ func CreateAwardIdsArray(
 		if found {
 			_, err := processModelFieldsVersions(nil, awardFromDb, award, parsingTimestamp)
 			if _, ok := err.(OldParserResultError); ok {
-				logger.Log.Warning("skipping item %v because of old parsing result", award)
+				logger.Log.Warningf("skipping item %v because of old parsing result", award)
 			} else {
 				if err != nil {
 					return nil, err
@@ -333,7 +333,7 @@ func createBanHistoryIdsArray(
 		if found {
 			_, err := processModelFieldsVersions(nil, dbBanHistoryItem, banHistoryItem, parsingTimestamp)
 			if _, ok := err.(OldParserResultError); ok {
-				logger.Log.Warning("skipping item %v because of old parsing result", banHistoryItem)
+				logger.Log.Warningf("skipping item %v because of old parsing result", banHistoryItem)
 			} else {
 				if err != nil {
 					return nil, err

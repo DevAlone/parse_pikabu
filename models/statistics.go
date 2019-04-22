@@ -1,14 +1,27 @@
 package models
 
+// NumberOfUsersToProcessEntry - number of users in queue
 type NumberOfUsersToProcessEntry struct {
 	Timestamp TimestampType `sql:",pk" json:"timestamp" api:"order,filter"`
 	Value     int64         `json:"value"`
 }
 
+// NumberOfStoriesToProcessEntry - number of stories in queue
+type NumberOfStoriesToProcessEntry struct {
+	Timestamp TimestampType `sql:",pk" json:"timestamp" api:"order,filter"`
+	Value     int64         `json:"value"`
+}
+
+// NumberOfCommentsToProcessEntry - number of comments in queue
+type NumberOfCommentsToProcessEntry struct {
+	Timestamp TimestampType `sql:",pk" json:"timestamp" api:"order,filter"`
+	Value     int64         `json:"value"`
+}
+
 func init() {
-	for _, item := range []interface{}{
+	Tables = append(Tables, []interface{}{
 		&NumberOfUsersToProcessEntry{},
-	} {
-		Tables = append(Tables, item)
-	}
+		&NumberOfStoriesToProcessEntry{},
+		&NumberOfCommentsToProcessEntry{},
+	}...)
 }

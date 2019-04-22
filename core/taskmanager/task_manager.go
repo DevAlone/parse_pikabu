@@ -50,7 +50,7 @@ func Run() error {
 
 	wg.Wait()
 
-	return Cleanup()
+	return nil
 }
 
 // CompleteTask completes a task

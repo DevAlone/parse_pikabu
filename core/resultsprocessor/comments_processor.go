@@ -30,7 +30,7 @@ func processComment(parsingTimestamp models.TimestampType, commentData *pikago_m
 		PikabuID: commentData.ID.Value,
 	})
 	if err != pg.ErrNoRows && err != nil {
-		return err
+		return errors.New(err)
 	}
 
 	images := []models.PikabuCommentImage{}
@@ -105,7 +105,7 @@ func processComment(parsingTimestamp models.TimestampType, commentData *pikago_m
 		}
 		return nil
 	} else if err != nil {
-		return err
+		return errors.New(err)
 	}
 
 	wasDataChanged, err := processModelFieldsVersions(nil, comment, newComment, parsingTimestamp)
