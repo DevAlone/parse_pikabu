@@ -32,7 +32,7 @@ func processFilter(req *orm.Query, resultType reflect.Type, filter string) (*orm
 		return req, errors.Errorf(errs.ToDisplayString())
 	}
 
-	typeProvider := types.NewProvider()
+	typeProvider := types.NewRegistry()
 	env := checker.NewStandardEnv(packages.DefaultPackage, typeProvider)
 	// declare fields to filter on
 	err := env.Add(getFieldsToFilter(resultType)...)
@@ -115,12 +115,9 @@ func celFunctionToSQL(function string) (string, error) {
 		logger.Log.Errorf("unknown cel function %v", function)
 		return "", errors.Errorf("some very bad shit happened")
 	}
-	if strings.HasPrefix(function, "_") {
-		function = function[1:]
-	}
-	if strings.HasSuffix(function, "_") {
-		function = function[:len(function)-1]
-	}
+
+	function = strings.TrimPrefix(function, "_")
+	function = strings.TrimSuffix(function, "_")
 	function = strings.ToLower(function)
 
 	switch function {

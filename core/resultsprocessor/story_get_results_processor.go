@@ -40,6 +40,10 @@ func processStoryGetResult(parsingTimestamp models.TimestampType, storyGetResult
 var storyLocker = helpers.NewIDLocker()
 
 func processStoryData(parsingTimestamp models.TimestampType, storyData *pikago_models.Story) error {
+	if storyData == nil {
+		logger.Log.Debugf("skipping story cuz storyData is nil")
+		return nil
+	}
 	storyLocker.Lock(storyData.StoryID.Value)
 	defer storyLocker.Unlock(storyData.StoryID.Value)
 

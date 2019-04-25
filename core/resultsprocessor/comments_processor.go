@@ -84,6 +84,7 @@ func processComment(parsingTimestamp models.TimestampType, commentData *pikago_m
 		IsAuthorCommunityModerator: commentData.IsAuthorCommunityModerator,
 		IsAuthorPikabuTeam:         commentData.IsAuthorPikabuTeam,
 		IsAuthorOfficial:           commentData.IsAuthorOfficial,
+		IsRatingHidden:             commentData.Rating.IsNull,
 
 		AddedTimestamp:       parsingTimestamp,
 		LastUpdateTimestamp:  parsingTimestamp,

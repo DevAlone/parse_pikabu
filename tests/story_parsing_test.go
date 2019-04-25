@@ -6,46 +6,22 @@ import (
 	"testing"
 	"time"
 
-	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/core/resultsprocessor"
-	"bitbucket.org/d3dev/parse_pikabu/globals"
+	"bitbucket.org/d3dev/parse_pikabu/core/taskmanager"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
-	"github.com/go-pg/pg/orm"
+	"bitbucket.org/d3dev/parse_pikabu/parser"
+	"github.com/go-pg/pg"
 	"github.com/stretchr/testify/assert"
 	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )
 
 func TestStoryParsing(t *testing.T) {
-	err := config.UpdateSettingsFromFile("../core.config.json")
-	helpers.PanicOnError(err)
-	helpers.PanicOnError(globals.Init())
-
-	initLogs()
+	initTestEnvironment()
 	logger.Log.Debug(`start test "story parsing"`)
 
-	err = models.InitDb()
-	if err != nil {
-		helpers.PanicOnError(err)
-	}
-
-	// clear tables
-	for _, table := range models.Tables {
-		err := models.Db.DropTable(table, &orm.DropTableOptions{
-			IfExists: true,
-			Cascade:  true,
-		})
-		if err != nil {
-			helpers.PanicOnError(err)
-		}
-	}
-
-	// create again
-	err = models.InitDb()
-	if err != nil {
-		helpers.PanicOnError(err)
-	}
+	clearAndInitDb()
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -59,7 +35,7 @@ func TestStoryParsing(t *testing.T) {
 		wg.Done()
 	}()
 
-	err = pushResultToQueue(1, []pikago_models.StoryGetResult{
+	err := pushStoriesResultToQueue(1, []pikago_models.StoryGetResult{
 		pikago_models.StoryGetResult{
 			QueryTimestampMs:       pikago_models.Int64{Value: 0},
 			HasNextCommentsPage:    false,
@@ -68,7 +44,7 @@ func TestStoryParsing(t *testing.T) {
 			DeepCommentsAreHidden:  false,
 			StoryData: &pikago_models.Story{
 				StoryID: pikago_models.UInt64{Value: 1},
-				Rating:  pikago_models.Int64{Value: 1},
+				Rating:  pikago_models.NullableInt64{Value: 1, IsNull: false},
 				Title:   "test story",
 				ContentBlocks: []pikago_models.StoryBlock{
 					pikago_models.StoryBlock{
@@ -157,7 +133,7 @@ func TestStoryParsing(t *testing.T) {
 
 	/* push the same result again */
 
-	err = pushResultToQueue(2, []pikago_models.StoryGetResult{
+	err = pushStoriesResultToQueue(2, []pikago_models.StoryGetResult{
 		pikago_models.StoryGetResult{
 			QueryTimestampMs:       pikago_models.Int64{Value: 0},
 			HasNextCommentsPage:    false,
@@ -166,7 +142,7 @@ func TestStoryParsing(t *testing.T) {
 			DeepCommentsAreHidden:  false,
 			StoryData: &pikago_models.Story{
 				StoryID: pikago_models.UInt64{Value: 1},
-				Rating:  pikago_models.Int64{Value: 1},
+				Rating:  pikago_models.NullableInt64{Value: 1, IsNull: false},
 				Title:   "test story",
 				ContentBlocks: []pikago_models.StoryBlock{
 					pikago_models.StoryBlock{
@@ -257,7 +233,7 @@ func TestStoryParsing(t *testing.T) {
 
 	/* change some fields */
 
-	err = pushResultToQueue(3, []pikago_models.StoryGetResult{
+	err = pushStoriesResultToQueue(3, []pikago_models.StoryGetResult{
 		pikago_models.StoryGetResult{
 			QueryTimestampMs:       pikago_models.Int64{Value: 0},
 			HasNextCommentsPage:    false,
@@ -266,7 +242,7 @@ func TestStoryParsing(t *testing.T) {
 			DeepCommentsAreHidden:  false,
 			StoryData: &pikago_models.Story{
 				StoryID: pikago_models.UInt64{Value: 1},
-				Rating:  pikago_models.Int64{Value: 2},
+				Rating:  pikago_models.NullableInt64{Value: 2, IsNull: false},
 				Title:   "new title",
 				ContentBlocks: []pikago_models.StoryBlock{
 					pikago_models.StoryBlock{
@@ -441,39 +417,65 @@ func TestStoryParsing(t *testing.T) {
 		},
 	}, contentBlocksVersions)
 
-	// clear tables
-	for _, table := range models.Tables {
-		err := models.Db.DropTable(table, &orm.DropTableOptions{
-			IfExists: true,
-			Cascade:  true,
-		})
+	clearAndInitDb()
+}
+
+func TestStoryDataIsNil(t *testing.T) {
+	initTestEnvironment()
+	logger.Log.Debug(`start test "story data is nil"`)
+
+	clearAndInitDb()
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	// start results processor
+	go func() {
+		err := resultsprocessor.Run()
 		if err != nil {
 			helpers.PanicOnError(err)
 		}
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		parser.Main()
+		wg.Done()
+	}()
+
+	story := &models.PikabuStory{
+		PikabuID: 59,
 	}
-}
 
-func pushResultToQueue(parsingTimestamp int64, stories []pikago_models.StoryGetResult) error {
-	logger.Log.Debug(`pushing result to queue`)
-	var pr models.ParserResult
-	pr.ParsingTimestamp = models.TimestampType(parsingTimestamp)
-	pr.ParserId = "d3dev/parser_id"
-	pr.NumberOfResults = len(stories)
-	pr.Results = stories
-	globals.ParserResults <- &pr
-
-	return nil
-}
-
-func waitForResultsQueueEmpty() {
-	logger.Log.Debug(`waiting for queue to become empty`)
 	for {
-		if len(globals.ParserResults) == 0 {
-			// TODO: check whether the message was actually processed
-			time.Sleep(1 * time.Second)
-			return
-		}
+		/* create task for parsing story number 59 */
+		err := taskmanager.ForceAddParseStoryTask(59)
+		helpers.PanicOnError(err)
 
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(1 * time.Second)
+		logger.Log.Debug("trying to select a story from db")
+		err = models.Db.Select(story)
+		if err == pg.ErrNoRows {
+			continue
+		}
+		helpers.PanicOnError(err)
+		break
 	}
+
+	assert.Equal(t, "Смешной пацан с мороженным", story.Title)
+	assert.Equal(t, []models.PikabuStoryBlock{
+		models.PikabuStoryBlock{
+			Type: "i",
+			Data: map[string]interface{}{
+				"animation": interface{}(nil),
+				"img_size":  interface{}(nil),
+				"large":     "https://cs.pikabu.ru/images/big_size_comm/2012-01_6/13275325751151.gif",
+				"small":     "https://cs.pikabu.ru/images/big_size_comm/2012-01_6/13275325751151.gif",
+			},
+		},
+	}, story.ContentBlocks)
+
+	/* clean up */
+	clearAndInitDb()
 }

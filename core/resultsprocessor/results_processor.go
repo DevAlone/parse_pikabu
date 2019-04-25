@@ -33,6 +33,7 @@ func Run() error {
 func startListener() error {
 	var wg sync.WaitGroup
 	for i := 0; i < config.Settings.NumberOfTasksProcessorsMultiplier*runtime.GOMAXPROCS(0); i++ {
+		logger.Log.Debug("started results processor routine")
 		wg.Add(1)
 		go func() {
 			for message := range globals.ParserResults {
@@ -47,6 +48,8 @@ func startListener() error {
 }
 
 func processMessage(message *models.ParserResult) error {
+	logger.Log.Debugf("got message from parser %v", message)
+
 	switch m := message.Results.(type) {
 	case []models.ParserUserProfileResultData:
 		userProfiles := []*pikago_models.UserProfile{}

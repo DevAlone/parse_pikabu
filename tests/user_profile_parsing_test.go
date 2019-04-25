@@ -1,5 +1,8 @@
+// TODO: update
+
 package tests
 
+/*
 import (
 	"strings"
 	"sync"
@@ -11,38 +14,16 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-pg/pg/orm"
-	"github.com/streadway/amqp"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUserProfileParsing(t *testing.T) {
-	initLogs()
+	initTestEnvironment()
 	logger.Log.Debug(`start test "user profile parsing"`)
 
-	err := models.InitDb()
-	if err != nil {
-		helpers.PanicOnError(err)
-	}
-
-	// clear tables
-	for _, table := range models.Tables {
-		err := models.Db.DropTable(table, &orm.DropTableOptions{
-			IfExists: true,
-			Cascade:  true,
-		})
-		if err != nil {
-			helpers.PanicOnError(err)
-		}
-	}
-
-	// create again
-	err = models.InitDb()
-	if err != nil {
-		helpers.PanicOnError(err)
-	}
+	clearAndInitDb()
 
 	var wg sync.WaitGroup
-	wg.Add(1)
 
 	// start results processor
 	go func() {
@@ -53,7 +34,7 @@ func TestUserProfileParsing(t *testing.T) {
 		wg.Done()
 	}()
 
-	err = pushTaskToQueue("user_profile", []byte(`
+	err := pushTaskToQueue("user_profile", []byte(`
 {
 	"parsing_timestamp": 100,
 	"parser_id": "d3dev/parser_id",
@@ -74,26 +55,26 @@ func TestUserProfileParsing(t *testing.T) {
 			"is_rating_ban": true,
 			"avatar": "https://cs8.pikabu.ru/avatars/2561/x2561615-512432259.png",
 			"awards": [
-        {                                                                                    
-          "id": "287578",           
+        {
+          "id": "287578",
           "user_id": "2561615",
-          "award_id": "0",                                                                
-          "award_title": "Пятничное [Моё]",                                                  
+          "award_id": "0",
+          "award_title": "Пятничное [Моё]",
           "award_image": "https://cs10.pikabu.ru/post_img/2018/04/05/8/152293551235288152.png",
-          "story_id": "5983144",                                                             
+          "story_id": "5983144",
           "story_title": "Впихнуть невпихуемое ",
           "date": "2018-06-25 11:43:55",
-          "is_hidden": "0",                                                              
-          "comment_id": null,                                                               
-          "link": "/story/vpikhnut_nevpikhuemoe_5983144"                                 
-        },                                                                                  
-        {                                                                   
-          "id": "269145",             
-          "user_id": "2561615",                                                             
-          "award_id": "14",                                                                  
-          "award_title": "редактирование тегов в 100 и более постах",                     
-          "award_image": "https://cs.pikabu.ru/images/awards/2x/100_story_edits_tags.png",   
-          "story_id": "0",          
+          "is_hidden": "0",
+          "comment_id": null,
+          "link": "/story/vpikhnut_nevpikhuemoe_5983144"
+        },
+        {
+          "id": "269145",
+          "user_id": "2561615",
+          "award_id": "14",
+          "award_title": "редактирование тегов в 100 и более постах",
+          "award_image": "https://cs.pikabu.ru/images/awards/2x/100_story_edits_tags.png",
+          "story_id": "0",
           "story_title": "",
           "date": "2018-05-28 17:00:12",
           "is_hidden": "0",
@@ -189,26 +170,26 @@ func TestUserProfileParsing(t *testing.T) {
 			"is_rating_ban": false,
 			"avatar": "https://cs8.pikabu.ru/avatars/2561/x2561615-512432259.png",
 			"awards": [
-        {                                                                                    
-          "id": "287578",           
+        {
+          "id": "287578",
           "user_id": "2561615",
-          "award_id": "0",                                                                
-          "award_title": "Пятничное [твоё]",                                                  
+          "award_id": "0",
+          "award_title": "Пятничное [твоё]",
           "award_image": "https://cs10.pikabu.ru/post_img/2018/04/05/8/152293551235288152.png",
-          "story_id": "9983144",                                                             
+          "story_id": "9983144",
           "story_title": "Впихнуть невпихуемое ",
           "date": "2018-06-25 11:43:55",
-          "is_hidden": "0",                                                              
-          "comment_id": null,                                                               
-          "link": "/story/vpikhnut_nevpikhuemoe_5983144"                                 
-        },                                                                                  
-        {                                                                   
-          "id": "269145",             
-          "user_id": "2561615",                                                             
-          "award_id": "14",                                                                  
-          "award_title": "редактирование тегов в 100 и более постах",                     
-          "award_image": "https://cs.pikabu.ru/images/awards/2x/100_story_edits_tags.png",   
-          "story_id": "0",          
+          "is_hidden": "0",
+          "comment_id": null,
+          "link": "/story/vpikhnut_nevpikhuemoe_5983144"
+        },
+        {
+          "id": "269145",
+          "user_id": "2561615",
+          "award_id": "14",
+          "award_title": "редактирование тегов в 100 и более постах",
+          "award_image": "https://cs.pikabu.ru/images/awards/2x/100_story_edits_tags.png",
+          "story_id": "0",
           "story_title": "",
           "date": "2018-05-28 17:00:12",
           "is_hidden": "0",
@@ -493,21 +474,21 @@ func TestUserProfileParsing(t *testing.T) {
 			"note": null,
 			"approved": "approved User",
 			"communities": [
-        {                                                                                                                                                                                       
-          "name": "Cynic Mansion",                                                                                                                                                              
-          "link": "cynicmansion",                                                                                                                                                               
-          "avatar": "https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png",                                                                                                      
-          "avatar_url": "https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png"                                                                                                   
-        },                
-        {                    
+        {
+          "name": "Cynic Mansion",
+          "link": "cynicmansion",
+          "avatar": "https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png",
+          "avatar_url": "https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png"
+        },
+        {
           "name": "Пикабу головного мозга",
-          "link": "p_g_m",                 
-          "avatar": "https://cs7.pikabu.ru/images/community/1360/1538729487212641089.png",     
+          "link": "p_g_m",
+          "avatar": "https://cs7.pikabu.ru/images/community/1360/1538729487212641089.png",
           "avatar_url": "https://cs7.pikabu.ru/images/community/1360/1538729487212641089.png"
-        },                                       
-        {                               
+        },
+        {
           "name": "Кофе мой друг",
-          "link": "Coffee",  
+          "link": "Coffee",
           "avatar": "https://cs8.pikabu.ru/images/community/729/1493440472283550654.png",
           "avatar_url": "https://cs8.pikabu.ru/images/community/729/1493440472283550654.png"
         }
@@ -900,21 +881,21 @@ func TestUserProfileParsing(t *testing.T) {
 			"note": null,
 			"approved": "approved User",
 			"communities": [
-        {                                                                                                                                                                                       
-          "name": "Cynic Mansion",                                                                                                                                                              
-          "link": "cynicmansion",                                                                                                                                                               
-          "avatar": "https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png",                                                                                                      
-          "avatar_url": "https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png"                                                                                                   
-        },                
-        {                    
+        {
+          "name": "Cynic Mansion",
+          "link": "cynicmansion",
+          "avatar": "https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png",
+          "avatar_url": "https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png"
+        },
+        {
           "name": "Пикабу головного мозга",
-          "link": "p_g_m",                 
-          "avatar": "https://cs7.pikabu.ru/images/community/1360/1538729487212641089.png",     
+          "link": "p_g_m",
+          "avatar": "https://cs7.pikabu.ru/images/community/1360/1538729487212641089.png",
           "avatar_url": "https://cs7.pikabu.ru/images/community/1360/1538729487212641089.png"
-        },                                       
-        {                               
+        },
+        {
           "name": "Кофе мой друг",
-          "link": "Coffee",  
+          "link": "Coffee",
           "avatar": "https://cs8.pikabu.ru/images/community/729/1493440472283550654.png",
           "avatar_url": "https://cs8.pikabu.ru/images/community/729/1493440472283550654.png"
         }
@@ -1037,21 +1018,21 @@ func TestUserProfileParsing(t *testing.T) {
 			"note": null,
 			"approved": "approved User",
 			"communities": [
-        {                                                                                                                                                                                       
-          "name": "Cynic Mansion",                                                                                                                                                              
-          "link": "cynicmansion",                                                                                                                                                               
-          "avatar": "https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png",                                                                                                      
-          "avatar_url": "https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png"                                                                                                   
-        },                
-        {                    
+        {
+          "name": "Cynic Mansion",
+          "link": "cynicmansion",
+          "avatar": "https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png",
+          "avatar_url": "https://cs6.pikabu.ru/images/community/1031/1502225712241040050.png"
+        },
+        {
           "name": "Пикабу головного мозга",
-          "link": "p_g_m",                 
-          "avatar": "https://cs7.pikabu.ru/images/community/1360/1538729487212641089.png",     
+          "link": "p_g_m",
+          "avatar": "https://cs7.pikabu.ru/images/community/1360/1538729487212641089.png",
           "avatar_url": "https://cs7.pikabu.ru/images/community/1360/1538729487212641089.png"
-        },                                       
-        {                               
+        },
+        {
           "name": "Кофе мой друг",
-          "link": "Coffee",  
+          "link": "Coffee",
           "avatar": "https://cs8.pikabu.ru/images/community/729/1493440472283550654.png",
           "avatar_url": "https://cs8.pikabu.ru/images/community/729/1493440472283550654.png"
         }
@@ -1165,111 +1146,11 @@ func TestUserProfileParsing(t *testing.T) {
 	}
 }
 
-func pushTaskToQueue(key string, message []byte) error {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672")
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	ch, err := conn.Channel()
-	if err != nil {
-		return err
-	}
-	defer ch.Close()
-
-	err = ch.ExchangeDeclare(
-		"parser_results",
-		"fanout",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		return err
-	}
-
-	err = ch.Publish(
-		"parser_results",
-		key,
-		true,
-		false,
-		amqp.Publishing{
-			ContentType:  "application/json",
-			DeliveryMode: amqp.Persistent,
-			Body:         message,
-		},
-	)
-	return err
-}
-
-func waitForQueueEmpty() {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672")
-	if err != nil {
-		helpers.PanicOnError(err)
-	}
-	defer conn.Close()
-
-	ch, err := conn.Channel()
-	if err != nil {
-		helpers.PanicOnError(err)
-	}
-	defer ch.Close()
-
-	err = ch.ExchangeDeclare(
-		"parser_results",
-		"fanout",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		helpers.PanicOnError(err)
-	}
-
-	for true {
-		parserTasksQueue, err := ch.QueueInspect("bitbucket.org/d3dev/parse_pikabu/parser_results")
-		helpers.PanicOnError(err)
-
-		if parserTasksQueue.Messages == 0 {
-			// TODO: check whether the message was processed
-			time.Sleep(2 * time.Second)
-			return
-		}
-
-		time.Sleep(50 * time.Millisecond)
-	}
-}
-
 func TestConcurrentUserProfileParsing(t *testing.T) {
-	initLogs()
+	initTestEnvironment()
 	logger.Log.Debug(`start test "concurrent user profile parsing"`)
 
-	err := models.InitDb()
-	if err != nil {
-		helpers.PanicOnError(err)
-	}
-
-	// clear tables
-	for _, table := range models.Tables {
-		err := models.Db.DropTable(table, &orm.DropTableOptions{
-			IfExists: true,
-			Cascade:  true,
-		})
-		if err != nil {
-			helpers.PanicOnError(err)
-		}
-	}
-
-	// create again
-	err = models.InitDb()
-	if err != nil {
-		helpers.PanicOnError(err)
-	}
+	clearAndInitDb()
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -1282,6 +1163,7 @@ func TestConcurrentUserProfileParsing(t *testing.T) {
 		}
 		wg.Done()
 	}()
+
 	data := `
 {"parsing_timestamp":1545920253,"parser_id":"d3dev/test_proxy_parser_copy_95","number_of_results":1,"results":[{"user":{"current_user_id":0,"user_id":297508,"user_name":"moderator","rating":120951.5,"gender":0,"comments_count":73338,"stories_count":0,"stories_hot_count":0,"pluses_count":192,"minuses_count":383,"signup_date":1367078405,"is_rating_ban":true,"avatar":"https://cs6.pikabu.ru/avatars/297/x297508-739228827.png","awards":[{"id":249466,"user_id":297508,"award_id":13,"award_title":"5 лет на Пикабу","award_image":"https://cs.pikabu.ru/images/awards/2x/5_let_pikabushnik.png","story_id":0,"story_title":"","date":"2018-04-27 20:00:21","is_hidden":0,"comment_id":0,"link":""},{"id":1746,"user_id":297508,"award_id":8,"award_title":"более 1000 подписчиков","award_image":"https://cs.pikabu.ru/images/awards/2x/1000_subs.png","story_id":0,"story_title":"","date":"2015-07-05 06:00:06","is_hidden":0,"comment_id":0,"link":""}],"is_subscribed":false,"is_ignored":false,"note":"","approved":"Команда Пикабу","communities":[{"name":"Фейки","link":"fakes","avatar":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png","avatar_url":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png"},{"name":"Вопросы по модерации","link":"moderator","avatar":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png","avatar_url":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png"},{"name":"Баяны","link":"reposts","avatar":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png","avatar_url":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png"}],"subscribers_count":5511,"is_user_banned":false,"is_user_fully_banned":false,"public_ban_history":[],"user_ban_time":-62169993079}}]}
 {"parsing_timestamp":1545920253,"parser_id":"d3dev/test_proxy_parser_copy_149","number_of_results":1,"results":[{"user":{"current_user_id":0,"user_id":297508,"user_name":"moderator","rating":120951.5,"gender":0,"comments_count":73338,"stories_count":0,"stories_hot_count":0,"pluses_count":192,"minuses_count":383,"signup_date":1367078405,"is_rating_ban":true,"avatar":"https://cs6.pikabu.ru/avatars/297/x297508-739228827.png","awards":[{"id":249466,"user_id":297508,"award_id":13,"award_title":"5 лет на Пикабу","award_image":"https://cs.pikabu.ru/images/awards/2x/5_let_pikabushnik.png","story_id":0,"story_title":"","date":"2018-04-27 20:00:21","is_hidden":0,"comment_id":0,"link":""},{"id":1746,"user_id":297508,"award_id":8,"award_title":"более 1000 подписчиков","award_image":"https://cs.pikabu.ru/images/awards/2x/1000_subs.png","story_id":0,"story_title":"","date":"2015-07-05 06:00:06","is_hidden":0,"comment_id":0,"link":""}],"is_subscribed":false,"is_ignored":false,"note":"","approved":"Команда Пикабу","communities":[{"name":"Фейки","link":"fakes","avatar":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png","avatar_url":"https://cs8.pikabu.ru/images/community/1/1511452065290441807.png"},{"name":"Вопросы по модерации","link":"moderator","avatar":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png","avatar_url":"https://cs10.pikabu.ru/images/community/298/1540135481227521303.png"},{"name":"Баяны","link":"reposts","avatar":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png","avatar_url":"https://cs8.pikabu.ru/images/community/298/1478189420255384259.png"}],"subscribers_count":5511,"is_user_banned":false,"is_user_fully_banned":false,"public_ban_history":[],"user_ban_time":-62169993079}}]}
@@ -1358,3 +1240,5 @@ func TestConcurrentUserProfileParsing(t *testing.T) {
 		}
 	}
 }
+
+*/

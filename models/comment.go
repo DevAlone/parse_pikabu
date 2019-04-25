@@ -35,6 +35,7 @@ type PikabuComment struct {
 	IsAuthorCommunityModerator bool `sql:",notnull" json:"is_author_community_moderator" gen_versions:""`
 	IsAuthorPikabuTeam         bool `sql:",notnull" json:"is_author_pikabu_team" gen_versions:""`
 	IsAuthorOfficial           bool `sql:",notnull" json:"is_author_official" gen_versions:""`
+	IsRatingHidden             bool `sql:",notnull" json:"is_rating_hidden" gen_versions:""`
 
 	AddedTimestamp       TimestampType `sql:",notnull" json:"added_timestamp" api:"order"`
 	LastUpdateTimestamp  TimestampType `sql:",notnull" json:"last_update_timestamp" api:"order"`

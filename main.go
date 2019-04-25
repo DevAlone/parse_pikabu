@@ -26,9 +26,15 @@ var commands = map[string]func(){
 	"single_process_mode": func() {
 		var wg sync.WaitGroup
 		wg.Add(1)
-		go func() { core.Main() }()
+		go func() {
+			core.Main()
+			wg.Done()
+		}()
 		wg.Add(1)
-		go func() { parser.Main() }()
+		go func() {
+			parser.Main()
+			wg.Done()
+		}()
 		wg.Wait()
 	},
 	"core": func() {

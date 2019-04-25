@@ -12,6 +12,7 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/models"
 )
 
+// Main - entry point for core of the project
 func Main() {
 	logger.Init()
 
