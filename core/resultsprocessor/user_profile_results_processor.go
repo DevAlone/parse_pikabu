@@ -53,8 +53,8 @@ func unlockUserById(userId uint64) {
 }
 
 func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago_models.UserProfile) error {
-	lockUserById(userProfile.UserId.Value)
-	defer unlockUserById(userProfile.UserId.Value)
+	lockUserById(userProfile.UserID.Value)
+	defer unlockUserById(userProfile.UserID.Value)
 
 	if userProfile == nil {
 		return errors.New("nil user profile")
@@ -72,14 +72,14 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 		nil,
 		"parse_user_tasks",
 		"pikabu_id",
-		userProfile.UserId.Value,
+		userProfile.UserID.Value,
 	)
 	if err != nil {
 		return err
 	}
 
 	task := models.ParseUserTask{
-		PikabuID: userProfile.UserId.Value,
+		PikabuID: userProfile.UserID.Value,
 	}
 	err = models.Db.Select(&task)
 	if err != pg.ErrNoRows && err != nil {
@@ -104,7 +104,7 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 	}
 
 	_, err = models.Db.Model(&models.PikabuDeletedOrNeverExistedUser{
-		PikabuID: userProfile.UserId.Value,
+		PikabuID: userProfile.UserID.Value,
 	}).WherePK().Delete()
 	if err != nil && err != pg.ErrNoRows {
 		return err
@@ -133,7 +133,7 @@ func saveUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago_
 		return err
 	}
 	newUser := &models.PikabuUser{
-		PikabuID:            userProfile.UserId.Value,
+		PikabuID:            userProfile.UserID.Value,
 		Username:            userProfile.Username,
 		Gender:              fmt.Sprint(userProfile.Gender.Value),
 		Rating:              int32(userProfile.Rating.Value),
@@ -161,7 +161,7 @@ func saveUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago_
 	newUser.NextUpdateTimestamp = calculateNextUpdateTimestamp(newUser, false)
 
 	user := &models.PikabuUser{
-		PikabuID: userProfile.UserId.Value,
+		PikabuID: userProfile.UserID.Value,
 	}
 	err = models.Db.Select(user)
 
@@ -195,6 +195,7 @@ func saveUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago_
 	return nil
 }
 
+// CreateAwardIdsArray - creates an array of user's awards
 func CreateAwardIdsArray(
 	parsedAwards []pikago_models.UserProfileAward,
 	parsingTimestamp models.TimestampType,
@@ -203,22 +204,22 @@ func CreateAwardIdsArray(
 
 	for _, parsedAward := range parsedAwards {
 		award := &models.PikabuUserAward{
-			PikabuID:            parsedAward.Id.Value,
+			PikabuID:            parsedAward.ID.Value,
 			AddedTimestamp:      parsingTimestamp,
-			UserId:              parsedAward.UserId.Value,
-			AwardId:             parsedAward.AwardId.Value,
+			UserId:              parsedAward.UserID.Value,
+			AwardId:             parsedAward.AwardID.Value,
 			AwardTitle:          parsedAward.AwardTitle,
 			AwardImageURL:       parsedAward.AwardImageURL,
-			StoryId:             parsedAward.StoryId.Value,
+			StoryId:             parsedAward.StoryID.Value,
 			StoryTitle:          parsedAward.StoryTitle,
 			IssuingDate:         parsedAward.IssuingDate,
 			IsHidden:            parsedAward.IsHidden.Value != 0,
-			CommentId:           parsedAward.CommentId.Value,
+			CommentId:           parsedAward.CommentID.Value,
 			Link:                parsedAward.Link,
 			LastUpdateTimestamp: parsingTimestamp,
 		}
 		awardFromDb := &models.PikabuUserAward{
-			PikabuID: parsedAward.Id.Value,
+			PikabuID: parsedAward.ID.Value,
 		}
 		err := models.Db.Select(awardFromDb)
 		if err != pg.ErrNoRows && err != nil {
@@ -302,16 +303,16 @@ func createBanHistoryIdsArray(
 	result := []uint64{}
 	for _, parsedBanHistoryItem := range parsedBanHistoryItems {
 		banHistoryItem := &models.PikabuUserBanHistoryItem{
-			PikabuID:                parsedBanHistoryItem.Id.Value,
+			PikabuID:                parsedBanHistoryItem.ID.Value,
 			BanStartTimestamp:       models.TimestampType(parsedBanHistoryItem.BanStartTimestamp.Value),
-			CommentId:               parsedBanHistoryItem.CommentId.Value,
-			CommentHtmlDeleteReason: parsedBanHistoryItem.CommentHtmlDeleteReason,
-			StoryId:                 parsedBanHistoryItem.StoryId.Value,
-			UserId:                  parsedBanHistoryItem.UserId.Value,
+			CommentId:               parsedBanHistoryItem.CommentID.Value,
+			CommentHtmlDeleteReason: parsedBanHistoryItem.CommentHTMLDeleteReason,
+			StoryId:                 parsedBanHistoryItem.StoryID.Value,
+			UserId:                  parsedBanHistoryItem.UserID.Value,
 			BanReason:               parsedBanHistoryItem.BanReason,
-			BanReasonId:             parsedBanHistoryItem.BanReasonId.Value,
+			BanReasonId:             parsedBanHistoryItem.BanReasonID.Value,
 			StoryURL:                parsedBanHistoryItem.StoryURL,
-			ModeratorId:             parsedBanHistoryItem.ModeratorId.Value,
+			ModeratorId:             parsedBanHistoryItem.ModeratorID.Value,
 			ModeratorName:           parsedBanHistoryItem.ModeratorName,
 			ModeratorAvatar:         parsedBanHistoryItem.ModeratorAvatar,
 			ReasonsLimit:            parsedBanHistoryItem.ReasonsLimit.Value,

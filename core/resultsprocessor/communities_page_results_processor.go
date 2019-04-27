@@ -46,11 +46,11 @@ func processCommunity(
 ) error {
 	moderatorIds := []uint64{}
 	for _, moderator := range parsedCommunity.CommunityModerators {
-		moderatorIds = append(moderatorIds, moderator.Id.Value)
+		moderatorIds = append(moderatorIds, moderator.ID.Value)
 	}
 
 	newCommunity := &models.PikabuCommunity{
-		PikabuID:            parsedCommunity.Id.Value,
+		PikabuID:            parsedCommunity.ID.Value,
 		Name:                parsedCommunity.Name,
 		LinkName:            parsedCommunity.Link,
 		URL:                 parsedCommunity.URL,
@@ -62,7 +62,7 @@ func processCommunity(
 		Description:         parsedCommunity.Description,
 		Rules:               parsedCommunity.Rules,
 		Restrictions:        parsedCommunity.Restrictions,
-		AdminId:             parsedCommunity.CommunityAdmin.Id.Value,
+		AdminId:             parsedCommunity.CommunityAdmin.ID.Value,
 		ModeratorIds:        moderatorIds,
 		AddedTimestamp:      parsingTimestamp,
 		LastUpdateTimestamp: parsingTimestamp,
