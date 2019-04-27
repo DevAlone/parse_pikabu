@@ -9,6 +9,7 @@ import (
 )
 
 // PushTaskToQueue -
+// TODO: check if it's used
 func PushTaskToQueue(taskPtr interface{}) error {
 	switch t := taskPtr.(type) {
 	case *models.ParseUserTask:

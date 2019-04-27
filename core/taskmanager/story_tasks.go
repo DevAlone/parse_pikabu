@@ -109,6 +109,7 @@ func updateStoriesWorker() error {
 	for {
 		time.Sleep(time.Duration(config.Settings.WaitBeforeAddingNewStoryTasksSeconds) * time.Second)
 
+		// TODO: rewrite
 		if len(globals.ParserParseStoryTasks) >= config.Settings.MaxNumberOfTasksInQueue/2 {
 			// wait for queue to become empty
 			continue
