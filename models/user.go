@@ -5,7 +5,7 @@ type PikabuUser struct {
 	PikabuID uint64 `sql:",pk" json:"pikabu_id" api:"order,filter"`
 
 	Username            string        `sql:",notnull" gen_versions:"" json:"username" api:"order,filter"`
-	Gender              string        `sql:",notnull" gen_versions:"" json:"gender" api:"order"`
+	Gender              string        `sql:",notnull" gen_versions:"" json:"gender" api:"order,filter"`
 	Rating              int32         `sql:",notnull" gen_versions:"" json:"rating" api:"order,filter"`
 	NumberOfComments    int32         `sql:",notnull" gen_versions:"" json:"number_of_comments" api:"order,filter"`
 	NumberOfSubscribers int32         `sql:",notnull" gen_versions:"" json:"number_of_subscribers" api:"order,filter"`

@@ -127,7 +127,7 @@ func celFunctionToSQL(function string) (string, error) {
 		return " AND ", nil
 	case "==":
 		return "=", nil
-	case ">", "<", "!=":
+	case ">", "<", "!=", ">=", "<=":
 		return function, nil
 	case "ilike":
 		return " ILIKE ", nil
@@ -169,32 +169,75 @@ func getFilterFunctions() []*exprpb.Decl {
 			decls.String,
 			decls.String,
 		},
-		decls.Null,
+		decls.Bool,
 	)))
+
+	/*
+		result = append(result, decls.NewFunction("_>=_", decls.NewOverload(
+			"uint >= int",
+			[]*exprpb.Type{
+				decls.Uint,
+				decls.Int,
+			},
+			decls.Bool,
+		)))
+
+		result = append(result, decls.NewFunction("_<=_", decls.NewOverload(
+			"uint <= int",
+			[]*exprpb.Type{
+				decls.Uint,
+				decls.Int,
+			},
+			decls.Bool,
+		)))
+	*/
+
+	/*
+		// TODO: for some reason it doesn't work
+		result = append(result, decls.NewFunction("_==_", decls.NewOverload(
+			"uint == int",
+			[]*exprpb.Type{
+				decls.Uint,
+				decls.Int,
+			},
+			decls.Bool,
+		)))
+	*/
+	/*
+		result = append(result, decls.NewFunction("_!=_", decls.NewOverload(
+			"uint != int",
+			[]*exprpb.Type{
+				decls.Uint,
+				decls.Int,
+			},
+			decls.Bool,
+		)))
+	*/
 
 	return result
 }
 
 func fieldToDecl(fieldType reflect.StructField) (*exprpb.Decl, error) {
-	fieldApiName := ""
+	fieldAPIName := ""
 	if jsonTag, found := fieldType.Tag.Lookup("json"); found {
 		jsonName := strings.Split(jsonTag, ",")[0]
 		jsonName = strings.TrimSpace(jsonName)
 		if len(jsonName) > 0 {
-			fieldApiName = jsonName
+			fieldAPIName = jsonName
 		}
 	}
-	if len(fieldApiName) == 0 {
-		fieldApiName = fieldType.Name
+	if len(fieldAPIName) == 0 {
+		fieldAPIName = fieldType.Name
 	}
 
 	switch fieldType.Type.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return decls.NewIdent(fieldApiName, decls.Int, nil), nil
+		return decls.NewIdent(fieldAPIName, decls.Int, nil), nil
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-		return decls.NewIdent(fieldApiName, decls.Uint, nil), nil
+		// return decls.NewIdent(fieldAPIName, decls.Uint, nil), nil
+		return decls.NewIdent(fieldAPIName, decls.Int, nil), nil
 	case reflect.String:
-		return decls.NewIdent(fieldApiName, decls.String, nil), nil
+		return decls.NewIdent(fieldAPIName, decls.String, nil), nil
 	}
 
 	return nil, errors.Errorf("forgot to create decl for field %v", fieldType)

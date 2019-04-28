@@ -88,7 +88,7 @@ func ProcessNumberOfItemsInQueue(tableName string, statTableName string, updatin
 
 // ProcessDistributions -
 func ProcessDistributions() error {
-	for true {
+	for {
 		// TODO: save last timestamp on redis
 		time.Sleep(10 * time.Minute)
 		for _, distributionFieldModel := range models.GeneratedDistributionFields {
@@ -107,8 +107,6 @@ func ProcessDistributions() error {
 
 		time.Sleep(1 * time.Hour)
 	}
-
-	return nil
 }
 
 // ProcessDistribution -
@@ -118,25 +116,44 @@ func ProcessDistribution(tableName string, columnName string, bucketSize int) er
 		columnName = "(next_update_timestamp - last_update_timestamp)"
 	}
 	tableName += "s"
-	_, err := models.Db.Exec(`
+	request := `
 DELETE FROM ` + distributionTableName + `; 
 INSERT INTO ` + distributionTableName + `
 SELECT timestamp, value FROM (
-	WITH stats AS (
+	WITH stats_min_max AS (
 		SELECT MIN(` + columnName + `) as min_value, MAX(` + columnName + `) as max_value
 		FROM ` + tableName + `
-	)
+	), stats_values_range AS (
+        SELECT ((max_value - min_value) / (86400))::int AS values_range
+        FROM stats_min_max
+    )
 	SELECT 
-		width_bucket(` + columnName + `::int, min_value::int, max_value::int, ((max_value - min_value) / (` + fmt.Sprint(bucketSize) + `))::int) as bucket,
+		width_bucket(
+            ` + columnName + `::int, 
+			min_value::int, 
+			CASE 
+                WHEN max_value::int = min_value::int THEN max_value::int + 1
+                ELSE max_value::int
+            END,
+			CASE 
+                WHEN values_range = 0 THEN 1
+                ELSE values_range
+            END
+		) as bucket,
 		MIN(` + columnName + `) as timestamp,
 		COUNT(*) AS value
 	FROM 
-		` + tableName + `, stats
+		` + tableName + `, stats_min_max, stats_values_range
 	GROUP BY
 		bucket
 	ORDER BY
 		bucket
 ) distribution;
-`)
-	return err
+`
+	_, err := models.Db.Exec(request)
+	if err != nil {
+		logger.Log.Errorf("error during execution request %v", request)
+		return errors.New(err)
+	}
+	return nil
 }

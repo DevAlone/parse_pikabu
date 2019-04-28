@@ -35,11 +35,22 @@ func userTasksWorker() error {
 
 func addMissingUserTasksWorker() error {
 	for {
+		count, err := models.Db.Model((*models.PikabuUser)(nil)).Count()
+		if err != nil {
+			return errors.New(err)
+		}
+		if count == 0 {
+			// init database
+			err := AddParseUserTask(1, "admin")
+			if err != nil {
+				return err
+			}
+		}
 		time.Sleep(5 * time.Minute)
 
 		var users []models.PikabuUser
 		// very slow query
-		err := models.Db.Model(&users).
+		err = models.Db.Model(&users).
 			ColumnExpr("pikabu_user.*").
 			Join("LEFT JOIN parse_user_tasks AS parse_user_task").
 			JoinOn("pikabu_user.pikabu_id = parse_user_task.pikabu_id").

@@ -20,6 +20,8 @@ var availableModels = map[string]interface{}{
 	"pikabu_user":                                   []models.PikabuUser{},
 	"pikabu_community":                              []models.PikabuCommunity{},
 	"number_of_users_to_process_entries":            []models.NumberOfUsersToProcessEntry{},
+	"number_of_stories_to_process_entries":          []models.NumberOfStoriesToProcessEntry{},
+	"number_of_comments_to_process_entries":         []models.NumberOfCommentsToProcessEntry{},
 	"pikabu_user_updating_period_distribution_3600": []models.PikabuUserUpdatingPeriodDistribution_3600{},
 }
 
