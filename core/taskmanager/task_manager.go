@@ -1,7 +1,6 @@
 package taskmanager
 
 import (
-	"flag"
 	"strings"
 	"sync"
 	"time"
@@ -18,14 +17,14 @@ import (
 func Run() error {
 	var wg sync.WaitGroup
 
-	workers := []func() error{
-		storyTasksWorker,
+	workers := []func() error{}
+	if !globals.DoNotParseStories {
+		workers = append(workers, storyTasksWorker)
 	}
 
 	if !globals.DoNotParseUsers {
 		workers = append(workers, userTasksWorker)
 	}
-	flag.Parse()
 
 	for _, f := range workers {
 		wg.Add(1)

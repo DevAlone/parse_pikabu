@@ -9,41 +9,44 @@ type PikabuUser struct {
 	Rating              int32         `sql:",notnull" gen_versions:"" json:"rating" api:"order,filter"`
 	NumberOfComments    int32         `sql:",notnull" gen_versions:"" json:"number_of_comments" api:"order,filter"`
 	NumberOfSubscribers int32         `sql:",notnull" gen_versions:"" json:"number_of_subscribers" api:"order,filter"`
-	NumberOfStories     int32         `sql:",notnull" gen_versions:"" json:"number_of_stories" api:"order"`
-	NumberOfHotStories  int32         `sql:",notnull" gen_versions:"" json:"number_of_hot_stories" api:"order"`
-	NumberOfPluses      int32         `sql:",notnull" gen_versions:"" json:"number_of_pluses" api:"order"`
-	NumberOfMinuses     int32         `sql:",notnull" gen_versions:"" json:"number_of_minuses" api:"order"`
-	SignupTimestamp     TimestampType `sql:",notnull" gen_versions:"" gen_distributions:"86400" json:"signup_timestamp" api:"order"`
+	NumberOfStories     int32         `sql:",notnull" gen_versions:"" json:"number_of_stories" api:"order,filter"`
+	NumberOfHotStories  int32         `sql:",notnull" gen_versions:"" json:"number_of_hot_stories" api:"order,filter"`
+	NumberOfPluses      int32         `sql:",notnull" gen_versions:"" json:"number_of_pluses" api:"order,filter"`
+	NumberOfMinuses     int32         `sql:",notnull" gen_versions:"" json:"number_of_minuses" api:"order,filter"`
+	SignupTimestamp     TimestampType `sql:",notnull" gen_versions:"" gen_distributions:"86400" json:"signup_timestamp" api:"order,filter"`
 	AvatarURL           string        `sql:",notnull" gen_versions:"" json:"avatar_url" api:"order"`
 	ApprovedText        string        `sql:",notnull" gen_versions:"" json:"approved_text" api:"order"`
 	AwardIds            []uint64      `sql:",notnull,array" gen_versions:"" json:"award_ids" api:"order"`
 	CommunityIds        []uint64      `sql:",notnull,array" gen_versions:"" json:"community_ids" api:"order"`
 	BanHistoryItemIds   []uint64      `sql:",notnull,array" gen_versions:"" json:"ban_history_item_ids" api:"order"`
-	BanEndTimestamp     TimestampType `sql:",notnull" gen_versions:"" json:"ban_end_timestamp" api:"order"`
-	IsRatingHidden      bool          `sql:",notnull" gen_versions:"" json:"is_rating_hidden" api:"order"`
-	IsBanned            bool          `sql:",notnull" gen_versions:"" json:"is_banned" api:"order"`
-	IsPermanentlyBanned bool          `sql:",notnull" gen_versions:"" json:"is_permanently_banned" api:"order"`
+	BanEndTimestamp     TimestampType `sql:",notnull" gen_versions:"" json:"ban_end_timestamp" api:"order,filter"`
+	IsRatingHidden      bool          `sql:",notnull" gen_versions:"" json:"is_rating_hidden" api:"order,filter"`
+	IsBanned            bool          `sql:",notnull" gen_versions:"" json:"is_banned" api:"order,filter"`
+	IsPermanentlyBanned bool          `sql:",notnull" gen_versions:"" json:"is_permanently_banned" api:"order,filter"`
 
 	// ?
 	// IsDeleted bool `sql:",notnull,default:false"`
 
 	IsDeleted           bool          `sql:",notnull,default:false" json:"is_deleted" api:"order,filter"`
-	AddedTimestamp      TimestampType `sql:",notnull" json:"added_timestamp" api:"order"`
-	LastUpdateTimestamp TimestampType `sql:",notnull" json:"last_update_timestamp" gen_distributions:"86400" api:"order"`
-	NextUpdateTimestamp TimestampType `sql:",notnull" json:"next_update_timestamp" gen_distributions:"86400" api:"order"`
+	AddedTimestamp      TimestampType `sql:",notnull" json:"added_timestamp" api:"order,filter"`
+	LastUpdateTimestamp TimestampType `sql:",notnull" json:"last_update_timestamp" gen_distributions:"86400" api:"order,filter"`
+	NextUpdateTimestamp TimestampType `sql:",notnull" json:"next_update_timestamp" gen_distributions:"86400" api:"order,filter"`
 }
 
+// PikabuDeletedOrNeverExistedUser - users which are not present in PikabuUser table
 type PikabuDeletedOrNeverExistedUser struct {
 	PikabuID            uint64        `sql:",pk" json:"pikabu_id"`
 	LastUpdateTimestamp TimestampType `sql:",notnull" json:"last_update_timestamp"`
 	NextUpdateTimestamp TimestampType `sql:",notnull" json:"next_update_timestamp"`
 }
 
+// PikabuUserUpdatingPeriodDistribution_3600 -
 type PikabuUserUpdatingPeriodDistribution_3600 struct {
 	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
 	Value     int64         `sql:",notnull" json:"value"`
 }
 
+// PikabuUserAward -
 type PikabuUserAward struct {
 	PikabuID uint64 `sql:",pk"`
 
@@ -66,6 +69,7 @@ type PikabuUserAward struct {
 	LastUpdateTimestamp TimestampType `sql:",notnull"`
 }
 
+// PikabuUserCommunity -
 type PikabuUserCommunity struct {
 	Id uint64
 
@@ -77,6 +81,7 @@ type PikabuUserCommunity struct {
 	LastUpdateTimestamp TimestampType `sql:",notnull"`
 }
 
+// PikabuUserBanHistoryItem -
 type PikabuUserBanHistoryItem struct {
 	PikabuID uint64 `sql:",pk"`
 
@@ -113,7 +118,7 @@ func init() {
 		Tables = append(Tables, item)
 	}
 
-	/* // make it working
+	/* // TODO: make it working
 	CustomQueries = append(CustomQueries, `
 		CREATE EXTENSION pg_trgm;
 	`)

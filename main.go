@@ -97,9 +97,13 @@ Available commands are:
 	configFilePath := flag.String("config", "core.config.json", "config file")
 	cpuProfile := flag.String("cpuprofile", "", "set to true to profile cpu")
 	memProfile := flag.String("memprofile", "", "set to true to profile memory")
-	globals.DoNotParseUsers = strings.HasPrefix(strings.ToLower(*flag.String("do-not-parse-users", "false", "do not parse users")), "t")
+	doNotParseUsersFlag := flag.String("do-not-parse-users", "false", "do not parse users")
+	doNotParseStoriesFlag := flag.String("do-not-parse-stories", "false", "do not parse stories")
 
 	flag.Parse()
+
+	globals.DoNotParseUsers = strings.HasPrefix(strings.ToLower(*doNotParseUsersFlag), "t")
+	globals.DoNotParseStories = strings.HasPrefix(strings.ToLower(*doNotParseStoriesFlag), "t")
 
 	if configFilePath == nil || len(*configFilePath) == 0 {
 		panic(errors.New("configFilePath is nil"))

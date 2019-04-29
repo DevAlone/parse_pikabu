@@ -98,6 +98,9 @@ func makeSQLExpression(e *expr.Expr, params *[]interface{}) (string, error) {
 		case *expr.Constant_StringValue:
 			*params = append(*params, c.StringValue)
 			return " ?" + fmt.Sprint(len(*params)-1) + " ", nil
+		case *expr.Constant_BoolValue:
+			*params = append(*params, c.BoolValue)
+			return " ?" + fmt.Sprint(len(*params)-1) + " ", nil
 		default:
 			bytes, _ := json.Marshal(c)
 			logger.Log.Debugf("unknown kind of constant: %v", string(bytes))
@@ -172,48 +175,6 @@ func getFilterFunctions() []*exprpb.Decl {
 		decls.Bool,
 	)))
 
-	/*
-		result = append(result, decls.NewFunction("_>=_", decls.NewOverload(
-			"uint >= int",
-			[]*exprpb.Type{
-				decls.Uint,
-				decls.Int,
-			},
-			decls.Bool,
-		)))
-
-		result = append(result, decls.NewFunction("_<=_", decls.NewOverload(
-			"uint <= int",
-			[]*exprpb.Type{
-				decls.Uint,
-				decls.Int,
-			},
-			decls.Bool,
-		)))
-	*/
-
-	/*
-		// TODO: for some reason it doesn't work
-		result = append(result, decls.NewFunction("_==_", decls.NewOverload(
-			"uint == int",
-			[]*exprpb.Type{
-				decls.Uint,
-				decls.Int,
-			},
-			decls.Bool,
-		)))
-	*/
-	/*
-		result = append(result, decls.NewFunction("_!=_", decls.NewOverload(
-			"uint != int",
-			[]*exprpb.Type{
-				decls.Uint,
-				decls.Int,
-			},
-			decls.Bool,
-		)))
-	*/
-
 	return result
 }
 
@@ -238,6 +199,8 @@ func fieldToDecl(fieldType reflect.StructField) (*exprpb.Decl, error) {
 		return decls.NewIdent(fieldAPIName, decls.Int, nil), nil
 	case reflect.String:
 		return decls.NewIdent(fieldAPIName, decls.String, nil), nil
+	case reflect.Bool:
+		return decls.NewIdent(fieldAPIName, decls.Bool, nil), nil
 	}
 
 	return nil, errors.Errorf("forgot to create decl for field %v", fieldType)

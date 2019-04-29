@@ -13,6 +13,9 @@ var ParserResults chan *models.ParserResult
 // DoNotParseUsers -
 var DoNotParseUsers = false
 
+// DoNotParseStories -
+var DoNotParseStories = false
+
 // ParserParseUserTasks is a channel for ParseUserTasks
 var ParserParseUserTasks chan *models.ParseUserTask
 
