@@ -1,81 +1,96 @@
 package taskmanager
 
 import (
-	"strings"
-	"sync"
 	"time"
 
-	"bitbucket.org/d3dev/parse_pikabu/core/config"
-	"bitbucket.org/d3dev/parse_pikabu/globals"
-	"bitbucket.org/d3dev/parse_pikabu/helpers"
-	"bitbucket.org/d3dev/parse_pikabu/models"
-	"github.com/go-pg/pg"
-	"github.com/go-pg/pg/orm"
+	"github.com/go-errors/errors"
 )
 
-// Run runs goroutines to process tasks
-func Run() error {
-	var wg sync.WaitGroup
+// TaskManager - task manager which guarantees at least N execution of specific task during cycle
+type TaskManager struct {
+	tasks              []*Task
+	currentTaskIndex   uint
+	tasksMap           map[string]*Task
+	totalNumberOfTasks uint
+}
 
-	workers := []func() error{}
-	if !globals.DoNotParseStories {
-		workers = append(workers, storyTasksWorker)
-	}
+// NewTaskManager - creates a new task manager.
+func NewTaskManager(taskDeclarations map[string]TaskDeclaration) (*TaskManager, error) {
+	tm := &TaskManager{}
+	tm.currentTaskIndex = 0
+	tm.totalNumberOfTasks = 0
+	tm.tasks = []*Task{}
+	tm.tasksMap = map[string]*Task{}
 
-	if !globals.DoNotParseUsers {
-		workers = append(workers, userTasksWorker)
-	}
-
-	for _, f := range workers {
-		wg.Add(1)
-		go func(handler func() error) {
-			helpers.PanicOnError(handler())
-			wg.Done()
-		}(f)
-	}
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for {
-			if !globals.DoNotParseUsers {
-				helpers.PanicOnError(processUserTasks())
-			}
-			helpers.PanicOnError(processCommunityTasks())
-
-			time.Sleep(time.Duration(config.Settings.WaitBeforeAddingNewUserTasksSeconds) * time.Second)
+	for taskName, taskDeclaration := range taskDeclarations {
+		task := &Task{
+			Name:       taskName,
+			Counter:    0,
+			Importance: taskDeclaration.Importance,
+			Channel:    make(chan interface{}, taskDeclaration.ChannelSize),
 		}
-	}()
+		tm.tasks = append(tm.tasks, task)
+		tm.tasksMap[taskName] = task
+	}
 
-	wg.Wait()
+	if len(tm.tasks) == 0 {
+		return nil, errors.Errorf("You gotta declare at least one task")
+	}
 
+	return tm, nil
+}
+
+// PushTask - pushes a new task, will throw an error if the task wasn't previously registred
+// Time complexity is O(1)
+func (tm *TaskManager) PushTask(name string, data interface{}) error {
+	task, found := tm.tasksMap[name]
+	if !found {
+		return errors.Errorf("task with name '%v' not found", name)
+	}
+	task.Channel <- data
+	// TODO: if it's empty, set the index to task
+	tm.totalNumberOfTasks++
 	return nil
 }
 
-// CompleteTask completes a task
-func CompleteTask(tx *pg.Tx, tableName, fieldName string, fieldValue interface{}) error {
-	// TODO: refactor to be able to pass the actual model, not a table's name
-	var q *orm.Query
-	if tx == nil {
-		q = models.Db.Model()
-	} else {
-		q = tx.Model()
-	}
-	var err error
-	switch value := fieldValue.(type) {
-	case string:
-		_, err = q.Exec(`
-			UPDATE `+tableName+` 
-			SET is_done = true
-			WHERE is_done = false AND LOWER(`+fieldName+`) = ?
-		`, strings.ToLower(value))
-	default:
-		_, err = q.Exec(`
-			UPDATE `+tableName+` 
-			SET is_done = true
-			WHERE is_done = false AND `+fieldName+` = ?
-		`, fieldValue)
-	}
+// WaitAndGetTask - waits until there is a task and returns one
+// Average and best time complexity is O(1), worst is O(N)
+// where N is the number of types of tasks(not tasks themselves)
+func (tm *TaskManager) WaitAndGetTask() (string, interface{}) {
+	for {
+		for tm.totalNumberOfTasks == 0 {
+			// TODO: find a better way
+			time.Sleep(1 * time.Second)
+		}
 
-	return err
+		task := tm.tasks[tm.currentTaskIndex]
+		// if task is there and we're not out of allowed tasks per cycle
+		if len(task.Channel) != 0 && task.Counter < task.Importance {
+			// TODO: consider using mutex
+			tm.totalNumberOfTasks--
+			task.Counter++
+			return task.Name, <-task.Channel
+		}
+		task.Counter = 0
+
+		tm.currentTaskIndex++
+		if tm.currentTaskIndex >= uint(len(tm.tasks)) {
+			tm.currentTaskIndex = 0
+		}
+	}
+}
+
+// TaskDeclaration - declares task
+// Importance - number of times that task will be executed in cycle
+type TaskDeclaration struct {
+	Importance  uint
+	ChannelSize uint
+}
+
+// Task - internal type to represent a task
+type Task struct {
+	Name       string
+	Counter    uint
+	Importance uint
+	Channel    chan interface{}
 }
