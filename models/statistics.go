@@ -18,44 +18,50 @@ type NumberOfCommentsToProcessEntry struct {
 	Value     int64         `json:"value"`
 }
 
-// NumberOfTasksInChannelUpdateUserTask - number of task in channel
-type NumberOfTasksInChannelUpdateUserTask struct {
+// NumberOfItemsInChannelUpdateUserTask - number of task in channel
+type NumberOfItemsInChannelUpdateUserTask struct {
 	Timestamp TimestampType `sql:",pk" json:"timestamp" api:"order,filter"`
 	Value     int64         `json:"value"`
 }
 
-// NumberOfTasksInChannelParseNewUserTask - number of task in channel
-type NumberOfTasksInChannelParseNewUserTask struct {
+// NumberOfItemsInChannelParseNewUserTask - number of task in channel
+type NumberOfItemsInChannelParseNewUserTask struct {
 	Timestamp TimestampType `sql:",pk" json:"timestamp" api:"order,filter"`
 	Value     int64         `json:"value"`
 }
 
-// NumberOfTasksInChannelParseDeletedOrNeverExistedUserTask  -
-type NumberOfTasksInChannelParseDeletedOrNeverExistedUserTask struct {
+// NumberOfItemsInChannelParseDeletedOrNeverExistedUserTask  -
+type NumberOfItemsInChannelParseDeletedOrNeverExistedUserTask struct {
 	Timestamp TimestampType `sql:",pk" json:"timestamp" api:"order,filter"`
 	Value     int64         `json:"value"`
 }
 
-// NumberOfTasksInChannelUpdateStoryTask -
-type NumberOfTasksInChannelUpdateStoryTask struct {
+// NumberOfItemsInChannelUpdateStoryTask -
+type NumberOfItemsInChannelUpdateStoryTask struct {
 	Timestamp TimestampType `sql:",pk" json:"timestamp" api:"order,filter"`
 	Value     int64         `json:"value"`
 }
 
-// NumberOfTasksInChannelParseNewStoryTask -
-type NumberOfTasksInChannelParseNewStoryTask struct {
+// NumberOfItemsInChannelParseNewStoryTask -
+type NumberOfItemsInChannelParseNewStoryTask struct {
 	Timestamp TimestampType `sql:",pk" json:"timestamp" api:"order,filter"`
 	Value     int64         `json:"value"`
 }
 
-// NumberOfTasksInChannelParseDeletedOrNeverExistedStoryTask -
-type NumberOfTasksInChannelParseDeletedOrNeverExistedStoryTask struct {
+// NumberOfItemsInChannelParseDeletedOrNeverExistedStoryTask -
+type NumberOfItemsInChannelParseDeletedOrNeverExistedStoryTask struct {
 	Timestamp TimestampType `sql:",pk" json:"timestamp" api:"order,filter"`
 	Value     int64         `json:"value"`
 }
 
-// NumberOfTasksInChannelParseAllCommunitiesTask -
-type NumberOfTasksInChannelParseAllCommunitiesTask struct {
+// NumberOfItemsInChannelParseAllCommunitiesTask -
+type NumberOfItemsInChannelParseAllCommunitiesTask struct {
+	Timestamp TimestampType `sql:",pk" json:"timestamp" api:"order,filter"`
+	Value     int64         `json:"value"`
+}
+
+// NumberOfItemsInChannelParserResults -
+type NumberOfItemsInChannelParserResults struct {
 	Timestamp TimestampType `sql:",pk" json:"timestamp" api:"order,filter"`
 	Value     int64         `json:"value"`
 }
@@ -65,12 +71,14 @@ func init() {
 		&NumberOfUsersToProcessEntry{},
 		&NumberOfStoriesToProcessEntry{},
 		&NumberOfCommentsToProcessEntry{},
-		&NumberOfTasksInChannelUpdateUserTask{},
-		&NumberOfTasksInChannelParseNewUserTask{},
-		&NumberOfTasksInChannelParseDeletedOrNeverExistedUserTask{},
-		&NumberOfTasksInChannelUpdateStoryTask{},
-		&NumberOfTasksInChannelParseNewStoryTask{},
-		&NumberOfTasksInChannelParseDeletedOrNeverExistedStoryTask{},
-		&NumberOfTasksInChannelParseAllCommunitiesTask{},
+		&NumberOfItemsInChannelUpdateUserTask{},
+		&NumberOfItemsInChannelParseNewUserTask{},
+		&NumberOfItemsInChannelParseDeletedOrNeverExistedUserTask{},
+		&NumberOfItemsInChannelUpdateStoryTask{},
+		&NumberOfItemsInChannelParseNewStoryTask{},
+		&NumberOfItemsInChannelParseDeletedOrNeverExistedStoryTask{},
+		&NumberOfItemsInChannelParseAllCommunitiesTask{},
+
+		&NumberOfItemsInChannelParserResults{},
 	}...)
 }

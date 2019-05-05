@@ -25,13 +25,14 @@ var availableModels = map[string]interface{}{
 
 	"pikabu_user_updating_period_distribution_3600": []models.PikabuUserUpdatingPeriodDistribution_3600{},
 
-	"number_of_tasks_in_channel_update_user_tasks":                          []models.NumberOfTasksInChannelUpdateUserTask{},
-	"number_of_tasks_in_channel_parse_new_user_tasks":                       []models.NumberOfTasksInChannelParseNewUserTask{},
-	"number_of_tasks_in_channel_parse_deleted_or_never_existed_user_tasks":  []models.NumberOfTasksInChannelParseDeletedOrNeverExistedUserTask{},
-	"number_of_tasks_in_channel_update_story_tasks":                         []models.NumberOfTasksInChannelUpdateStoryTask{},
-	"number_of_tasks_in_channel_parse_new_story_tasks":                      []models.NumberOfTasksInChannelParseNewStoryTask{},
-	"number_of_tasks_in_channel_parse_deleted_or_never_existed_story_tasks": []models.NumberOfTasksInChannelParseDeletedOrNeverExistedStoryTask{},
-	"number_of_tasks_in_channel_parse_all_communities_tasks":                []models.NumberOfTasksInChannelParseAllCommunitiesTask{},
+	"number_of_items_in_channel_update_user_tasks":                          []models.NumberOfItemsInChannelUpdateUserTask{},
+	"number_of_items_in_channel_parse_new_user_tasks":                       []models.NumberOfItemsInChannelParseNewUserTask{},
+	"number_of_items_in_channel_parse_deleted_or_never_existed_user_tasks":  []models.NumberOfItemsInChannelParseDeletedOrNeverExistedUserTask{},
+	"number_of_items_in_channel_update_story_tasks":                         []models.NumberOfItemsInChannelUpdateStoryTask{},
+	"number_of_items_in_channel_parse_new_story_tasks":                      []models.NumberOfItemsInChannelParseNewStoryTask{},
+	"number_of_items_in_channel_parse_deleted_or_never_existed_story_tasks": []models.NumberOfItemsInChannelParseDeletedOrNeverExistedStoryTask{},
+	"number_of_items_in_channel_parse_all_communities_tasks":                []models.NumberOfItemsInChannelParseAllCommunitiesTask{},
+	"number_of_items_in_channel_parser_results":                             []models.NumberOfItemsInChannelParserResults{},
 }
 
 func init() {

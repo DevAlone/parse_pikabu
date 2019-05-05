@@ -6,6 +6,7 @@ import (
 
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/core/taskmanager"
+	"bitbucket.org/d3dev/parse_pikabu/globals"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-errors/errors"
@@ -107,6 +108,7 @@ func processTaskManagerChannelsSize() error {
 			"parse_new_story_tasks":                      taskmanager.CoreTaskManager.MustTaskChannelSize(taskmanager.ParseNewStoryTask),
 			"parse_deleted_or_never_existed_story_tasks": taskmanager.CoreTaskManager.MustTaskChannelSize(taskmanager.ParseDeletedOrNeverExistedStoryTask),
 			"parse_all_communities_tasks":                taskmanager.CoreTaskManager.MustTaskChannelSize(taskmanager.ParseAllCommunitiesTask),
+			"parser_results":                             int64(len(globals.ParserResults)),
 		} {
 			err := processTaskManagerChannelSize(channelName, channelSize)
 			if err != nil {
@@ -119,7 +121,7 @@ func processTaskManagerChannelsSize() error {
 }
 
 func processTaskManagerChannelSize(channelName string, channelSize int64) error {
-	tableName := "number_of_tasks_in_channel_" + channelName
+	tableName := "number_of_items_in_channel_" + channelName
 	query := `
 		WITH constants (curr_timestamp, value) AS (
 			VALUES (
