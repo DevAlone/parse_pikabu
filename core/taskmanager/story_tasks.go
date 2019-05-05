@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
-	"bitbucket.org/d3dev/parse_pikabu/globals"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-errors/errors"
@@ -41,7 +40,7 @@ func addMissingStoriesWorker() error {
 		if count == 0 {
 			// init database
 			storyID := uint64(6579293)
-			err := AddParseStoryTask(storyID)
+			err := AddParseStoryTask(storyID, ParseNewStoryTask)
 			if err != nil {
 				return err
 			}
@@ -73,7 +72,7 @@ func addNewStoriesWorker() error {
 		}
 		for i := 0; i < config.Settings.NumberOfNewStoriesGap; i++ {
 			storyID := lastStory.PikabuID + 1 + uint64(i)
-			err = AddParseStoryTask(storyID)
+			err = AddParseStoryTask(storyID, ParseNewStoryTask)
 			if err != nil {
 				return err
 			}
@@ -96,7 +95,7 @@ func addNewStoriesWorker() error {
 			if storyID == 0 {
 				break
 			}
-			err = AddParseStoryTask(storyID)
+			err = AddParseStoryTask(storyID, ParseNewStoryTask)
 			if err != nil {
 				return err
 			}
@@ -106,14 +105,17 @@ func addNewStoriesWorker() error {
 }
 
 func updateStoriesWorker() error {
+	// TODO: fix
 	for {
 		time.Sleep(time.Duration(config.Settings.WaitBeforeAddingNewStoryTasksSeconds) * time.Second)
 
 		// TODO: rewrite
-		if len(globals.ParserParseStoryTasks) >= config.Settings.MaxNumberOfTasksInQueue/2 {
-			// wait for queue to become empty
-			continue
-		}
+		/*
+			if len(globals.ParserParseStoryTasks) >= config.Settings.MaxNumberOfTasksInQueue/2 {
+				// wait for queue to become empty
+				continue
+			}
+		*/
 
 		var storiesToUpdate []models.PikabuStory
 		err := models.Db.Model(&storiesToUpdate).
@@ -124,7 +126,7 @@ func updateStoriesWorker() error {
 			return err
 		}
 		for _, story := range storiesToUpdate {
-			err := AddParseStoryTask(story.PikabuID)
+			err := AddParseStoryTask(story.PikabuID, UpdateStoryTask)
 			if err != nil {
 				return err
 			}
@@ -139,7 +141,7 @@ func updateStoriesWorker() error {
 			return err
 		}
 		for _, story := range storiesToUpdate {
-			err := AddParseStoryTask(story.PikabuID)
+			err := AddParseStoryTask(story.PikabuID, ParseDeletedOrNeverExistedStoryTask)
 			if err != nil {
 				return err
 			}
@@ -148,7 +150,7 @@ func updateStoriesWorker() error {
 }
 
 // AddParseStoryTask queues task for parsing story
-func AddParseStoryTask(pikabuID uint64) error {
+func AddParseStoryTask(pikabuID uint64, taskType int) error {
 	timestamp := models.TimestampType(time.Now().Unix())
 
 	deletedOrNeverExistedStory := models.PikabuDeletedOrNeverExistedStory{
@@ -201,14 +203,14 @@ func AddParseStoryTask(pikabuID uint64) error {
 		}
 	}
 
-	return PushTaskToQueue(&models.ParseStoryTask{
+	return CoreTaskManager.PushTask(taskType, &models.ParseStoryTask{
 		PikabuID:       pikabuID,
 		AddedTimestamp: timestamp,
 	})
 }
 
 // ForceAddParseStoryTask queues task for parsing story without limiting
-func ForceAddParseStoryTask(pikabuID uint64) error {
+func ForceAddParseStoryTask(pikabuID uint64, taskType int) error {
 	timestamp := models.TimestampType(time.Now().Unix())
 
 	deletedOrNeverExistedStory := models.PikabuDeletedOrNeverExistedStory{
@@ -252,7 +254,7 @@ func ForceAddParseStoryTask(pikabuID uint64) error {
 		}
 	}
 
-	return PushTaskToQueue(&models.ParseStoryTask{
+	return CoreTaskManager.PushTask(taskType, &models.ParseStoryTask{
 		PikabuID:       pikabuID,
 		AddedTimestamp: timestamp,
 	})

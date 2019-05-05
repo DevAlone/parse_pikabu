@@ -41,7 +41,7 @@ func addMissingUserTasksWorker() error {
 		}
 		if count == 0 {
 			// init database
-			err := AddParseUserTask(1, "admin")
+			err := AddParseUserTask(1, "admin", ParseNewUserTask)
 			if err != nil {
 				return err
 			}
@@ -64,7 +64,7 @@ func addMissingUserTasksWorker() error {
 			return err
 		}
 		for _, user := range users {
-			err := AddParseUserTask(user.PikabuID, user.Username)
+			err := AddParseUserTask(user.PikabuID, user.Username, ParseNewUserTask)
 			if err != nil {
 				return err
 			}
@@ -121,7 +121,7 @@ WHERE pikabu_id + 1 <> next_nr LIMIT 10;
 					if err != nil {
 						return errors.New(err)
 					}
-					err = AddParseUserTaskIfNotExists(deletedUser.PikabuID, "")
+					err = AddParseUserTaskIfNotExists(deletedUser.PikabuID, "", ParseNewUserTask)
 					if err != nil {
 						return err
 					}
@@ -150,7 +150,7 @@ func updateDeletedOrNeverExistedUsersWorker() error {
 			return errors.New(err)
 		}
 		for _, deletedUser := range deletedUsers {
-			err := AddParseUserTask(deletedUser.PikabuID, "")
+			err := AddParseUserTask(deletedUser.PikabuID, "", ParseDeletedOrNeverExistedUserTask)
 			if err != nil {
 				return err
 			}
@@ -190,7 +190,7 @@ func addNewUsersWorker() error {
 			if err != nil {
 				return err
 			}
-			err = AddParseUserTaskIfNotExists(deletedUser.PikabuID, "")
+			err = AddParseUserTaskIfNotExists(deletedUser.PikabuID, "", ParseDeletedOrNeverExistedUserTask)
 			if err != nil {
 				return err
 			}
@@ -216,7 +216,7 @@ func processUserTasks() error {
 	}
 
 	for _, user := range users {
-		err = AddParseUserTask(user.PikabuID, user.Username)
+		err = AddParseUserTask(user.PikabuID, user.Username, UpdateUserTask)
 		if err != nil {
 			return err
 		}
@@ -234,7 +234,7 @@ func processUserTasks() error {
 		return errors.New(err)
 	}
 	for _, task := range parseUserTasks {
-		err := AddParseUserTask(task.PikabuID, task.Username)
+		err := AddParseUserTask(task.PikabuID, task.Username, UpdateUserTask)
 		if err != nil {
 			return err
 		}
@@ -243,13 +243,14 @@ func processUserTasks() error {
 	return nil
 }
 
-func AddParseUserTask(pikabuId uint64, username string) error {
+// AddParseUserTask -
+func AddParseUserTask(pikabuID uint64, username string, taskType int) error {
 	// username = strings.ToLower(username)
 
 	task := &models.ParseUserTask{}
 
 	err := models.Db.Model(task).
-		Where("pikabu_id = ?", pikabuId).
+		Where("pikabu_id = ?", pikabuID).
 		Select()
 
 	if err != pg.ErrNoRows && err != nil {
@@ -258,7 +259,7 @@ func AddParseUserTask(pikabuId uint64, username string) error {
 
 	exists := err != pg.ErrNoRows
 
-	task.PikabuID = pikabuId
+	task.PikabuID = pikabuID
 	task.AddedTimestamp = models.TimestampType(time.Now().Unix())
 	task.IsDone = false
 	task.IsTaken = true
@@ -276,14 +277,15 @@ func AddParseUserTask(pikabuId uint64, username string) error {
 		}
 	}
 
-	return PushTaskToQueue(task)
+	return CoreTaskManager.PushTask(taskType, task)
 }
 
-func AddParseUserTaskIfNotExists(pikabuId uint64, username string) error {
+// AddParseUserTaskIfNotExists -
+func AddParseUserTaskIfNotExists(pikabuID uint64, username string, taskType int) error {
 	task := &models.ParseUserTask{}
 
 	err := models.Db.Model(task).
-		Where("pikabu_id = ?", pikabuId).
+		Where("pikabu_id = ?", pikabuID).
 		Select()
 
 	if err != pg.ErrNoRows && err != nil {
@@ -295,7 +297,7 @@ func AddParseUserTaskIfNotExists(pikabuId uint64, username string) error {
 		return nil
 	}
 
-	task.PikabuID = pikabuId
+	task.PikabuID = pikabuID
 	task.AddedTimestamp = models.TimestampType(time.Now().Unix())
 	task.IsDone = false
 	task.IsTaken = true
@@ -306,5 +308,5 @@ func AddParseUserTaskIfNotExists(pikabuId uint64, username string) error {
 		return errors.New(err)
 	}
 
-	return PushTaskToQueue(task)
+	return CoreTaskManager.PushTask(taskType, task)
 }

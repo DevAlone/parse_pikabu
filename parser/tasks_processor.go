@@ -3,8 +3,7 @@ package parser
 import (
 	"time"
 
-	"bitbucket.org/d3dev/parse_pikabu/globals"
-
+	"bitbucket.org/d3dev/parse_pikabu/core/taskmanager"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-errors/errors"
 )
@@ -29,7 +28,7 @@ func (p *Parser) ListenForTasks() error {
 	}()
 
 	for {
-		task, err := globals.GetTaskPtr()
+		task, err := taskmanager.GetParserTask()
 		if err != nil {
 			return err
 		}

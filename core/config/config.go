@@ -34,8 +34,14 @@ var Settings struct {
 	WaitBeforeAddingNewUserTasksSeconds  int
 	WaitBeforeAddingNewStoryTasksSeconds int
 	AddNewUsersEachNMinutes              int
-	UpdateUserTaskImportance             uint
-	ParseNewUserByIDImportance           uint
+
+	UpdateUserTaskImportance                      uint
+	ParseNewUserTaskImportance                    uint
+	ParseDeletedOrNeverExistedUserTaskImportance  uint
+	UpdateStoryTaskImportance                     uint
+	ParseNewStoryTaskImportance                   uint
+	ParseDeletedOrNeverExistedStoryTaskImportance uint
+	ParseAllCommunitiesTaskImportance             uint
 }
 
 // UpdateSettingsFromFile fills settings from the file
@@ -82,5 +88,10 @@ func init() {
 	Settings.AddNewUsersEachNMinutes = 10
 
 	Settings.UpdateUserTaskImportance = 100
-	Settings.ParseNewUserByIDImportance = 10
+	Settings.ParseNewUserTaskImportance = 10
+	Settings.ParseDeletedOrNeverExistedUserTaskImportance = 1
+	Settings.ParseNewStoryTaskImportance = 10
+	Settings.UpdateStoryTaskImportance = 1
+	Settings.ParseDeletedOrNeverExistedStoryTaskImportance = 5
+	Settings.ParseAllCommunitiesTaskImportance = 1
 }

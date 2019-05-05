@@ -39,6 +39,7 @@ func processCommunityTasks() error {
 	return nil
 }
 
+// AddParseCommunitiesTask -
 func AddParseCommunitiesTask() error {
 	task := &models.SimpleTask{
 		Name: "parse_communities_pages",
@@ -68,5 +69,5 @@ func AddParseCommunitiesTask() error {
 		}
 	}
 
-	return PushTaskToQueue(task)
+	return CoreTaskManager.PushTask(ParseAllCommunitiesTask, task)
 }

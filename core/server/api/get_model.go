@@ -17,12 +17,21 @@ import (
 )
 
 var availableModels = map[string]interface{}{
-	"pikabu_user":                                   []models.PikabuUser{},
-	"pikabu_community":                              []models.PikabuCommunity{},
-	"number_of_users_to_process_entries":            []models.NumberOfUsersToProcessEntry{},
-	"number_of_stories_to_process_entries":          []models.NumberOfStoriesToProcessEntry{},
-	"number_of_comments_to_process_entries":         []models.NumberOfCommentsToProcessEntry{},
+	"pikabu_user":                           []models.PikabuUser{},
+	"pikabu_community":                      []models.PikabuCommunity{},
+	"number_of_users_to_process_entries":    []models.NumberOfUsersToProcessEntry{},
+	"number_of_stories_to_process_entries":  []models.NumberOfStoriesToProcessEntry{},
+	"number_of_comments_to_process_entries": []models.NumberOfCommentsToProcessEntry{},
+
 	"pikabu_user_updating_period_distribution_3600": []models.PikabuUserUpdatingPeriodDistribution_3600{},
+
+	"number_of_tasks_in_channel_update_user_tasks":                          []models.NumberOfTasksInChannelUpdateUserTask{},
+	"number_of_tasks_in_channel_parse_new_user_tasks":                       []models.NumberOfTasksInChannelParseNewUserTask{},
+	"number_of_tasks_in_channel_parse_deleted_or_never_existed_user_tasks":  []models.NumberOfTasksInChannelParseDeletedOrNeverExistedUserTask{},
+	"number_of_tasks_in_channel_update_story_tasks":                         []models.NumberOfTasksInChannelUpdateStoryTask{},
+	"number_of_tasks_in_channel_parse_new_story_tasks":                      []models.NumberOfTasksInChannelParseNewStoryTask{},
+	"number_of_tasks_in_channel_parse_deleted_or_never_existed_story_tasks": []models.NumberOfTasksInChannelParseDeletedOrNeverExistedStoryTask{},
+	"number_of_tasks_in_channel_parse_all_communities_tasks":                []models.NumberOfTasksInChannelParseAllCommunitiesTask{},
 }
 
 func init() {

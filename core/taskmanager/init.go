@@ -13,25 +13,65 @@ import (
 	"github.com/go-pg/pg/orm"
 )
 
-var coreTaskManager *TaskManager
+// CoreTaskManager -
+var CoreTaskManager *TaskManager
 
-// Run runs goroutines to process tasks
-func Run() error {
+const (
+	// UpdateUserTask -
+	UpdateUserTask = iota
+	// ParseNewUserTask -
+	ParseNewUserTask = iota
+	// ParseDeletedOrNeverExistedUserTask -
+	ParseDeletedOrNeverExistedUserTask = iota
+	// UpdateStoryTask -
+	UpdateStoryTask = iota
+	// ParseNewStoryTask -
+	ParseNewStoryTask = iota
+	// ParseDeletedOrNeverExistedStoryTask -
+	ParseDeletedOrNeverExistedStoryTask = iota
+	// ParseAllCommunitiesTask -
+	ParseAllCommunitiesTask = iota
+)
+
+func init() {
 	var err error
-	coreTaskManager, err = NewTaskManager(map[string]TaskDeclaration{
-		"update_user": TaskDeclaration{
+	CoreTaskManager, err = NewTaskManager(map[int]TaskDeclaration{
+		UpdateUserTask: TaskDeclaration{
 			Importance:  config.Settings.UpdateUserTaskImportance,
 			ChannelSize: uint(config.Settings.MaxNumberOfTasksInQueue),
 		},
-		"parse_new_user_by_id": TaskDeclaration{
-			Importance: config.Settings.ParseNewUserByIDImportance,
+		ParseNewUserTask: TaskDeclaration{
+			Importance:  config.Settings.ParseNewUserTaskImportance,
 			ChannelSize: uint(config.Settings.MaxNumberOfTasksInQueue),
-		}
+		},
+		ParseDeletedOrNeverExistedUserTask: TaskDeclaration{
+			Importance:  config.Settings.ParseDeletedOrNeverExistedUserTaskImportance,
+			ChannelSize: uint(config.Settings.MaxNumberOfTasksInQueue),
+		},
+		UpdateStoryTask: TaskDeclaration{
+			Importance:  config.Settings.UpdateStoryTaskImportance,
+			ChannelSize: uint(config.Settings.MaxNumberOfTasksInQueue),
+		},
+		ParseNewStoryTask: TaskDeclaration{
+			Importance:  config.Settings.ParseNewStoryTaskImportance,
+			ChannelSize: uint(config.Settings.MaxNumberOfTasksInQueue),
+		},
+		ParseDeletedOrNeverExistedStoryTask: TaskDeclaration{
+			Importance:  config.Settings.ParseDeletedOrNeverExistedStoryTaskImportance,
+			ChannelSize: uint(config.Settings.MaxNumberOfTasksInQueue),
+		},
+		ParseAllCommunitiesTask: TaskDeclaration{
+			Importance:  config.Settings.ParseAllCommunitiesTaskImportance,
+			ChannelSize: uint(config.Settings.MaxNumberOfTasksInQueue),
+		},
 	})
 	if err != nil {
-		return err
+		panic(err)
 	}
+}
 
+// Run runs goroutines to process tasks
+func Run() error {
 	var wg sync.WaitGroup
 
 	workers := []func() error{}
