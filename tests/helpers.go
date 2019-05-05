@@ -70,11 +70,13 @@ func pushStoriesResultToQueue(parsingTimestamp int64, stories []pikago_models.St
 func waitForTasksQueueEmpty() {
 	logger.Log.Debug(`waiting for tasks queue to become empty`)
 	for {
-		// TODO: add other queue
-		if len(globals.ParserParseStoryTasks) == 0 {
-			time.Sleep(1 * time.Second)
-			return
-		}
+		// TODO: fix
+		/*
+			if len(globals.ParserParseStoryTasks) == 0 {
+				time.Sleep(1 * time.Second)
+				return
+			}
+		*/
 
 		time.Sleep(500 * time.Millisecond)
 	}
