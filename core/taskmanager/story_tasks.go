@@ -119,7 +119,7 @@ func updateStoriesWorker() error {
 
 		var storiesToUpdate []models.PikabuStory
 		err := models.Db.Model(&storiesToUpdate).
-			Where("is_permanently_deleted = false AND next_update_timestamp < ? AND task_taken_at_timestamp < ?", time.Now().Unix(), time.Now().Unix()-int64(config.Settings.MaximumParseStoryTaskProcessingTime)).
+			Where("next_update_timestamp < ? AND task_taken_at_timestamp < ?", time.Now().Unix(), time.Now().Unix()-int64(config.Settings.MaximumParseStoryTaskProcessingTime)).
 			Limit(1024).
 			Select()
 		if err != pg.ErrNoRows && err != nil {
@@ -153,53 +153,57 @@ func updateStoriesWorker() error {
 func AddParseStoryTask(pikabuID uint64, taskType int) error {
 	timestamp := models.TimestampType(time.Now().Unix())
 
-	deletedOrNeverExistedStory := models.PikabuDeletedOrNeverExistedStory{
-		PikabuID: pikabuID,
-	}
-	err := models.Db.Select(&deletedOrNeverExistedStory)
-	if err != pg.ErrNoRows && err != nil {
-		return errors.New(err)
-	}
-	if err == nil {
-		// deletedOrNeverExistedStory exists
-
-		// ignore recently added tasks
-		if deletedOrNeverExistedStory.TaskTakenAtTimestamp+models.TimestampType(config.Settings.MaximumParseStoryTaskProcessingTime) >= timestamp {
-			return nil
-		}
-		deletedOrNeverExistedStory.TaskTakenAtTimestamp = timestamp
-		err := models.Db.Update(&deletedOrNeverExistedStory)
-		if err != pg.ErrNoRows && err != nil {
-			return errors.New(err)
-		}
-	} else {
-		// deletedOrNeverExistedStory does not exist
-		deletedOrNeverExistedStory.LastUpdateTimestamp = 0
-		deletedOrNeverExistedStory.NextUpdateTimestamp = timestamp
-		deletedOrNeverExistedStory.TaskTakenAtTimestamp = timestamp
-		err := models.Db.Insert(&deletedOrNeverExistedStory)
-		if err != nil {
-			return errors.New(err)
-		}
-	}
-
 	story := models.PikabuStory{
 		PikabuID: pikabuID,
 	}
-	err = models.Db.Select(&story)
+	err := models.Db.Select(&story)
 	if err != pg.ErrNoRows && err != nil {
 		return errors.New(err)
 	}
 	if err == nil {
+		// story exists
+
 		// ignore recently added tasks
 		if story.TaskTakenAtTimestamp+models.TimestampType(config.Settings.MaximumParseStoryTaskProcessingTime) >= timestamp {
 			return nil
 		}
 
 		story.TaskTakenAtTimestamp = timestamp
-		err := models.Db.Update(&story)
+		_, err := models.Db.Model(&story).Set("task_taken_at_timestamp = ?task_taken_at_timestamp").WherePK().Update()
 		if err != nil {
 			return errors.New(err)
+		}
+	} else {
+		// story does not exist
+
+		deletedOrNeverExistedStory := models.PikabuDeletedOrNeverExistedStory{
+			PikabuID: pikabuID,
+		}
+		err := models.Db.Select(&deletedOrNeverExistedStory)
+		if err != pg.ErrNoRows && err != nil {
+			return errors.New(err)
+		}
+		if err == nil {
+			// deletedOrNeverExistedStory exists
+
+			// ignore recently added tasks
+			if deletedOrNeverExistedStory.TaskTakenAtTimestamp+models.TimestampType(config.Settings.MaximumParseStoryTaskProcessingTime) >= timestamp {
+				return nil
+			}
+			deletedOrNeverExistedStory.TaskTakenAtTimestamp = timestamp
+			_, err := models.Db.Model(&deletedOrNeverExistedStory).Set("?task_taken_at_timestamp = ?task_taken_at_timestamp").WherePK().Update()
+			if err != pg.ErrNoRows && err != nil {
+				return errors.New(err)
+			}
+		} else {
+			// deletedOrNeverExistedStory does not exist
+			deletedOrNeverExistedStory.LastUpdateTimestamp = 0
+			deletedOrNeverExistedStory.NextUpdateTimestamp = timestamp
+			deletedOrNeverExistedStory.TaskTakenAtTimestamp = timestamp
+			err := models.Db.Insert(&deletedOrNeverExistedStory)
+			if err != nil {
+				return errors.New(err)
+			}
 		}
 	}
 
@@ -211,6 +215,7 @@ func AddParseStoryTask(pikabuID uint64, taskType int) error {
 
 // ForceAddParseStoryTask queues task for parsing story without limiting
 func ForceAddParseStoryTask(pikabuID uint64, taskType int) error {
+	// TODO: refactor
 	timestamp := models.TimestampType(time.Now().Unix())
 
 	deletedOrNeverExistedStory := models.PikabuDeletedOrNeverExistedStory{

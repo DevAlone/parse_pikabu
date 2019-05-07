@@ -27,17 +27,19 @@ type PikabuUser struct {
 	// ?
 	// IsDeleted bool `sql:",notnull,default:false"`
 
-	IsDeleted           bool          `sql:",notnull,default:false" json:"is_deleted" api:"order,filter"`
-	AddedTimestamp      TimestampType `sql:",notnull" json:"added_timestamp" api:"order,filter"`
-	LastUpdateTimestamp TimestampType `sql:",notnull" json:"last_update_timestamp" gen_distributions:"86400" api:"order,filter"`
-	NextUpdateTimestamp TimestampType `sql:",notnull" json:"next_update_timestamp" gen_distributions:"86400" api:"order,filter"`
+	IsDeleted            bool          `sql:",notnull,default:false" json:"is_deleted" api:"order,filter"`
+	AddedTimestamp       TimestampType `sql:",notnull" json:"added_timestamp" api:"order,filter"`
+	LastUpdateTimestamp  TimestampType `sql:",notnull" json:"last_update_timestamp" gen_distributions:"86400" api:"order,filter"`
+	NextUpdateTimestamp  TimestampType `sql:",notnull" json:"next_update_timestamp" gen_distributions:"86400" api:"order,filter"`
+	TaskTakenAtTimestamp TimestampType `sql:",notnull" json:"task_taken_at_timestamp" api:"order"`
 }
 
 // PikabuDeletedOrNeverExistedUser - users which are not present in PikabuUser table
 type PikabuDeletedOrNeverExistedUser struct {
-	PikabuID            uint64        `sql:",pk" json:"pikabu_id"`
-	LastUpdateTimestamp TimestampType `sql:",notnull" json:"last_update_timestamp"`
-	NextUpdateTimestamp TimestampType `sql:",notnull" json:"next_update_timestamp"`
+	PikabuID             uint64        `sql:",pk" json:"pikabu_id"`
+	LastUpdateTimestamp  TimestampType `sql:",notnull" json:"last_update_timestamp"`
+	NextUpdateTimestamp  TimestampType `sql:",notnull" json:"next_update_timestamp"`
+	TaskTakenAtTimestamp TimestampType `sql:",notnull" json:"task_taken_at_timestamp" api:"order"`
 }
 
 // PikabuUserUpdatingPeriodDistribution_3600 -

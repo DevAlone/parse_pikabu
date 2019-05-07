@@ -16,7 +16,6 @@ func userTasksWorker() error {
 	var wg sync.WaitGroup
 
 	for _, f := range []func() error{
-		addMissingUserTasksWorker,
 		addMissingUsersWorker,
 		addNewUsersWorker,
 		updateDeletedOrNeverExistedUsersWorker,
@@ -32,47 +31,6 @@ func userTasksWorker() error {
 	wg.Wait()
 
 	return nil
-}
-
-func addMissingUserTasksWorker() error {
-	for {
-		count, err := models.Db.Model((*models.PikabuUser)(nil)).Count()
-		if err != nil {
-			return errors.New(err)
-		}
-		if count == 0 {
-			// init database
-			err := AddParseUserTask(1, "admin", ParseNewUserTask)
-			if err != nil {
-				return err
-			}
-		}
-		time.Sleep(5 * time.Minute)
-
-		var users []models.PikabuUser
-		// very slow query
-		err = models.Db.Model(&users).
-			ColumnExpr("pikabu_user.*").
-			Join("LEFT JOIN parse_user_tasks AS parse_user_task").
-			JoinOn("pikabu_user.pikabu_id = parse_user_task.pikabu_id").
-			Where("parse_user_task.pikabu_id IS NULL").
-			Limit(1024).
-			Select()
-		if err == pg.ErrNoRows {
-			continue
-		}
-		if err != nil {
-			return err
-		}
-		for _, user := range users {
-			err := AddParseUserTask(user.PikabuID, user.Username, ParseNewUserTask)
-			if err != nil {
-				return err
-			}
-		}
-
-		time.Sleep(1 * time.Hour)
-	}
 }
 
 func addMissingUsersWorker() error {
@@ -203,41 +161,21 @@ func updateUsersWorker() error {
 		time.Sleep(1 * time.Minute)
 
 		// update users
-		// TODO: iterate over all users here
-		// TODO: improve performance
-		users := []models.PikabuUser{}
-		err := models.Db.Model(&users).
-			ColumnExpr("pikabu_user.*").
-			Join("LEFT JOIN parse_user_tasks AS parse_user_task").
-			JoinOn("pikabu_user.pikabu_id = parse_user_task.pikabu_id").
-			Where("next_update_timestamp <= ? AND parse_user_task.is_done = true", time.Now().Unix()).
-			Order("next_update_timestamp").
-			Limit(1024).
-			Select()
-		if err != pg.ErrNoRows && err != nil {
-			return errors.New(err)
-		}
-
-		for _, user := range users {
-			err = AddParseUserTask(user.PikabuID, user.Username, UpdateUserTask)
-			if err != nil {
-				return err
-			}
-		}
-
-		// update tasks
-		parseUserTasks := []models.ParseUserTask{}
-		err = models.Db.Model(&parseUserTasks).
+		usersToUpdate := []models.PikabuUser{}
+		err := models.Db.Model(&usersToUpdate).
 			Where(
-				"is_done = false AND is_taken = true AND added_timestamp < ?",
-				models.TimestampType(time.Now().Unix())-models.TimestampType(config.Settings.MaximumTaskProcessingTime)).
+				"next_update_timestamp < ? AND task_taken_at_timestamp < ?",
+				time.Now().Unix(),
+				time.Now().Unix()-int64(config.Settings.MaximumParseUserTaskProcessingTime),
+			).
 			Limit(1024).
 			Select()
 		if err != pg.ErrNoRows && err != nil {
-			return errors.New(err)
+			return err
 		}
-		for _, task := range parseUserTasks {
-			err := AddParseUserTask(task.PikabuID, task.Username, UpdateUserTask)
+
+		for _, user := range usersToUpdate {
+			err = AddParseUserTask(user.PikabuID, user.Username, UpdateUserTask)
 			if err != nil {
 				return err
 			}
@@ -247,68 +185,108 @@ func updateUsersWorker() error {
 
 // AddParseUserTask -
 func AddParseUserTask(pikabuID uint64, username string, taskType int) error {
-	// username = strings.ToLower(username)
+	timestamp := models.TimestampType(time.Now().Unix())
 
-	task := &models.ParseUserTask{}
+	user := &models.PikabuUser{
+		PikabuID: pikabuID,
+	}
 
-	err := models.Db.Model(task).
-		Where("pikabu_id = ?", pikabuID).
-		Select()
-
+	err := models.Db.Select(user)
 	if err != pg.ErrNoRows && err != nil {
 		return errors.New(err)
 	}
+	if err == nil {
+		// such user exists
 
-	exists := err != pg.ErrNoRows
+		// ignore recently added tasks
+		if user.TaskTakenAtTimestamp+models.TimestampType(config.Settings.MaximumParseUserTaskProcessingTime) >= timestamp {
+			return nil
+		}
 
-	task.PikabuID = pikabuID
-	task.AddedTimestamp = models.TimestampType(time.Now().Unix())
-	task.IsDone = false
-	task.IsTaken = true
-	task.Username = username
-
-	if !exists {
-		err := models.Db.Insert(task)
+		user.TaskTakenAtTimestamp = timestamp
+		_, err := models.Db.Model(user).Set("task_taken_at_timestamp = ?task_taken_at_timestamp").WherePK().Update()
 		if err != nil {
 			return errors.New(err)
 		}
 	} else {
-		err := models.Db.Update(task)
-		if err != nil {
+		// deletedOrNeverExistedUser
+
+		deletedOrNeverExistedUser := &models.PikabuDeletedOrNeverExistedUser{
+			PikabuID: pikabuID,
+		}
+		err := models.Db.Select(deletedOrNeverExistedUser)
+		if err != pg.ErrNoRows && err != nil {
 			return errors.New(err)
+		}
+		if err == nil {
+			// exists
+
+			// ignore recently added tasks
+			if deletedOrNeverExistedUser.TaskTakenAtTimestamp+models.TimestampType(config.Settings.MaximumParseUserTaskProcessingTime) >= timestamp {
+				return nil
+			}
+			deletedOrNeverExistedUser.TaskTakenAtTimestamp = timestamp
+			_, err := models.Db.Model(deletedOrNeverExistedUser).Set("?task_taken_at_timestamp = ?task_taken_at_timestamp").WherePK().Update()
+			if err != pg.ErrNoRows && err != nil {
+				return errors.New(err)
+			}
+		} else {
+			deletedOrNeverExistedUser.LastUpdateTimestamp = 0
+			deletedOrNeverExistedUser.NextUpdateTimestamp = timestamp
+			deletedOrNeverExistedUser.TaskTakenAtTimestamp = timestamp
+			err := models.Db.Insert(deletedOrNeverExistedUser)
+			if err != nil {
+				return errors.New(err)
+			}
 		}
 	}
 
-	return CoreTaskManager.PushTask(taskType, task)
+	return CoreTaskManager.PushTask(taskType, &models.ParseUserTask{
+		PikabuID:       pikabuID,
+		Username:       username,
+		AddedTimestamp: timestamp,
+	})
 }
 
 // AddParseUserTaskIfNotExists -
 func AddParseUserTaskIfNotExists(pikabuID uint64, username string, taskType int) error {
-	task := &models.ParseUserTask{}
+	user := &models.PikabuUser{
+		PikabuID: pikabuID,
+	}
 
-	err := models.Db.Model(task).
-		Where("pikabu_id = ?", pikabuID).
-		Select()
-
+	err := models.Db.Select(user)
 	if err != pg.ErrNoRows && err != nil {
 		return errors.New(err)
 	}
+	if err == nil {
+		return nil
+		// such user exists
+	}
 
-	exists := err != pg.ErrNoRows
-	if exists {
+	deletedOrNeverExistedUser := &models.PikabuDeletedOrNeverExistedUser{
+		PikabuID: pikabuID,
+	}
+	err = models.Db.Select(deletedOrNeverExistedUser)
+	if err != pg.ErrNoRows && err != nil {
+		return errors.New(err)
+	}
+	if err == nil {
 		return nil
 	}
 
-	task.PikabuID = pikabuID
-	task.AddedTimestamp = models.TimestampType(time.Now().Unix())
-	task.IsDone = false
-	task.IsTaken = true
-	task.Username = username
+	timestamp := models.TimestampType(time.Now().Unix())
 
-	err = models.Db.Insert(task)
+	deletedOrNeverExistedUser.LastUpdateTimestamp = 0
+	deletedOrNeverExistedUser.NextUpdateTimestamp = timestamp
+	deletedOrNeverExistedUser.TaskTakenAtTimestamp = timestamp
+	err = models.Db.Insert(deletedOrNeverExistedUser)
 	if err != nil {
 		return errors.New(err)
 	}
 
-	return CoreTaskManager.PushTask(taskType, task)
+	return CoreTaskManager.PushTask(taskType, &models.ParseUserTask{
+		PikabuID:       pikabuID,
+		Username:       username,
+		AddedTimestamp: timestamp,
+	})
 }

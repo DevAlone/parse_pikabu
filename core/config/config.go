@@ -16,7 +16,7 @@ var Settings struct {
 	ServerListeningAddress     string
 	AMQPAddress                string
 	// in seconds
-	MaximumTaskProcessingTime           int
+	MaximumParseUserTaskProcessingTime  int
 	MaximumParseStoryTaskProcessingTime int
 	CommunitiesProcessingPeriod         int
 	ServerMaximumNumberOfResultsPerPage uint
@@ -70,7 +70,7 @@ func init() {
 	Settings.Pikabu18BotToken = ""
 	Settings.ServerListeningAddress = "0.0.0.0:8080"
 	Settings.AMQPAddress = "amqp://guest:guest@localhost:5672/"
-	Settings.MaximumTaskProcessingTime = 2 * 60
+	Settings.MaximumParseUserTaskProcessingTime = 2 * 60
 	Settings.MaximumParseStoryTaskProcessingTime = 2 * 60
 	Settings.CommunitiesProcessingPeriod = 3600
 	Settings.ServerMaximumNumberOfResultsPerPage = 1024
