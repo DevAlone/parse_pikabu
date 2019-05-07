@@ -191,7 +191,7 @@ func AddParseStoryTask(pikabuID uint64, taskType int) error {
 				return nil
 			}
 			deletedOrNeverExistedStory.TaskTakenAtTimestamp = timestamp
-			_, err := models.Db.Model(&deletedOrNeverExistedStory).Set("?task_taken_at_timestamp = ?task_taken_at_timestamp").WherePK().Update()
+			_, err := models.Db.Model(&deletedOrNeverExistedStory).Column("task_taken_at_timestamp").WherePK().Update()
 			if err != pg.ErrNoRows && err != nil {
 				return errors.New(err)
 			}
