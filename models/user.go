@@ -153,7 +153,9 @@ func init() {
 	addIndex("pikabu_users", "added_timestamp", "")
 	addIndex("pikabu_users", "last_update_timestamp", "")
 	addIndex("pikabu_users", "next_update_timestamp", "")
+	addIndex("pikabu_users", "task_taken_at_timestamp", "")
 
 	addIndex("pikabu_deleted_or_never_existed_users", "last_update_timestamp", "")
 	addIndex("pikabu_deleted_or_never_existed_users", "next_update_timestamp", "")
+	addIndex("pikabu_deleted_or_never_existed_users", "task_taken_at_timestamp", "")
 }
