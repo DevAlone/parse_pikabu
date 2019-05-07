@@ -95,9 +95,6 @@ func Run() error {
 	go func() {
 		defer wg.Done()
 		for {
-			if !globals.DoNotParseUsers {
-				helpers.PanicOnError(processUserTasks())
-			}
 			helpers.PanicOnError(processCommunityTasks())
 
 			time.Sleep(time.Duration(config.Settings.WaitBeforeAddingNewUserTasksSeconds) * time.Second)

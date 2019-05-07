@@ -4,7 +4,6 @@ process deleted communities
 fix logging
 clean username versions with the same value but in different cases
 fix a lot of connections issue
-fix -1000 in iuint issue
 process deleted
 fix user with id 2159282 and 1834991
 save last used proxy in redis
