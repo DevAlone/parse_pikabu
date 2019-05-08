@@ -7,15 +7,16 @@ import (
 	"github.com/go-errors/errors"
 )
 
+// ParserConfig -
 type ParserConfig struct {
-	ParserId string
+	ParserID string
 	// by default 1, can be used in config to
 	// define multiple parsers with the same behavior
 	// parser_id will be suffixed with number of copy
 	NumberOfInstances                uint
-	ApiURL                           string
-	ApiTimeout                       int
-	ApiSessionId                     string
+	APIURL                           string
+	APITimeout                       int
+	APISessionID                     string
 	ProxyProviderAPIURL              string
 	ProxyProviderTimeout             int
 	PikagoTimeout                    uint
@@ -31,16 +32,18 @@ type ParserConfig struct {
 	ProxyGettingPolicy               string
 }
 
+// ParsersConfig -
 type ParsersConfig struct {
 	Configs []ParserConfig
 }
 
+// NewParserConfigFromBytes -
 func NewParserConfigFromBytes(configData []byte) (*ParserConfig, error) {
 	config := &ParserConfig{}
 
-	config.ParserId = "unique_parser_id"
+	config.ParserID = "unique_parser_id"
 	config.NumberOfInstances = 1
-	config.ApiURL = "http://localhost:8080/api/v1"
+	config.APIURL = "http://localhost:8080/api/v1"
 	config.ProxyProviderAPIURL = ""
 	config.ProxyProviderTimeout = 2 * 60
 	config.PikagoTimeout = 45
@@ -48,10 +51,10 @@ func NewParserConfigFromBytes(configData []byte) (*ParserConfig, error) {
 	config.PikagoChangeProxyOnNthBadTry = 5
 	config.PikagoWaitBetweenProcessingPages = 1
 	config.PikagoWaitBeforeNextRequestMs = 1000
-	config.ApiTimeout = 60
+	config.APITimeout = 60
 	config.WaitAfterErrorSeconds = 1
 	config.WaitNoTaskSeconds = 5 // TODO: delete?
-	config.ApiSessionId = "put parser's session id here"
+	config.APISessionID = "put parser's session id here"
 	config.AMQPAddress = "amqp://guest:guest@localhost:5672"
 	config.LogHTTPQueries = false
 	config.FileToStoreSSLKeys = ""

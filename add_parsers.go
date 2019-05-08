@@ -22,7 +22,7 @@ func addParsersFromConfig() error {
 	}
 
 	for _, parserConfig := range parsersConfig.Configs {
-		sessionId := strings.TrimSpace(parserConfig.ApiSessionId)
+		sessionId := strings.TrimSpace(parserConfig.APISessionID)
 		key := "parse_pikabu_server_authentication_middleware_session_group_" + sessionId
 		err := redisClient.Set(key, fmt.Sprint(middlewares.GROUP_PARSER), 0).Err()
 

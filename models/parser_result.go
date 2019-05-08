@@ -4,9 +4,10 @@ import (
 	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )
 
+// ParserBaseResult -
 type ParserBaseResult struct {
 	ParsingTimestamp TimestampType `json:"parsing_timestamp"`
-	ParserId         string        `json:"parser_id"`
+	ParserID         string        `json:"parser_id"`
 	NumberOfResults  int           `json:"number_of_results"`
 	// TypeOfResult     string        `json:"type_of_result"`
 }

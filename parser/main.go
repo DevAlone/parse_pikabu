@@ -25,7 +25,7 @@ func Main() {
 			var conf ParserConfig
 			conf = parserConfig
 			if i != 0 {
-				conf.ParserId += "_copy_" + fmt.Sprint(i)
+				conf.ParserID += "_copy_" + fmt.Sprint(i)
 			}
 
 			parser, err := NewParser(&conf)

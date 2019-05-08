@@ -29,7 +29,7 @@ func NewParser(parserConfig *ParserConfig) (*Parser, error) {
 	var err error
 	parser.Config = parserConfig
 	parser.httpClient = &http.Client{
-		Timeout: time.Duration(parser.Config.ApiTimeout) * time.Second,
+		Timeout: time.Duration(parser.Config.APITimeout) * time.Second,
 	}
 
 	proxyGettingPolicy := pikago.ProxyGettingPoliceRandom
@@ -101,10 +101,10 @@ func (p *Parser) handleError(err error) {
 // TODO: consider removing
 func (p *Parser) doAPIRequest(method string, url string, body io.Reader) (*http.Response, error) {
 	method = strings.ToUpper(method)
-	req, err := http.NewRequest(method, p.Config.ApiURL+url, body)
+	req, err := http.NewRequest(method, p.Config.APIURL+url, body)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Session-Id", p.Config.ApiSessionId)
+	req.Header.Set("Session-Id", p.Config.APISessionID)
 	return p.httpClient.Do(req)
 }

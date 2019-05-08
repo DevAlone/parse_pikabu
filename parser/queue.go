@@ -23,7 +23,7 @@ func (p *Parser) PutResultsToQueue(routingKey string, result interface{}) error 
 
 	var pr models.ParserResult
 	pr.ParsingTimestamp = models.TimestampType(time.Now().Unix())
-	pr.ParserId = "d3dev/" + p.Config.ParserId
+	pr.ParserID = "d3dev/" + p.Config.ParserID
 	pr.NumberOfResults = numberOfResults
 	pr.Results = result
 	globals.ParserResults <- &pr
