@@ -17,7 +17,7 @@ func storyTasksWorker() error {
 	for _, f := range []func() error{
 		addMissingStoriesWorker,
 		addNewStoriesWorker,
-		// updateStoriesWorker,  // TODO: return back
+		updateStoriesWorker,
 	} {
 		wg.Add(1)
 		go func(handler func() error) {
@@ -56,7 +56,7 @@ func addMissingStoriesWorker() error {
 
 func addNewStoriesWorker() error {
 	for {
-		time.Sleep(10 * time.Second)
+		time.Sleep(time.Minute)
 
 		// go up
 		var lastStory models.PikabuStory
@@ -105,26 +105,17 @@ func addNewStoriesWorker() error {
 }
 
 func updateStoriesWorker() error {
-	// TODO: fix
 	for {
 		time.Sleep(time.Duration(config.Settings.WaitBeforeAddingNewStoryTasksSeconds) * time.Second)
-
-		// TODO: rewrite
-		/*
-			if len(globals.ParserParseStoryTasks) >= config.Settings.MaxNumberOfTasksInQueue/2 {
-				// wait for queue to become empty
-				continue
-			}
-		*/
 
 		var storiesToUpdate []models.PikabuStory
 		err := models.Db.Model(&storiesToUpdate).
 			Where("next_update_timestamp < ? AND task_taken_at_timestamp < ?", time.Now().Unix(), time.Now().Unix()-int64(config.Settings.MaximumParseStoryTaskProcessingTime)).
 			Order("next_update_timestamp").
-			Limit(1024).
+			Limit(config.Settings.GetItemsToUpdateAtTime).
 			Select()
 		if err != pg.ErrNoRows && err != nil {
-			return err
+			return errors.New(err)
 		}
 		for _, story := range storiesToUpdate {
 			err := AddParseStoryTask(story.PikabuID, UpdateStoryTask)
@@ -133,15 +124,16 @@ func updateStoriesWorker() error {
 			}
 		}
 
-		var deletedOrNeverExistedStories []models.PikabuDeletedOrNeverExistedStory
-		err = models.Db.Model(&deletedOrNeverExistedStories).
+		// deletedOrNeverExistedStoriesToUpdate
+		var deletedOrNeverExistedStoriesToUpdate []models.PikabuDeletedOrNeverExistedStory
+		err = models.Db.Model(&deletedOrNeverExistedStoriesToUpdate).
 			Where("next_update_timestamp < ? AND task_taken_at_timestamp > ?", time.Now().Unix(), time.Now().Unix()-int64(config.Settings.MaximumParseStoryTaskProcessingTime)).
-			Limit(1024).
+			Limit(config.Settings.GetItemsToUpdateAtTime).
 			Select()
 		if err != pg.ErrNoRows && err != nil {
-			return err
+			return errors.New(err)
 		}
-		for _, story := range storiesToUpdate {
+		for _, story := range deletedOrNeverExistedStoriesToUpdate {
 			err := AddParseStoryTask(story.PikabuID, ParseDeletedOrNeverExistedStoryTask)
 			if err != nil {
 				return err

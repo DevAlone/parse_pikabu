@@ -42,6 +42,7 @@ var Settings struct {
 	ParseNewStoryTaskImportance                   uint
 	ParseDeletedOrNeverExistedStoryTaskImportance uint
 	ParseAllCommunitiesTaskImportance             uint
+	GetItemsToUpdateAtTime                        int
 }
 
 // UpdateSettingsFromFile fills settings from the file
@@ -70,8 +71,8 @@ func init() {
 	Settings.Pikabu18BotToken = ""
 	Settings.ServerListeningAddress = "0.0.0.0:8080"
 	Settings.AMQPAddress = "amqp://guest:guest@localhost:5672/"
-	Settings.MaximumParseUserTaskProcessingTime = 2 * 60
-	Settings.MaximumParseStoryTaskProcessingTime = 2 * 60
+	Settings.MaximumParseUserTaskProcessingTime = 5 * 60
+	Settings.MaximumParseStoryTaskProcessingTime = 5 * 60
 	Settings.CommunitiesProcessingPeriod = 3600
 	Settings.ServerMaximumNumberOfResultsPerPage = 1024
 	Settings.NewUserTime = 3600 * 24 * 7
@@ -94,5 +95,5 @@ func init() {
 	Settings.UpdateStoryTaskImportance = 1
 	Settings.ParseDeletedOrNeverExistedStoryTaskImportance = 5
 	Settings.ParseAllCommunitiesTaskImportance = 1
-
+	Settings.GetItemsToUpdateAtTime = 512
 }
