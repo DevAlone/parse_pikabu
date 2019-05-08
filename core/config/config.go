@@ -94,4 +94,5 @@ func init() {
 	Settings.UpdateStoryTaskImportance = 1
 	Settings.ParseDeletedOrNeverExistedStoryTaskImportance = 5
 	Settings.ParseAllCommunitiesTaskImportance = 1
+
 }

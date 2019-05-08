@@ -7,7 +7,6 @@ import (
 
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
-	"bitbucket.org/d3dev/parse_pikabu/core/taskmanager"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
@@ -26,79 +25,42 @@ func processUserProfiles(parsingTimestamp models.TimestampType, userProfiles []*
 	return nil
 }
 
-var userProfileIdLocks = map[uint64]bool{}
-var userProfileIdLocksMutex = sync.Mutex{}
+var userProfileIDLocks = map[uint64]bool{}
+var userProfileIDLocksMutex = sync.Mutex{}
 
-func lockUserById(userId uint64) {
+func lockUserByID(userID uint64) {
 	// lock results with the same id
 	found := true
 	for found {
-		userProfileIdLocksMutex.Lock()
-		_, found = userProfileIdLocks[userId]
+		userProfileIDLocksMutex.Lock()
+		_, found = userProfileIDLocks[userID]
 		if !found {
-			userProfileIdLocks[userId] = true
-			userProfileIdLocksMutex.Unlock()
+			userProfileIDLocks[userID] = true
+			userProfileIDLocksMutex.Unlock()
 			return
 		}
-		userProfileIdLocksMutex.Unlock()
+		userProfileIDLocksMutex.Unlock()
 
 		time.Sleep(10 * time.Millisecond)
 	}
 }
 
-func unlockUserById(userId uint64) {
-	userProfileIdLocksMutex.Lock()
-	delete(userProfileIdLocks, userId)
-	userProfileIdLocksMutex.Unlock()
+func unlockUserByID(userID uint64) {
+	userProfileIDLocksMutex.Lock()
+	delete(userProfileIDLocks, userID)
+	userProfileIDLocksMutex.Unlock()
 }
 
 func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago_models.UserProfile) error {
-	lockUserById(userProfile.UserID.Value)
-	defer unlockUserById(userProfile.UserID.Value)
+	lockUserByID(userProfile.UserID.Value)
+	defer unlockUserByID(userProfile.UserID.Value)
 
 	if userProfile == nil {
 		return errors.New("nil user profile")
 	}
-	/*
-		tx, err := models.Db.Begin()
-		if err != nil {
-			return err
-		}
-		defer tx.Rollback()
-	*/
 
-	// complete tasks
-	err := taskmanager.CompleteTask(
-		nil,
-		"parse_user_tasks",
-		"pikabu_id",
-		userProfile.UserID.Value,
-	)
-	if err != nil {
-		return err
-	}
-
-	task := models.ParseUserTask{
-		PikabuID: userProfile.UserID.Value,
-	}
-	err = models.Db.Select(&task)
-	if err != pg.ErrNoRows && err != nil {
-		return err
-	}
-	if err != pg.ErrNoRows {
-		task.Username = userProfile.Username
-		err = models.Db.Update(&task)
-		if err != nil {
-			return err
-		}
-	}
-
-	err = taskmanager.CompleteTask(
-		nil,
-		"parse_user_tasks",
-		"username",
-		userProfile.Username,
-	)
+	// save results
+	err := saveUserProfile(parsingTimestamp, userProfile)
 	if err != nil {
 		return err
 	}
@@ -107,13 +69,7 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 		PikabuID: userProfile.UserID.Value,
 	}).WherePK().Delete()
 	if err != nil && err != pg.ErrNoRows {
-		return err
-	}
-
-	// save results
-	err = saveUserProfile(parsingTimestamp, userProfile)
-	if err != nil {
-		return err
+		return errors.New(err)
 	}
 
 	return nil
@@ -133,30 +89,31 @@ func saveUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago_
 		return err
 	}
 	newUser := &models.PikabuUser{
-		PikabuID:            userProfile.UserID.Value,
-		Username:            userProfile.Username,
-		Gender:              fmt.Sprint(userProfile.Gender.Value),
-		Rating:              int32(userProfile.Rating.Value),
-		NumberOfComments:    int32(userProfile.CommentsCount.Value),
-		NumberOfSubscribers: int32(userProfile.SubscribersCount.Value),
-		NumberOfStories:     int32(userProfile.StoriesCount.Value),
-		NumberOfHotStories:  int32(userProfile.StoriesHotCount.Value),
-		NumberOfPluses:      int32(userProfile.PlusesCount.Value),
-		NumberOfMinuses:     int32(userProfile.MinusesCount.Value),
-		SignupTimestamp:     models.TimestampType(userProfile.SignupTimestamp.Value),
-		AvatarURL:           userProfile.AvatarURL,
-		ApprovedText:        userProfile.Approved,
-		AwardIds:            awardIds,
-		CommunityIds:        communityIds,
-		BanHistoryItemIds:   banHistoryIds,
-		BanEndTimestamp:     models.TimestampType(userProfile.BanEndTimestamp.Value),
-		IsRatingHidden:      userProfile.IsRatingBanned,
-		IsBanned:            userProfile.IsUserBanned,
-		IsPermanentlyBanned: userProfile.IsUserPermanentlyBanned,
-		IsDeleted:           false,
-		AddedTimestamp:      parsingTimestamp,
-		LastUpdateTimestamp: parsingTimestamp,
-		NextUpdateTimestamp: 0,
+		PikabuID:             userProfile.UserID.Value,
+		Username:             userProfile.Username,
+		Gender:               fmt.Sprint(userProfile.Gender.Value),
+		Rating:               int32(userProfile.Rating.Value),
+		NumberOfComments:     int32(userProfile.CommentsCount.Value),
+		NumberOfSubscribers:  int32(userProfile.SubscribersCount.Value),
+		NumberOfStories:      int32(userProfile.StoriesCount.Value),
+		NumberOfHotStories:   int32(userProfile.StoriesHotCount.Value),
+		NumberOfPluses:       int32(userProfile.PlusesCount.Value),
+		NumberOfMinuses:      int32(userProfile.MinusesCount.Value),
+		SignupTimestamp:      models.TimestampType(userProfile.SignupTimestamp.Value),
+		AvatarURL:            userProfile.AvatarURL,
+		ApprovedText:         userProfile.Approved,
+		AwardIds:             awardIds,
+		CommunityIds:         communityIds,
+		BanHistoryItemIds:    banHistoryIds,
+		BanEndTimestamp:      models.TimestampType(userProfile.BanEndTimestamp.Value),
+		IsRatingHidden:       userProfile.IsRatingBanned,
+		IsBanned:             userProfile.IsUserBanned,
+		IsPermanentlyBanned:  userProfile.IsUserPermanentlyBanned,
+		IsDeleted:            false,
+		AddedTimestamp:       parsingTimestamp,
+		LastUpdateTimestamp:  parsingTimestamp,
+		NextUpdateTimestamp:  0,
+		TaskTakenAtTimestamp: parsingTimestamp,
 	}
 	newUser.NextUpdateTimestamp = calculateNextUpdateTimestamp(newUser, false)
 
@@ -172,7 +129,7 @@ func saveUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago_
 		}
 		return nil
 	} else if err != nil {
-		return err
+		return errors.New(err)
 	}
 
 	wasDataChanged, err := processModelFieldsVersions(nil, user, newUser, parsingTimestamp)

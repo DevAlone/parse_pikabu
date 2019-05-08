@@ -121,7 +121,7 @@ func updateDeletedOrNeverExistedUsersWorker() error {
 
 func addNewUsersWorker() error {
 	for {
-		time.Sleep(time.Duration(config.Settings.AddNewUsersEachNMinutes) * time.Minute)
+		time.Sleep(time.Minute)
 
 		// parse new users
 		var lastUser models.PikabuUser
@@ -130,6 +130,10 @@ func addNewUsersWorker() error {
 			Limit(1).
 			Select()
 		if err == pg.ErrNoRows {
+			err := AddParseUserTask(1, "admin", ParseNewUserTask)
+			if err != nil {
+				return err
+			}
 			continue
 		}
 		if err != nil {
@@ -153,6 +157,8 @@ func addNewUsersWorker() error {
 				return err
 			}
 		}
+
+		time.Sleep(time.Duration(config.Settings.AddNewUsersEachNMinutes) * time.Minute)
 	}
 }
 
@@ -168,6 +174,7 @@ func updateUsersWorker() error {
 				time.Now().Unix(),
 				time.Now().Unix()-int64(config.Settings.MaximumParseUserTaskProcessingTime),
 			).
+			Order("next_update_timestamp").
 			Limit(1024).
 			Select()
 		if err != pg.ErrNoRows && err != nil {

@@ -3,6 +3,7 @@ package resultsprocessor
 import (
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
 )
 
@@ -25,12 +26,32 @@ func processStoryNotFoundResult(
 	storyLocker.Lock(res.PikabuID)
 	defer storyLocker.Unlock(res.PikabuID)
 
+	story := models.PikabuStory{
+		PikabuID: res.PikabuID,
+	}
+	err := models.Db.Select(&story)
+	if err != pg.ErrNoRows && err != nil {
+		return errors.New(err)
+	}
+	if err != pg.ErrNoRows {
+		story.LastUpdateTimestamp = parsingTimestamp
+		story.NextUpdateTimestamp = calculateStoryNextUpdateTimestamp(&story, false)
+		story.IsPermanentlyDeleted = true
+
+		err := models.Db.Update(&story)
+		if err != nil {
+			return errors.New(err)
+		}
+	}
+
+	// deletedOrNeverExistedStory
+
 	deletedOrNeverExistedStory := models.PikabuDeletedOrNeverExistedStory{
 		PikabuID: res.PikabuID,
 	}
-	err := models.Db.Select(&deletedOrNeverExistedStory)
+	err = models.Db.Select(&deletedOrNeverExistedStory)
 	if err != pg.ErrNoRows && err != nil {
-		return err
+		return errors.New(err)
 	}
 	if err != pg.ErrNoRows {
 		updatingPeriod := deletedOrNeverExistedStory.NextUpdateTimestamp - deletedOrNeverExistedStory.LastUpdateTimestamp
@@ -45,24 +66,9 @@ func processStoryNotFoundResult(
 
 		deletedOrNeverExistedStory.NextUpdateTimestamp = parsingTimestamp + updatingPeriod
 		deletedOrNeverExistedStory.LastUpdateTimestamp = parsingTimestamp
-	}
-
-	story := models.PikabuStory{
-		PikabuID: res.PikabuID,
-	}
-	err = models.Db.Select(&story)
-	if err != pg.ErrNoRows && err != nil {
-		return err
-	}
-	if err != pg.ErrNoRows {
-		story.IsPermanentlyDeleted = true
-		story.LastUpdateTimestamp = parsingTimestamp
-		story.NextUpdateTimestamp = calculateStoryNextUpdateTimestamp(&story, true)
-		story.TaskTakenAtTimestamp = parsingTimestamp
-
-		err := models.Db.Update(&story)
+		err := models.Db.Update(&deletedOrNeverExistedStory)
 		if err != nil {
-			return err
+			return errors.New(err)
 		}
 	}
 
