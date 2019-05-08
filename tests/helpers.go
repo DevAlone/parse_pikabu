@@ -59,7 +59,7 @@ func pushStoriesResultToQueue(parsingTimestamp int64, stories []pikago_models.St
 	logger.Log.Debug(`pushing result to queue`)
 	var pr models.ParserResult
 	pr.ParsingTimestamp = models.TimestampType(parsingTimestamp)
-	pr.ParserId = "d3dev/parser_id"
+	pr.ParserID = "d3dev/parser_id"
 	pr.NumberOfResults = len(stories)
 	pr.Results = stories
 	globals.ParserResults <- &pr
