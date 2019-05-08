@@ -56,7 +56,7 @@ func processStoryNotFoundResult(
 	if err != pg.ErrNoRows {
 		updatingPeriod := deletedOrNeverExistedStory.NextUpdateTimestamp - deletedOrNeverExistedStory.LastUpdateTimestamp
 		if updatingPeriod < 0 {
-			updatingPeriod = -updatingPeriod
+			updatingPeriod = 0
 		}
 		if updatingPeriod == 0 {
 			updatingPeriod = models.TimestampType(config.Settings.UsersMinUpdatingPeriod)

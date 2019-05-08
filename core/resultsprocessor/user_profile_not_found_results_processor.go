@@ -54,7 +54,7 @@ func processUserProfileNotFoundResult(parsingTimestamp models.TimestampType, res
 	if err != pg.ErrNoRows {
 		updatingPeriod := deletedUser.NextUpdateTimestamp - deletedUser.LastUpdateTimestamp
 		if updatingPeriod < 0 {
-			updatingPeriod = -updatingPeriod
+			updatingPeriod = 0
 		}
 		if updatingPeriod == 0 {
 			updatingPeriod = models.TimestampType(config.Settings.UsersMinUpdatingPeriod)
