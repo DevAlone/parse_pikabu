@@ -69,7 +69,7 @@ FROM (
 	WHERE pikabu_id > ?
 ) nr
 WHERE pikabu_id + 1 <> next_nr LIMIT 10;
-			`)
+			`, offset)
 			if err == pg.ErrNoRows {
 				break
 			} else if err != nil {

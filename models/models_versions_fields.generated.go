@@ -1,7 +1,7 @@
 package models
 
 // generated code, do not touch!
-// generated at timestamp 2019-03-17 19:36:54.345722117 &#43;0000 UTC m=&#43;0.003478521
+// generated at timestamp 2019-05-09 21:16:04.961946775 &#43;0000 UTC m=&#43;0.002691859
 
 type PikabuCommentParentIDVersion struct {
 	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
@@ -112,6 +112,12 @@ type PikabuCommentIsAuthorPikabuTeamVersion struct {
 }
 
 type PikabuCommentIsAuthorOfficialVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     bool          `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentIsRatingHiddenVersion struct {
 	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
 	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
 	Value     bool          `sql:",notnull" json:"value" api:"order,filter"`
@@ -599,6 +605,7 @@ var FieldsVersionTablesMap = map[string]interface{}{
 	"PikabuCommentIsAuthorCommunityModeratorVersion":         &PikabuCommentIsAuthorCommunityModeratorVersion{},
 	"PikabuCommentIsAuthorPikabuTeamVersion":                 &PikabuCommentIsAuthorPikabuTeamVersion{},
 	"PikabuCommentIsAuthorOfficialVersion":                   &PikabuCommentIsAuthorOfficialVersion{},
+	"PikabuCommentIsRatingHiddenVersion":                     &PikabuCommentIsRatingHiddenVersion{},
 	"PikabuCommunityNameVersion":                             &PikabuCommunityNameVersion{},
 	"PikabuCommunityLinkNameVersion":                         &PikabuCommunityLinkNameVersion{},
 	"PikabuCommunityURLVersion":                              &PikabuCommunityURLVersion{},
@@ -698,6 +705,7 @@ var FieldsVersionAPITablesMap = map[string]interface{}{
 	"PikabuCommentIsAuthorCommunityModeratorVersion":         []PikabuCommentIsAuthorCommunityModeratorVersion{},
 	"PikabuCommentIsAuthorPikabuTeamVersion":                 []PikabuCommentIsAuthorPikabuTeamVersion{},
 	"PikabuCommentIsAuthorOfficialVersion":                   []PikabuCommentIsAuthorOfficialVersion{},
+	"PikabuCommentIsRatingHiddenVersion":                     []PikabuCommentIsRatingHiddenVersion{},
 	"PikabuCommunityNameVersion":                             []PikabuCommunityNameVersion{},
 	"PikabuCommunityLinkNameVersion":                         []PikabuCommunityLinkNameVersion{},
 	"PikabuCommunityURLVersion":                              []PikabuCommunityURLVersion{},
@@ -798,6 +806,7 @@ func init() {
 		&PikabuCommentIsAuthorCommunityModeratorVersion{},
 		&PikabuCommentIsAuthorPikabuTeamVersion{},
 		&PikabuCommentIsAuthorOfficialVersion{},
+		&PikabuCommentIsRatingHiddenVersion{},
 		&PikabuCommunityNameVersion{},
 		&PikabuCommunityLinkNameVersion{},
 		&PikabuCommunityURLVersion{},
