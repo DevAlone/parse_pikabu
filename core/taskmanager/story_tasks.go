@@ -18,6 +18,7 @@ func storyTasksWorker() error {
 		addMissingStoriesWorker,
 		addNewStoriesWorker,
 		updateStoriesWorker,
+		updateDeletedOrNeverExistedStoriesWorker,
 	} {
 		wg.Add(1)
 		go func(handler func() error) {
@@ -48,7 +49,48 @@ func addMissingStoriesWorker() error {
 			continue
 		}
 
-		// TODO: parse gaps
+		// parse gaps
+		for offset := uint64(0); true; {
+			var gaps []struct {
+				GapStart uint64
+				GapEnd   uint64
+			}
+
+			_, err := models.Db.Query(&gaps, `
+SELECT
+	pikabu_id + 1 as gap_start,
+	next_nr - 1 as gap_end
+FROM (
+	SELECT 
+		pikabu_id,
+		lead(pikabu_id)
+	OVER (ORDER BY pikabu_id) as next_nr
+	FROM pikabu_stories
+	WHERE pikabu_id > ?
+) nr
+WHERE pikabu_id + 1 <> next_nr LIMIT 10;
+			`)
+			if err == pg.ErrNoRows {
+				break
+			} else if err != nil {
+				return errors.New(err)
+			}
+
+			for _, gap := range gaps {
+				if gap.GapEnd > offset {
+					offset = gap.GapEnd
+				} else {
+					offset++
+				}
+
+				for i := gap.GapStart; i <= gap.GapEnd; i++ {
+					err := AddParseStoryTaskIfNotExists(i, ParseDeletedOrNeverExistedStoryTask)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
 
 		time.Sleep(time.Duration(config.Settings.WaitBeforeAddingNewStoryTasksSeconds) * time.Second)
 	}
@@ -123,10 +165,16 @@ func updateStoriesWorker() error {
 				return err
 			}
 		}
+	}
+}
+
+func updateDeletedOrNeverExistedStoriesWorker() error {
+	for {
+		time.Sleep(time.Duration(config.Settings.WaitBeforeAddingNewStoryTasksSeconds) * time.Second)
 
 		// deletedOrNeverExistedStoriesToUpdate
 		var deletedOrNeverExistedStoriesToUpdate []models.PikabuDeletedOrNeverExistedStory
-		err = models.Db.Model(&deletedOrNeverExistedStoriesToUpdate).
+		err := models.Db.Model(&deletedOrNeverExistedStoriesToUpdate).
 			Where("next_update_timestamp < ? AND task_taken_at_timestamp > ?", time.Now().Unix(), time.Now().Unix()-int64(config.Settings.MaximumParseStoryTaskProcessingTime)).
 			Limit(config.Settings.GetItemsToUpdateAtTime).
 			Select()
@@ -144,6 +192,15 @@ func updateStoriesWorker() error {
 
 // AddParseStoryTask queues task for parsing story
 func AddParseStoryTask(pikabuID uint64, taskType int) error {
+	return _AddParseStoryTask(pikabuID, taskType, false)
+}
+
+// AddParseStoryTaskIfNotExists queues task for parsing story
+func AddParseStoryTaskIfNotExists(pikabuID uint64, taskType int) error {
+	return _AddParseStoryTask(pikabuID, taskType, true)
+}
+
+func _AddParseStoryTask(pikabuID uint64, taskType int, ignoreIfExists bool) error {
 	timestamp := models.TimestampType(time.Now().Unix())
 
 	story := models.PikabuStory{
@@ -153,8 +210,12 @@ func AddParseStoryTask(pikabuID uint64, taskType int) error {
 	if err != pg.ErrNoRows && err != nil {
 		return errors.New(err)
 	}
+
 	if err == nil {
 		// story exists
+		if ignoreIfExists {
+			return nil
+		}
 
 		// ignore recently added tasks
 		if story.TaskTakenAtTimestamp+models.TimestampType(config.Settings.MaximumParseStoryTaskProcessingTime) >= timestamp {
@@ -178,6 +239,9 @@ func AddParseStoryTask(pikabuID uint64, taskType int) error {
 		}
 		if err == nil {
 			// deletedOrNeverExistedStory exists
+			if ignoreIfExists {
+				return nil
+			}
 
 			// ignore recently added tasks
 			if deletedOrNeverExistedStory.TaskTakenAtTimestamp+models.TimestampType(config.Settings.MaximumParseStoryTaskProcessingTime) >= timestamp {

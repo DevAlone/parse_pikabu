@@ -55,32 +55,23 @@ FROM (
     FROM pikabu_users
     WHERE pikabu_id > ?
 ) nr 
-WHERE pikabu_id + 1 <> next_nr LIMIT 10;
+WHERE pikabu_id + 1 <> next_nr LIMIT 128;
 `, offset)
 			if err == pg.ErrNoRows {
-				continue
+				break
 			} else if err != nil {
-				return err
+				return errors.New(err)
 			}
 
 			for _, gap := range gaps {
 				if gap.GapEnd > offset {
 					offset = gap.GapEnd
+				} else {
+					offset++
 				}
 
 				for i := gap.GapStart; i <= gap.GapEnd; i++ {
-					deletedUser := models.PikabuDeletedOrNeverExistedUser{
-						PikabuID:            i,
-						LastUpdateTimestamp: 0,
-						NextUpdateTimestamp: 0,
-					}
-					_, err := models.Db.Model(&deletedUser).
-						OnConflict("(pikabu_id) DO NOTHING").
-						Insert()
-					if err != nil {
-						return errors.New(err)
-					}
-					err = AddParseUserTaskIfNotExists(deletedUser.PikabuID, "", ParseNewUserTask)
+					err = AddParseUserTaskIfNotExists(i, "", ParseNewUserTask)
 					if err != nil {
 						return err
 					}
@@ -277,6 +268,7 @@ func AddParseUserTaskIfNotExists(pikabuID uint64, username string, taskType int)
 	if err != pg.ErrNoRows && err != nil {
 		return errors.New(err)
 	}
+	// deletedOrNeverExistedUser entry found
 	if err == nil {
 		return nil
 	}
