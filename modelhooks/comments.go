@@ -18,14 +18,10 @@ type commentModelChange struct {
 	ChangeTime models.TimestampType
 }
 
-var commentModelChanges = make(chan *commentModelChange, 1024)
+var commentModelChanges = make(chan *commentModelChange)
 
 // HandlePikabuCommentChange - it's called when some comment is changed
 func HandlePikabuCommentChange(prev, curr models.PikabuComment, changeTime models.TimestampType) {
-	go handlePikabuCommentChange(prev, curr, changeTime)
-}
-
-func handlePikabuCommentChange(prev, curr models.PikabuComment, changeTime models.TimestampType) {
 	commentModelChanges <- &commentModelChange{
 		PrevState:  prev,
 		CurrState:  curr,
@@ -46,7 +42,6 @@ func RunTelegramNotifier() error {
 	}
 
 	for commentChange := range commentModelChanges {
-		fmt.Println("commentChange")
 		if commentChange.PrevState.IsDeleted != commentChange.CurrState.IsDeleted {
 			messages := createCommentsChangedTgMessage(commentChange, config.Settings.Pikabu18BotDeletedChat)
 			for _, message := range messages {
