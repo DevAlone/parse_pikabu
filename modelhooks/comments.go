@@ -43,8 +43,6 @@ func RunTelegramNotifier() error {
 
 	for commentChange := range commentModelChanges {
 		if commentChange.PrevState.IsDeleted != commentChange.CurrState.IsDeleted {
-			fmt.Println("sending to chat '" + config.Settings.Pikabu18BotDeletedChat + "'")
-			fmt.Println("token is '" + config.Settings.Pikabu18BotToken + "'")
 			messages := createCommentsChangedTgMessage(commentChange, config.Settings.Pikabu18BotDeletedChat)
 			for _, message := range messages {
 				recipient, err := bot.ChatByID(config.Settings.Pikabu18BotDeletedChat)
