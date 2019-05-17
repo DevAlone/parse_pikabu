@@ -47,12 +47,11 @@ func RunTelegramNotifier() error {
 			fmt.Println("token is '" + config.Settings.Pikabu18BotToken + "'")
 			messages := createCommentsChangedTgMessage(commentChange, config.Settings.Pikabu18BotDeletedChat)
 			for _, message := range messages {
-				recipient := &tb.Chat{
-					ID:       0,
-					Type:     tb.ChatChannel,
-					Username: config.Settings.Pikabu18BotDeletedChat,
+				recipient, err := bot.ChatByID(config.Settings.Pikabu18BotDeletedChat)
+				if err != nil {
+					return errors.New(err)
 				}
-				_, err := bot.Send(recipient, message)
+				_, err = bot.Send(recipient, message)
 				if err != nil {
 					return errors.New(err)
 				}
