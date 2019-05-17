@@ -64,6 +64,18 @@ func Main() {
 		wg.Done()
 	}()
 
+	modelhooks.HandlePikabuCommentChange(
+		models.PikabuComment{
+			Text:      "test1",
+			IsDeleted: false,
+		},
+		models.PikabuComment{
+			Text:      "test2",
+			IsDeleted: true,
+		},
+		models.TimestampType(0),
+	)
+
 	wg.Wait()
 
 	logger.Cleanup()
