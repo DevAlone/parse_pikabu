@@ -3,6 +3,7 @@ package resultsprocessor
 import (
 	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
+	"bitbucket.org/d3dev/parse_pikabu/modelhooks"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
@@ -108,6 +109,8 @@ func processComment(parsingTimestamp models.TimestampType, commentData *pikago_m
 	} else if err != nil {
 		return errors.New(err)
 	}
+
+	modelhooks.HandlePikabuCommentChange(*comment, *newComment, parsingTimestamp)
 
 	wasDataChanged, err := processModelFieldsVersions(nil, comment, newComment, parsingTimestamp)
 	if _, ok := err.(OldParserResultError); ok {

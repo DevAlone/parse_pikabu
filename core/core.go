@@ -9,6 +9,7 @@ import (
 	"bitbucket.org/d3dev/parse_pikabu/core/statistics"
 	"bitbucket.org/d3dev/parse_pikabu/core/taskmanager"
 	"bitbucket.org/d3dev/parse_pikabu/helpers"
+	"bitbucket.org/d3dev/parse_pikabu/modelhooks"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 )
 
@@ -51,6 +52,14 @@ func Main() {
 	// statistics
 	go func() {
 		err := statistics.Run()
+		helpers.PanicOnError(err)
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	// start telegram notifier
+	go func() {
+		err := modelhooks.RunTelegramNotifier()
 		helpers.PanicOnError(err)
 		wg.Done()
 	}()

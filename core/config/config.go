@@ -13,6 +13,7 @@ var Settings struct {
 	ProxyProviderClientTimeout int
 	ProxyProviderBaseURL       string
 	Pikabu18BotToken           string
+	Pikabu18BotDeletedChat     string
 	ServerListeningAddress     string
 	AMQPAddress                string
 	// in seconds
@@ -69,6 +70,7 @@ func init() {
 	Settings.ProxyProviderClientTimeout = 60
 	Settings.ProxyProviderBaseURL = ""
 	Settings.Pikabu18BotToken = ""
+	Settings.Pikabu18BotDeletedChat = ""
 	Settings.ServerListeningAddress = "0.0.0.0:8080"
 	Settings.AMQPAddress = "amqp://guest:guest@localhost:5672/"
 	Settings.MaximumParseUserTaskProcessingTime = 5 * 60
