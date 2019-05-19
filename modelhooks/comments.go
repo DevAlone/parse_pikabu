@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
 	"bitbucket.org/d3dev/parse_pikabu/models"
@@ -20,12 +21,27 @@ type commentModelChange struct {
 
 var commentModelChanges = make(chan *commentModelChange)
 
+type commentModelCreate struct {
+	Data       models.PikabuComment
+	CreateTime models.TimestampType
+}
+
+var commentModelCreates = make(chan *commentModelCreate)
+
 // HandlePikabuCommentChange - it's called when some comment is changed
 func HandlePikabuCommentChange(prev, curr models.PikabuComment, changeTime models.TimestampType) {
 	commentModelChanges <- &commentModelChange{
 		PrevState:  prev,
 		CurrState:  curr,
 		ChangeTime: changeTime,
+	}
+}
+
+// HandlePikabuCommentCreate - it's called when some comment is changed
+func HandlePikabuCommentCreate(model models.PikabuComment, timestamp models.TimestampType) {
+	commentModelCreates <- &commentModelCreate{
+		Data:       model,
+		CreateTime: timestamp,
 	}
 }
 
@@ -41,24 +57,38 @@ func RunTelegramNotifier() error {
 		return errors.New(err)
 	}
 
-	for commentChange := range commentModelChanges {
-		if commentChange.PrevState.IsDeleted != commentChange.CurrState.IsDeleted {
-			messages := createCommentsChangedTgMessage(commentChange, config.Settings.Pikabu18BotDeletedChat)
-			for _, message := range messages {
-				recipient, err := bot.ChatByID(config.Settings.Pikabu18BotDeletedChat)
-				if err != nil {
-					return errors.New(err)
-				}
-				_, err = bot.Send(recipient, message)
-				if err != nil {
-					return errors.New(err)
+	for {
+		select {
+		case commentChange := <-commentModelChanges:
+			if commentChange.PrevState.IsDeleted != commentChange.CurrState.IsDeleted {
+				messages := createCommentsChangedTgMessage(commentChange, config.Settings.Pikabu18BotDeletedChat)
+				for _, message := range messages {
+					recipient, err := bot.ChatByID(config.Settings.Pikabu18BotDeletedChat)
+					if err != nil {
+						return errors.New(err)
+					}
+					_, err = bot.Send(recipient, message)
+					if err != nil {
+						return errors.New(err)
+					}
 				}
 			}
-
+		case commentCreate := <-commentModelCreates:
+			if commentCreate.Data.IsDeleted {
+				messages := commentToMessages(&commentCreate.Data, config.Settings.Pikabu18BotDeletedAtFirstParsingChat)
+				for _, message := range messages {
+					recipient, err := bot.ChatByID(config.Settings.Pikabu18BotDeletedAtFirstParsingChat)
+					if err != nil {
+						return errors.New(err)
+					}
+					_, err = bot.Send(recipient, message)
+					if err != nil {
+						return errors.New(err)
+					}
+				}
+			}
 		}
 	}
-
-	return nil
 }
 
 func createCommentsChangedTgMessage(
@@ -84,7 +114,8 @@ func commentToMessages(
 ) []interface{} {
 	result := []interface{}{}
 
-	text := "Автор: " + comment.AuthorUsername + "\n"
+	text := "Дата: " + fmt.Sprint(time.Unix(int64(comment.CreatedAtTimestamp), 0)) + "\n"
+	text += "Автор: " + comment.AuthorUsername + "\n"
 	text += "Текст: " + comment.Text + "\n"
 	text += "Ссылка: https://pikabu.ru/story/_" + fmt.Sprint(comment.StoryID) + "?cid=" + fmt.Sprint(comment.PikabuID) + "\n"
 	text += "Удалён: " + fmt.Sprint(comment.IsDeleted) + "\n"

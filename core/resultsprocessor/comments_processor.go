@@ -101,6 +101,7 @@ func processComment(parsingTimestamp models.TimestampType, commentData *pikago_m
 	err = models.Db.Select(comment)
 
 	if err == pg.ErrNoRows {
+		modelhooks.HandlePikabuCommentCreate(*comment, parsingTimestamp)
 		err := models.Db.Insert(newComment)
 		if err != nil {
 			return errors.New(err)

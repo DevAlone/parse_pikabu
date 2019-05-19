@@ -7,15 +7,16 @@ import (
 
 // Settings is struct for global settings of app
 var Settings struct {
-	Debug                      bool
-	LogSQLQueries              bool
-	Database                   map[string]string
-	ProxyProviderClientTimeout int
-	ProxyProviderBaseURL       string
-	Pikabu18BotToken           string
-	Pikabu18BotDeletedChat     string
-	ServerListeningAddress     string
-	AMQPAddress                string
+	Debug                                bool
+	LogSQLQueries                        bool
+	Database                             map[string]string
+	ProxyProviderClientTimeout           int
+	ProxyProviderBaseURL                 string
+	Pikabu18BotToken                     string
+	Pikabu18BotDeletedChat               string
+	Pikabu18BotDeletedAtFirstParsingChat string
+	ServerListeningAddress               string
+	AMQPAddress                          string
 	// in seconds
 	MaximumParseUserTaskProcessingTime  int
 	MaximumParseStoryTaskProcessingTime int
@@ -71,6 +72,7 @@ func init() {
 	Settings.ProxyProviderBaseURL = ""
 	Settings.Pikabu18BotToken = ""
 	Settings.Pikabu18BotDeletedChat = ""
+	Settings.Pikabu18BotDeletedAtFirstParsingChat = ""
 	Settings.ServerListeningAddress = "0.0.0.0:8080"
 	Settings.AMQPAddress = "amqp://guest:guest@localhost:5672/"
 	Settings.MaximumParseUserTaskProcessingTime = 5 * 60
