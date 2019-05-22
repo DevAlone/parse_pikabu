@@ -74,7 +74,9 @@ func RunTelegramNotifier() error {
 				}
 			}
 		case commentCreate := <-commentModelCreates:
+			fmt.Println("processing new comment ", commentCreate.Data.PikabuID)
 			if commentCreate.Data.IsDeleted {
+				fmt.Println("processing new deleted comment ", commentCreate.Data.PikabuID)
 				messages := commentToMessages(&commentCreate.Data, config.Settings.Pikabu18BotDeletedAtFirstParsingChat)
 				for _, message := range messages {
 					recipient, err := bot.ChatByID(config.Settings.Pikabu18BotDeletedAtFirstParsingChat)
