@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"bitbucket.org/d3dev/parse_pikabu/core/config"
+	"bitbucket.org/d3dev/parse_pikabu/core/logger"
 	"bitbucket.org/d3dev/parse_pikabu/models"
 	"github.com/go-errors/errors"
 
@@ -75,7 +76,7 @@ func RunTelegramNotifier() error {
 			}
 		case commentCreate := <-commentModelCreates:
 			if commentCreate.Data.IsDeleted {
-				fmt.Println("processing new deleted comment ", commentCreate.Data.PikabuID)
+				logger.Log.Debugf("processing new deleted comment %+v\n", commentCreate.Data)
 				messages := commentToMessages(&commentCreate.Data, config.Settings.Pikabu18BotDeletedAtFirstParsingChat)
 				for _, message := range messages {
 					recipient, err := bot.ChatByID(config.Settings.Pikabu18BotDeletedAtFirstParsingChat)

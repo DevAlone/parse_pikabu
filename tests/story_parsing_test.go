@@ -450,7 +450,7 @@ func TestStoryDataIsNil(t *testing.T) {
 
 	for {
 		/* create task for parsing story number 59 */
-		err := taskmanager.ForceAddParseStoryTask(59)
+		err := taskmanager.ForceAddParseStoryTask(59, taskmanager.ParseNewStoryTask)
 		helpers.PanicOnError(err)
 
 		time.Sleep(1 * time.Second)
