@@ -40,10 +40,20 @@ func addMissingStoriesWorker() error {
 		}
 		if count == 0 {
 			// init database
-			storyID := uint64(6579293)
-			err := AddParseStoryTask(storyID, ParseNewStoryTask)
-			if err != nil {
-				return err
+			for _, storyID := range []uint64{
+				6579296,
+				6579295,
+				6579294,
+				6579293,
+				6579292,
+				6579291,
+				6579290,
+			} {
+				err := AddParseStoryTask(storyID, ParseNewStoryTask)
+				if err != nil {
+					return err
+				}
+
 			}
 			time.Sleep(time.Duration(config.Settings.WaitBeforeAddingNewStoryTasksSeconds) * time.Second)
 			continue

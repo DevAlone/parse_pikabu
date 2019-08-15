@@ -29,6 +29,9 @@ type PikabuComment struct {
 	AuthorUsername         string               `sql:",notnull" json:"author_username" gen_versions:""`
 	AuthorGender           int32                `sql:",notnull" json:"author_gender" gen_versions:""`
 	AuthorAvatarURL        string               `sql:",notnull" json:"author_avatar_url" gen_versions:""`
+	IgnoreCode             int32                `sql:",notnull" json:"ignore_code" gen_versions:""`
+	IsIgnoredBySomeone     bool                 `sql:",notnull" json:"is_ignored_by_someone" gen_versions:""`
+	IgnoredBy              []string             `sql:",notnull" json:"ignored_by" gen_versions:""`
 	IsAuthorProfileDeleted bool                 `sql:",notnull" json:"is_author_profile_deleted" gen_versions:""`
 	IsDeleted              bool                 `sql:",notnull" json:"is_deleted" gen_versions:""`
 
