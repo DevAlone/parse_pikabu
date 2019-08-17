@@ -105,6 +105,25 @@ func createSchema() error {
 	return nil
 }
 
+// GetIndexQueries - returns queries to create indices
+func GetIndexQueries() []string {
+	result := []string{}
+	for _, query := range createIndexQueries {
+		query = strings.TrimSpace(query)
+		if len(query) == 0 {
+			continue
+		}
+		if strings.HasPrefix(query, "CREATE INDEX") {
+			query = "CREATE INDEX CONCURRENTLY" + query[len("CREATE INDEX"):]
+		} else {
+			panic("something's wrong")
+		}
+		query += ";"
+		result = append(result, query)
+	}
+	return result
+}
+
 func addIndex(tableName string, _columns interface{}, method string) {
 	_addIndex(tableName, _columns, method, false)
 }

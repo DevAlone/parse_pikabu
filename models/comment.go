@@ -60,6 +60,29 @@ func init() {
 		&PikabuDeletedOrNeverExistedComment{},
 	}...)
 
+	addIndex("pikabu_comments", "parent_id", "")
+	// TODO: addIndex("pikabu_comments", "parent_id", "hash") ?
+	addIndex("pikabu_comments", "created_at_timestamp", "")
+	// TODO: Text                   ?
+	// TODO: Images                ?
+	addIndex("pikabu_comments", "rating", "")
+	addIndex("pikabu_comments", "number_of_pluses", "")
+	addIndex("pikabu_comments", "number_of_minuses", "")
+	addIndex("pikabu_comments", "story_id", "")
+	// TODO: StoryTitle      ?
+	addIndex("pikabu_comments", "author_id", "")
+	addIndex("pikabu_comments", "author_username", "")
+	// TODO: AuthorGender  ?
+	addIndex("pikabu_comments", "ignore_code", "")
+	addIndex("pikabu_comments", "is_ignored_by_someone", "")
+	// TODO: IgnoredBy ?
+	addIndex("pikabu_comments", "is_author_profile_deleted", "")
+	addIndex("pikabu_comments", "is_deleted", "")
+	addIndex("pikabu_comments", "is_author_community_moderator", "")
+	addIndex("pikabu_comments", "is_author_pikabu_team", "")
+	addIndex("pikabu_comments", "is_author_official", "")
+	addIndex("pikabu_comments", "is_rating_hidden", "")
+
 	addIndex("pikabu_comments", "added_timestamp", "")
 	addIndex("pikabu_comments", "last_update_timestamp", "")
 	addIndex("pikabu_comments", "next_update_timestamp", "")

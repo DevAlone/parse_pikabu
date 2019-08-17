@@ -53,6 +53,24 @@ func init() {
 		&PikabuDeletedOrNeverExistedStory{},
 	}...)
 
+	addIndex("pikabu_stories", "rating", "")
+	addIndex("pikabu_stories", "number_of_pluses", "")
+	addIndex("pikabu_stories", "number_of_minuses", "")
+	// TODO: addIndex("pikabu_stories", "title", "") ?
+	addIndex("pikabu_stories", "created_at_timestamp", "")
+	addIndex("pikabu_stories", "number_of_comments", "")
+	addIndex("pikabu_stories", "is_deleted", "")
+	addIndex("pikabu_stories", "is_rating_hidden", "")
+	addIndex("pikabu_stories", "has_mine_tag", "")
+	addIndex("pikabu_stories", "has_adult_tag", "")
+	addIndex("pikabu_stories", "is_longpost", "")
+	addIndex("pikabu_stories", "author_id", "")
+	// addIndex("pikabu_stories", "author_username", "hash")
+	addIndex("pikabu_stories", "LOWER(author_username)", "hash")
+	addIndex("pikabu_stories", "LOWER(community_link)", "hash")
+	// addIndex("pikabu_stories", "community_name", "")
+	addIndex("pikabu_stories", "comments_are_hot", "")
+
 	addIndex("pikabu_stories", "added_timestamp", "")
 	addIndex("pikabu_stories", "last_update_timestamp", "")
 	addIndex("pikabu_stories", "next_update_timestamp", "")

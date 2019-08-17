@@ -59,6 +59,14 @@ var commands = map[string]func(){
 			helpers.PanicOnError(err)
 		}
 	},
+	"print_index_queries": func() {
+		logger.Init()
+
+		queries := models.GetIndexQueries()
+		for _, query := range queries {
+			fmt.Println(query)
+		}
+	},
 	"add_parser": func() {
 		redisClient := helpers.GetRedisClient()
 		if len(os.Args) < 2 {
