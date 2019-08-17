@@ -1,7 +1,7 @@
 package models
 
 // generated code, do not touch!
-// generated at timestamp 2019-05-09 21:16:04.961946775 &#43;0000 UTC m=&#43;0.002691859
+// generated at timestamp 2019-08-17 18:00:11.997383548 &#43;0000 UTC m=&#43;0.020272987
 
 type PikabuCommentParentIDVersion struct {
 	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
@@ -85,6 +85,24 @@ type PikabuCommentAuthorAvatarURLVersion struct {
 	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
 	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
 	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentIgnoreCodeVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int32         `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentIsIgnoredBySomeoneVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     bool          `sql:",notnull" json:"value" api:"order,filter"`
+}
+
+type PikabuCommentIgnoredByVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     []string      `sql:",notnull" json:"value" api:"order,filter"`
 }
 
 type PikabuCommentIsAuthorProfileDeletedVersion struct {
@@ -600,6 +618,9 @@ var FieldsVersionTablesMap = map[string]interface{}{
 	"PikabuCommentAuthorUsernameVersion":                     &PikabuCommentAuthorUsernameVersion{},
 	"PikabuCommentAuthorGenderVersion":                       &PikabuCommentAuthorGenderVersion{},
 	"PikabuCommentAuthorAvatarURLVersion":                    &PikabuCommentAuthorAvatarURLVersion{},
+	"PikabuCommentIgnoreCodeVersion":                         &PikabuCommentIgnoreCodeVersion{},
+	"PikabuCommentIsIgnoredBySomeoneVersion":                 &PikabuCommentIsIgnoredBySomeoneVersion{},
+	"PikabuCommentIgnoredByVersion":                          &PikabuCommentIgnoredByVersion{},
 	"PikabuCommentIsAuthorProfileDeletedVersion":             &PikabuCommentIsAuthorProfileDeletedVersion{},
 	"PikabuCommentIsDeletedVersion":                          &PikabuCommentIsDeletedVersion{},
 	"PikabuCommentIsAuthorCommunityModeratorVersion":         &PikabuCommentIsAuthorCommunityModeratorVersion{},
@@ -700,6 +721,9 @@ var FieldsVersionAPITablesMap = map[string]interface{}{
 	"PikabuCommentAuthorUsernameVersion":                     []PikabuCommentAuthorUsernameVersion{},
 	"PikabuCommentAuthorGenderVersion":                       []PikabuCommentAuthorGenderVersion{},
 	"PikabuCommentAuthorAvatarURLVersion":                    []PikabuCommentAuthorAvatarURLVersion{},
+	"PikabuCommentIgnoreCodeVersion":                         []PikabuCommentIgnoreCodeVersion{},
+	"PikabuCommentIsIgnoredBySomeoneVersion":                 []PikabuCommentIsIgnoredBySomeoneVersion{},
+	"PikabuCommentIgnoredByVersion":                          []PikabuCommentIgnoredByVersion{},
 	"PikabuCommentIsAuthorProfileDeletedVersion":             []PikabuCommentIsAuthorProfileDeletedVersion{},
 	"PikabuCommentIsDeletedVersion":                          []PikabuCommentIsDeletedVersion{},
 	"PikabuCommentIsAuthorCommunityModeratorVersion":         []PikabuCommentIsAuthorCommunityModeratorVersion{},
@@ -801,6 +825,9 @@ func init() {
 		&PikabuCommentAuthorUsernameVersion{},
 		&PikabuCommentAuthorGenderVersion{},
 		&PikabuCommentAuthorAvatarURLVersion{},
+		&PikabuCommentIgnoreCodeVersion{},
+		&PikabuCommentIsIgnoredBySomeoneVersion{},
+		&PikabuCommentIgnoredByVersion{},
 		&PikabuCommentIsAuthorProfileDeletedVersion{},
 		&PikabuCommentIsDeletedVersion{},
 		&PikabuCommentIsAuthorCommunityModeratorVersion{},
