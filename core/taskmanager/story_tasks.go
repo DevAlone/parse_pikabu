@@ -185,7 +185,7 @@ func updateDeletedOrNeverExistedStoriesWorker() error {
 		// deletedOrNeverExistedStoriesToUpdate
 		var deletedOrNeverExistedStoriesToUpdate []models.PikabuDeletedOrNeverExistedStory
 		err := models.Db.Model(&deletedOrNeverExistedStoriesToUpdate).
-			Where("next_update_timestamp < ? AND task_taken_at_timestamp > ?", time.Now().Unix(), time.Now().Unix()-int64(config.Settings.MaximumParseStoryTaskProcessingTime)).
+			Where("next_update_timestamp < ? AND task_taken_at_timestamp < ?", time.Now().Unix(), time.Now().Unix()-int64(config.Settings.MaximumParseStoryTaskProcessingTime)).
 			Limit(config.Settings.GetItemsToUpdateAtTime).
 			Select()
 		if err != pg.ErrNoRows && err != nil {
