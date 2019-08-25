@@ -36,6 +36,7 @@ var Settings struct {
 	WaitBeforeAddingNewUserTasksSeconds  int
 	WaitBeforeAddingNewStoryTasksSeconds int
 	AddNewUsersEachNMinutes              int
+	UpdateUsersEachNSeconds              int
 
 	UpdateUserTaskImportance                      uint
 	ParseNewUserTaskImportance                    uint
@@ -91,6 +92,7 @@ func init() {
 	Settings.WaitBeforeAddingNewUserTasksSeconds = 60
 	Settings.WaitBeforeAddingNewStoryTasksSeconds = 60
 	Settings.AddNewUsersEachNMinutes = 10
+	Settings.UpdateUsersEachNSeconds = 30
 
 	Settings.UpdateUserTaskImportance = 100
 	Settings.ParseNewUserTaskImportance = 10

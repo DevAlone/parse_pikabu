@@ -155,7 +155,7 @@ func addNewUsersWorker() error {
 
 func updateUsersWorker() error {
 	for {
-		time.Sleep(30 * time.Second)
+		time.Sleep(time.Duration(config.Settings.UpdateUsersEachNSeconds) * time.Second)
 
 		// update users
 		usersToUpdate := []models.PikabuUser{}
