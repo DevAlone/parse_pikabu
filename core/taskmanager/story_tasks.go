@@ -102,7 +102,7 @@ WHERE pikabu_id + 1 <> next_nr LIMIT 10;
 			}
 		}
 
-		time.Sleep(time.Duration(config.Settings.WaitBeforeAddingNewStoryTasksSeconds) * time.Second)
+		time.Sleep(60 * time.Minute)
 	}
 }
 

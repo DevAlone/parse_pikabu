@@ -88,7 +88,7 @@ func init() {
 	Settings.NumberOfTasksProcessorsMultiplier = 4
 	Settings.NumberOfNewUsersGap = 1024
 	Settings.NumberOfNewStoriesGap = 1024
-	Settings.WaitBeforeAddingNewUserTasksSeconds = 10
+	Settings.WaitBeforeAddingNewUserTasksSeconds = 60
 	Settings.WaitBeforeAddingNewStoryTasksSeconds = 60
 	Settings.AddNewUsersEachNMinutes = 10
 

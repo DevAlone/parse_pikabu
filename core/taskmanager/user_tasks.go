@@ -79,7 +79,7 @@ WHERE pikabu_id + 1 <> next_nr LIMIT 128;
 			}
 		}
 
-		time.Sleep(30 * time.Minute)
+		time.Sleep(6 * time.Hour)
 	}
 }
 
@@ -155,7 +155,7 @@ func addNewUsersWorker() error {
 
 func updateUsersWorker() error {
 	for {
-		time.Sleep(1 * time.Minute)
+		time.Sleep(30 * time.Second)
 
 		// update users
 		usersToUpdate := []models.PikabuUser{}
