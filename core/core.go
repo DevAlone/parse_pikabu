@@ -3,14 +3,14 @@ package core
 import (
 	"sync"
 
-	"bitbucket.org/d3dev/parse_pikabu/core/logger"
-	"bitbucket.org/d3dev/parse_pikabu/core/resultsprocessor"
-	"bitbucket.org/d3dev/parse_pikabu/core/server"
-	"bitbucket.org/d3dev/parse_pikabu/core/statistics"
-	"bitbucket.org/d3dev/parse_pikabu/core/taskmanager"
-	"bitbucket.org/d3dev/parse_pikabu/helpers"
-	"bitbucket.org/d3dev/parse_pikabu/modelhooks"
-	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/DevAlone/parse_pikabu/core/logger"
+	"github.com/DevAlone/parse_pikabu/core/resultsprocessor"
+	"github.com/DevAlone/parse_pikabu/core/server"
+	"github.com/DevAlone/parse_pikabu/core/statistics"
+	"github.com/DevAlone/parse_pikabu/core/taskmanager"
+	"github.com/DevAlone/parse_pikabu/helpers"
+	"github.com/DevAlone/parse_pikabu/modelhooks"
+	"github.com/DevAlone/parse_pikabu/models"
 )
 
 // Main - entry point for core of the project

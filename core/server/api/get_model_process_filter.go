@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strings"
 
-	"bitbucket.org/d3dev/parse_pikabu/core/logger"
+	"github.com/DevAlone/parse_pikabu/core/logger"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg/orm"
 	"github.com/google/cel-go/checker"

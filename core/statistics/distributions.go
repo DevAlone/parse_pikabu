@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"bitbucket.org/d3dev/parse_pikabu/core/logger"
-	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/DevAlone/parse_pikabu/core/logger"
+	"github.com/DevAlone/parse_pikabu/models"
 	"github.com/go-errors/errors"
 	"github.com/iancoleman/strcase"
 )

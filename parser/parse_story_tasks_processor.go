@@ -3,7 +3,7 @@ package parser
 import (
 	"strings"
 
-	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/DevAlone/parse_pikabu/models"
 	"gogsweb.2-47.ru/d3dev/pikago"
 	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )

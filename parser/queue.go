@@ -4,9 +4,9 @@ import (
 	"reflect"
 	"time"
 
-	"bitbucket.org/d3dev/parse_pikabu/globals"
+	"github.com/DevAlone/parse_pikabu/globals"
 
-	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/DevAlone/parse_pikabu/models"
 )
 
 // PutResultsToQueue - handles parser's results

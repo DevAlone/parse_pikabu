@@ -6,11 +6,11 @@ import (
 	"sync"
 	"time"
 
-	"bitbucket.org/d3dev/parse_pikabu/globals"
+	"github.com/DevAlone/parse_pikabu/globals"
 
-	"bitbucket.org/d3dev/parse_pikabu/core/config"
-	"bitbucket.org/d3dev/parse_pikabu/core/logger"
-	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/DevAlone/parse_pikabu/core/config"
+	"github.com/DevAlone/parse_pikabu/core/logger"
+	"github.com/DevAlone/parse_pikabu/models"
 	"github.com/go-errors/errors"
 	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )

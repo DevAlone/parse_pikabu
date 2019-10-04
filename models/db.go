@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"bitbucket.org/d3dev/parse_pikabu/core/config"
-	"bitbucket.org/d3dev/parse_pikabu/core/logger"
+	"github.com/DevAlone/parse_pikabu/core/config"
+	"github.com/DevAlone/parse_pikabu/core/logger"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"

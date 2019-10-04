@@ -3,7 +3,7 @@ package logger
 import (
 	"os"
 
-	"bitbucket.org/d3dev/parse_pikabu/core/config"
+	"github.com/DevAlone/parse_pikabu/core/config"
 	"github.com/go-errors/errors"
 	"github.com/sirupsen/logrus"
 )

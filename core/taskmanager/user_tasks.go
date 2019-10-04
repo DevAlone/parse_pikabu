@@ -6,9 +6,9 @@ import (
 
 	"github.com/go-errors/errors"
 
-	"bitbucket.org/d3dev/parse_pikabu/core/config"
-	"bitbucket.org/d3dev/parse_pikabu/helpers"
-	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/DevAlone/parse_pikabu/core/config"
+	"github.com/DevAlone/parse_pikabu/helpers"
+	"github.com/DevAlone/parse_pikabu/models"
 	"github.com/go-pg/pg"
 )
 

@@ -2,9 +2,9 @@
 package api
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/core/logger"
-	"bitbucket.org/d3dev/parse_pikabu/helpers"
-	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/DevAlone/parse_pikabu/core/logger"
+	"github.com/DevAlone/parse_pikabu/helpers"
+	"github.com/DevAlone/parse_pikabu/models"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-errors/errors"

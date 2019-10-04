@@ -3,8 +3,8 @@ package tests
 import (
 	"testing"
 
-	"bitbucket.org/d3dev/parse_pikabu/core/resultsprocessor"
-	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/DevAlone/parse_pikabu/core/resultsprocessor"
+	"github.com/DevAlone/parse_pikabu/models"
 	"github.com/stretchr/testify/assert"
 )
 

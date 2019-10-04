@@ -5,9 +5,9 @@ import (
 	"os"
 	"strings"
 
-	"bitbucket.org/d3dev/parse_pikabu/core/server/middlewares"
-	"bitbucket.org/d3dev/parse_pikabu/helpers"
-	"bitbucket.org/d3dev/parse_pikabu/parser"
+	"github.com/DevAlone/parse_pikabu/core/server/middlewares"
+	"github.com/DevAlone/parse_pikabu/helpers"
+	"github.com/DevAlone/parse_pikabu/parser"
 	"github.com/go-errors/errors"
 )
 

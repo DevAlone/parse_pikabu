@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/DevAlone/parse_pikabu/models"
 )
 
 type FieldT struct {

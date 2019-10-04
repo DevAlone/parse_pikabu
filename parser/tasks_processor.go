@@ -3,8 +3,8 @@ package parser
 import (
 	"time"
 
-	"bitbucket.org/d3dev/parse_pikabu/core/taskmanager"
-	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/DevAlone/parse_pikabu/core/taskmanager"
+	"github.com/DevAlone/parse_pikabu/models"
 	"github.com/go-errors/errors"
 )
 

@@ -6,10 +6,10 @@ import (
 	"sync"
 	"testing"
 
-	"bitbucket.org/d3dev/parse_pikabu/core/logger"
-	"bitbucket.org/d3dev/parse_pikabu/core/resultsprocessor"
-	"bitbucket.org/d3dev/parse_pikabu/helpers"
-	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/DevAlone/parse_pikabu/core/logger"
+	"github.com/DevAlone/parse_pikabu/core/resultsprocessor"
+	"github.com/DevAlone/parse_pikabu/helpers"
+	"github.com/DevAlone/parse_pikabu/models"
 	"github.com/go-pg/pg/orm"
 	"github.com/stretchr/testify/assert"
 )

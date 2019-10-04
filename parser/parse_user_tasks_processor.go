@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"strings"
 
-	"bitbucket.org/d3dev/parse_pikabu/helpers"
-	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/DevAlone/parse_pikabu/helpers"
+	"github.com/DevAlone/parse_pikabu/models"
 	"github.com/go-errors/errors"
 	"gogsweb.2-47.ru/d3dev/pikago"
 )

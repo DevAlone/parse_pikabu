@@ -1,7 +1,7 @@
 package taskmanager
 
 import (
-	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/DevAlone/parse_pikabu/models"
 	"github.com/go-errors/errors"
 )
 

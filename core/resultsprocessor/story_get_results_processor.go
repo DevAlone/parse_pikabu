@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"time"
 
-	"bitbucket.org/d3dev/parse_pikabu/core/logger"
-	"bitbucket.org/d3dev/parse_pikabu/helpers"
-	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/DevAlone/parse_pikabu/core/logger"
+	"github.com/DevAlone/parse_pikabu/helpers"
+	"github.com/DevAlone/parse_pikabu/models"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
 	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"

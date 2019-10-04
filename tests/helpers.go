@@ -4,11 +4,11 @@ import (
 	"os"
 	"time"
 
-	"bitbucket.org/d3dev/parse_pikabu/core/config"
-	"bitbucket.org/d3dev/parse_pikabu/core/logger"
-	"bitbucket.org/d3dev/parse_pikabu/globals"
-	"bitbucket.org/d3dev/parse_pikabu/helpers"
-	"bitbucket.org/d3dev/parse_pikabu/models"
+	"github.com/DevAlone/parse_pikabu/core/config"
+	"github.com/DevAlone/parse_pikabu/core/logger"
+	"github.com/DevAlone/parse_pikabu/globals"
+	"github.com/DevAlone/parse_pikabu/helpers"
+	"github.com/DevAlone/parse_pikabu/models"
 	"github.com/go-pg/pg/orm"
 	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )

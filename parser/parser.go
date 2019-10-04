@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"bitbucket.org/d3dev/parse_pikabu/parser/logger"
+	"github.com/DevAlone/parse_pikabu/parser/logger"
 	"github.com/go-errors/errors"
 	"gogsweb.2-47.ru/d3dev/pikago"
 )
