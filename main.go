@@ -86,12 +86,14 @@ var commands = map[string]func(){
 }
 
 func main() {
+	var err error
+
 	if len(os.Args) < 2 {
 		var commandsList string
 		for command := range commands {
 			commandsList += "\t-" + command + "\n"
 		}
-		_, err := os.Stderr.WriteString(fmt.Sprintf(`Please, specify a command.
+		_, err = os.Stderr.WriteString(fmt.Sprintf(`Please, specify a command.
 Available commands are: 
 %s
 `, commandsList))
@@ -130,7 +132,7 @@ Available commands are:
 		defer p.Stop()
 	}
 
-	err := config.UpdateSettingsFromFile(*configFilePath)
+	err = config.UpdateSettingsFromFile(*configFilePath)
 	helpers.PanicOnError(err)
 
 	err = globals.Init()

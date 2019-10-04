@@ -1,9 +1,11 @@
 package helpers
 
 import (
-	"github.com/go-redis/redis"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/go-redis/redis"
 )
 
 func GetArrayOfIntsFromRedis(key string, redisClient *redis.Client) ([]int, error) {
@@ -30,9 +32,11 @@ var redisClient *redis.Client
 func GetRedisClient() *redis.Client {
 	if redisClient == nil {
 		redisClient = redis.NewClient(&redis.Options{
-			Addr:     "localhost:6379",
-			Password: "",
-			DB:       1,
+			Addr:        "localhost:6379",
+			Password:    "",
+			DB:          1,
+			MaxRetries:  5,
+			IdleTimeout: 5 * time.Minute,
 		})
 	}
 	return redisClient

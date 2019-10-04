@@ -201,7 +201,7 @@ func AddParseUserTask(pikabuID uint64, username string, taskType int) error {
 		}
 
 		user.TaskTakenAtTimestamp = timestamp
-		_, err := models.Db.Model(user).Column("task_taken_at_timestamp = ?task_taken_at_timestamp").WherePK().Update()
+		_, err := models.Db.Model(user).Column("task_taken_at_timestamp").WherePK().Update()
 		if err != nil {
 			return errors.New(err)
 		}

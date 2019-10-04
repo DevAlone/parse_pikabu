@@ -163,9 +163,9 @@ func updateStoriesWorker() error {
 		var storiesToUpdate []models.PikabuStory
 		err := models.Db.Model(&storiesToUpdate).
 			Where(
-			    "next_update_timestamp < ? AND task_taken_at_timestamp < ?",
+				"next_update_timestamp < ? AND task_taken_at_timestamp < ?",
 				time.Now().Unix(),
-				time.Now().Unix()-int64(config.Settings.MaximumParseStoryTaskProcessingTime)
+				time.Now().Unix()-int64(config.Settings.MaximumParseStoryTaskProcessingTime),
 			).
 			Order("next_update_timestamp").
 			Limit(config.Settings.GetItemsToUpdateAtTime).
