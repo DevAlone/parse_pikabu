@@ -18,8 +18,8 @@ func userTasksWorker() error {
 	for _, f := range []func() error{
 		addMissingUsersWorker,
 		addNewUsersWorker,
-		updateDeletedOrNeverExistedUsersWorker,
 		updateUsersWorker,
+		updateDeletedOrNeverExistedUsersWorker,
 	} {
 		wg.Add(1)
 		go func(handler func() error) {
@@ -157,8 +157,7 @@ func updateUsersWorker() error {
 	for {
 		time.Sleep(time.Duration(config.Settings.UpdateUsersEachNSeconds) * time.Second)
 
-		// update users
-		usersToUpdate := []models.PikabuUser{}
+		var usersToUpdate []models.PikabuUser
 		err := models.Db.Model(&usersToUpdate).
 			Where(
 				"next_update_timestamp < ? AND task_taken_at_timestamp < ?",
@@ -166,7 +165,7 @@ func updateUsersWorker() error {
 				time.Now().Unix()-int64(config.Settings.MaximumParseUserTaskProcessingTime),
 			).
 			Order("next_update_timestamp").
-			Limit(1024).
+			Limit(config.Settings.GetItemsToUpdateAtTime).
 			Select()
 		if err != pg.ErrNoRows && err != nil {
 			return err
@@ -202,7 +201,7 @@ func AddParseUserTask(pikabuID uint64, username string, taskType int) error {
 		}
 
 		user.TaskTakenAtTimestamp = timestamp
-		_, err := models.Db.Model(user).Column("task_taken_at_timestamp").WherePK().Update()
+		_, err := models.Db.Model(user).Column("task_taken_at_timestamp = ?task_taken_at_timestamp").WherePK().Update()
 		if err != nil {
 			return errors.New(err)
 		}
