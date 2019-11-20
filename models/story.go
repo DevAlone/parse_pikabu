@@ -30,6 +30,7 @@ type PikabuStory struct {
 	AuthorAvatarURL    string             `sql:",notnull" json:"author_avatar_url" gen_versions:""`
 	CommunityLink      string             `sql:",notnull" json:"community_link" gen_versions:""`
 	CommunityName      string             `sql:",notnull" json:"community_name" gen_versions:""`
+	CommunityID        uint64             `sql:",notnull" json:"community_id" gen_versions:""`
 	CommentsAreHot     bool               `sql:",notnull" json:"comments_are_hot" gen_versions:""`
 
 	AddedTimestamp       TimestampType `sql:",notnull" json:"added_timestamp" api:"order"`

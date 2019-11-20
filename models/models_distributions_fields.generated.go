@@ -1,7 +1,7 @@
 package models
 
 // generated code, do not touch!
-// generated at timestamp 2019-08-17 18:00:13.374972211 &#43;0000 UTC m=&#43;0.003033751
+// generated at timestamp 2019-11-20 15:11:02.821591148 &#43;0000 UTC m=&#43;0.002861180
 
 type PikabuUserSignupTimestampDistribution_86400 struct {
 	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`

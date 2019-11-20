@@ -1,7 +1,7 @@
 package models
 
 // generated code, do not touch!
-// generated at timestamp 2019-08-17 18:00:11.997383548 &#43;0000 UTC m=&#43;0.020272987
+// generated at timestamp 2019-11-20 15:11:01.193546632 &#43;0000 UTC m=&#43;0.003141127
 
 type PikabuCommentParentIDVersion struct {
 	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
@@ -339,6 +339,12 @@ type PikabuStoryCommunityNameVersion struct {
 	Value     string        `sql:",notnull" json:"value" api:"order,filter"`
 }
 
+type PikabuStoryCommunityIDVersion struct {
+	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     uint64        `sql:",notnull" json:"value" api:"order,filter"`
+}
+
 type PikabuStoryCommentsAreHotVersion struct {
 	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
 	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
@@ -660,6 +666,7 @@ var FieldsVersionTablesMap = map[string]interface{}{
 	"PikabuStoryAuthorAvatarURLVersion":                      &PikabuStoryAuthorAvatarURLVersion{},
 	"PikabuStoryCommunityLinkVersion":                        &PikabuStoryCommunityLinkVersion{},
 	"PikabuStoryCommunityNameVersion":                        &PikabuStoryCommunityNameVersion{},
+	"PikabuStoryCommunityIDVersion":                          &PikabuStoryCommunityIDVersion{},
 	"PikabuStoryCommentsAreHotVersion":                       &PikabuStoryCommentsAreHotVersion{},
 	"PikabuUserUsernameVersion":                              &PikabuUserUsernameVersion{},
 	"PikabuUserGenderVersion":                                &PikabuUserGenderVersion{},
@@ -763,6 +770,7 @@ var FieldsVersionAPITablesMap = map[string]interface{}{
 	"PikabuStoryAuthorAvatarURLVersion":                      []PikabuStoryAuthorAvatarURLVersion{},
 	"PikabuStoryCommunityLinkVersion":                        []PikabuStoryCommunityLinkVersion{},
 	"PikabuStoryCommunityNameVersion":                        []PikabuStoryCommunityNameVersion{},
+	"PikabuStoryCommunityIDVersion":                          []PikabuStoryCommunityIDVersion{},
 	"PikabuStoryCommentsAreHotVersion":                       []PikabuStoryCommentsAreHotVersion{},
 	"PikabuUserUsernameVersion":                              []PikabuUserUsernameVersion{},
 	"PikabuUserGenderVersion":                                []PikabuUserGenderVersion{},
@@ -867,6 +875,7 @@ func init() {
 		&PikabuStoryAuthorAvatarURLVersion{},
 		&PikabuStoryCommunityLinkVersion{},
 		&PikabuStoryCommunityNameVersion{},
+		&PikabuStoryCommunityIDVersion{},
 		&PikabuStoryCommentsAreHotVersion{},
 		&PikabuUserUsernameVersion{},
 		&PikabuUserGenderVersion{},

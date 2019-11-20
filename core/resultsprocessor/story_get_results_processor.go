@@ -93,6 +93,7 @@ func processStoryData(parsingTimestamp models.TimestampType, storyData *pikago_m
 		AuthorAvatarURL:    storyData.AuthorAvatarURL,
 		CommunityLink:      storyData.CommunityLink,
 		CommunityName:      storyData.CommunityName,
+		CommunityID:        storyData.CommunityID.Value,
 		CommentsAreHot:     storyData.CommentsAreHot,
 
 		AddedTimestamp:       parsingTimestamp,
