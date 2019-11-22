@@ -3,6 +3,7 @@ module github.com/DevAlone/parse_pikabu
 go 1.12
 
 require (
+	github.com/ansel1/merry v1.5.0
 	github.com/gin-gonic/gin v1.4.0
 	github.com/go-errors/errors v1.0.1
 	github.com/go-pg/pg v8.0.4+incompatible
@@ -16,7 +17,7 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271
 	github.com/stretchr/testify v1.4.0
-	gogsweb.2-47.ru/d3dev/pikago v0.0.0-20191120171223-c1b6c2b2dced
+	gogsweb.2-47.ru/d3dev/pikago v0.0.0-20191122130051-ae1172f0b609
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20191120155948-bd437916bb0e // indirect
 	golang.org/x/tools v0.0.0-20191120143758-e97fc272220f // indirect

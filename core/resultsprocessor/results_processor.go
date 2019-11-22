@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/DevAlone/parse_pikabu/globals"
+	"github.com/DevAlone/parse_pikabu/helpers"
 
 	"github.com/DevAlone/parse_pikabu/core/config"
 	"github.com/DevAlone/parse_pikabu/core/logger"
 	"github.com/DevAlone/parse_pikabu/models"
-	"github.com/go-errors/errors"
 	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )
 
@@ -20,11 +20,7 @@ func Run() error {
 	for {
 		err := startListener()
 		if err != nil {
-			if e, ok := err.(*errors.Error); ok {
-				logger.Log.Error(e.ErrorStack())
-			} else {
-				logger.Log.Error(err.Error())
-			}
+			logger.Log.Error(helpers.ErrorToString(err))
 		}
 		time.Sleep(5 * time.Second)
 	}
