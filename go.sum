@@ -74,6 +74,8 @@ gogsweb.2-47.ru/d3dev/pikago v0.0.0-20191122130051-ae1172f0b609 h1:zX4ope91w9VjW
 gogsweb.2-47.ru/d3dev/pikago v0.0.0-20191122130051-ae1172f0b609/go.mod h1:m/Q2xNXM30C9IHhNypmTUJ7CcWSBAR93be8Dn2wF7iM=
 gogsweb.2-47.ru/d3dev/pikago v0.0.0-20191122130737-508fcd64b802 h1:KE7HZUCHxDognTGOmNFJtceo6elGhvUn5qq8UAHGE2M=
 gogsweb.2-47.ru/d3dev/pikago v0.0.0-20191122130737-508fcd64b802/go.mod h1:m/Q2xNXM30C9IHhNypmTUJ7CcWSBAR93be8Dn2wF7iM=
+gogsweb.2-47.ru/d3dev/pikago v0.0.0-20191122140440-9c0b15b968a9 h1:HRf7uNkqf+pIDHnkeqD5kGcSDZmpmFWH5FWJlNreP/8=
+gogsweb.2-47.ru/d3dev/pikago v0.0.0-20191122140440-9c0b15b968a9/go.mod h1:m/Q2xNXM30C9IHhNypmTUJ7CcWSBAR93be8Dn2wF7iM=
 golang.org/x/crypto v0.0.0-20180910181607-0e37d006457b/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2 h1:VklqNMn3ovrHsnt90PveolxSbWFaJdECFbxSq0Mqo2M=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
