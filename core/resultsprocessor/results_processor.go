@@ -6,11 +6,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/DevAlone/parse_pikabu/globals"
-	"github.com/DevAlone/parse_pikabu/helpers"
-
 	"github.com/DevAlone/parse_pikabu/core/config"
 	"github.com/DevAlone/parse_pikabu/core/logger"
+	"github.com/DevAlone/parse_pikabu/globals"
+	"github.com/DevAlone/parse_pikabu/helpers"
 	"github.com/DevAlone/parse_pikabu/models"
 	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )
