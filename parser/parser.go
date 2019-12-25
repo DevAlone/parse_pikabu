@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/DevAlone/parse_pikabu/helpers"
 	"github.com/DevAlone/parse_pikabu/parser/logger"
 	"github.com/go-errors/errors"
 	"gogsweb.2-47.ru/d3dev/pikago"
@@ -89,11 +90,7 @@ func (p *Parser) handleError(err error) {
 		return
 	}
 
-	if e, ok := err.(*errors.Error); ok {
-		logger.Log.Error(e.ErrorStack())
-	} else {
-		logger.Log.Error(err.Error())
-	}
+	logger.Log.Error(helpers.ErrorToString(err))
 
 	time.Sleep(time.Duration(p.Config.WaitAfterErrorSeconds) * time.Second)
 }

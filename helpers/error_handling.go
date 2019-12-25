@@ -2,7 +2,7 @@ package helpers
 
 import (
 	"errors"
-
+	"fmt"
 	"github.com/ansel1/merry"
 	go_errors "github.com/go-errors/errors"
 )
@@ -15,7 +15,7 @@ func PanicOnError(err error) {
 }
 
 func ErrorToString(err error) string {
-	res := ""
+	res := fmt.Sprintf("Error '%T'. ", err)
 	if e, ok := err.(*go_errors.Error); ok {
 		res += e.ErrorStack()
 	}
