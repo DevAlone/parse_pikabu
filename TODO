@@ -9,3 +9,4 @@ fix user with id 2159282 and 1834991
 save last used proxy in redis
 reorder columns to save some space
 store videos attached to comments(see pikago models)
+add community chiefs
