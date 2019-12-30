@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/DevAlone/parse_pikabu/models"
+	"github.com/ansel1/merry"
 	"gogsweb.2-47.ru/d3dev/pikago"
 	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
 )
@@ -39,6 +40,11 @@ func (p *Parser) processParseStoryTask(task *models.ParseStoryTask) error {
 		if err != nil {
 			return err
 		}
+
+		if res == nil {
+			return merry.Errorf("processParseStoryTask(): res is nil. Task is %+v", task)
+		}
+
 		results = append(results, *res)
 		if !res.HasNextCommentsPage {
 			break
