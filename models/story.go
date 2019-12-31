@@ -15,7 +15,7 @@ type PikabuStory struct {
 	NumberOfMinuses    int32              `sql:",notnull" json:"number_of_minuses" gen_versions:""`
 	Title              string             `sql:",notnull" json:"title" gen_versions:""`
 	ContentBlocks      []PikabuStoryBlock `sql:",notnull" json:"content_blocks" gen_versions:""`
-	CreatedAtTimestamp TimestampType      `sql:",notnull" json:"created_at_timestamp" gen_versions:""`
+	CreatedAtTimestamp TimestampType      `sql:",notnull" json:"created_at_timestamp" gen_versions:"" gen_distributions:"86400"`
 	StoryURL           string             `sql:",notnull" json:"story_url" gen_versions:""`
 	Tags               []string           `sql:",notnull" json:"tags" gen_versions:""`
 	NumberOfComments   int32              `sql:",notnull" json:"number_of_comments" gen_versions:""`

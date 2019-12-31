@@ -15,7 +15,7 @@ type PikabuComment struct {
 	PikabuID uint64 `sql:",pk" json:"pikabu_id" api:"order,filter"`
 
 	ParentID           uint64        `sql:",notnull" json:"parent_id" gen_versions:""`
-	CreatedAtTimestamp TimestampType `sql:",notnull" json:"created_at_timestamp" gen_versions:""`
+	CreatedAtTimestamp TimestampType `sql:",notnull" json:"created_at_timestamp" gen_versions:"" gen_distributions:"86400"`
 
 	Text                   string               `sql:",notnull" json:"text" gen_versions:""`
 	Images                 []PikabuCommentImage `sql:",notnull" json:"images" gen_versions:""`

@@ -1,7 +1,17 @@
 package models
 
 // generated code, do not touch!
-// generated at timestamp 2019-11-20 15:11:02.821591148 &#43;0000 UTC m=&#43;0.002861180
+// generated at timestamp 2019-12-31 15:15:18.203486847 &#43;0000 UTC m=&#43;0.003144821
+
+type PikabuCommentCreatedAtTimestampDistribution_86400 struct {
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int64         `sql:",notnull" json:"value"`
+}
+
+type PikabuStoryCreatedAtTimestampDistribution_86400 struct {
+	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
+	Value     int64         `sql:",notnull" json:"value"`
+}
 
 type PikabuUserSignupTimestampDistribution_86400 struct {
 	Timestamp TimestampType `sql:",pk,notnull" json:"timestamp" api:"order,filter"`
@@ -24,18 +34,24 @@ var GeneratedDistributionFields = map[string]struct {
 	DistributionTable             interface{}
 	BucketSize                    int
 }{
-	"PikabuUserSignupTimestampDistribution_86400":     {"PikabuUser", "SignupTimestamp", &PikabuUserSignupTimestampDistribution_86400{}, 86400},
-	"PikabuUserLastUpdateTimestampDistribution_86400": {"PikabuUser", "LastUpdateTimestamp", &PikabuUserLastUpdateTimestampDistribution_86400{}, 86400},
-	"PikabuUserNextUpdateTimestampDistribution_86400": {"PikabuUser", "NextUpdateTimestamp", &PikabuUserNextUpdateTimestampDistribution_86400{}, 86400},
+	"PikabuCommentCreatedAtTimestampDistribution_86400": {"PikabuComment", "CreatedAtTimestamp", &PikabuCommentCreatedAtTimestampDistribution_86400{}, 86400},
+	"PikabuStoryCreatedAtTimestampDistribution_86400":   {"PikabuStory", "CreatedAtTimestamp", &PikabuStoryCreatedAtTimestampDistribution_86400{}, 86400},
+	"PikabuUserSignupTimestampDistribution_86400":       {"PikabuUser", "SignupTimestamp", &PikabuUserSignupTimestampDistribution_86400{}, 86400},
+	"PikabuUserLastUpdateTimestampDistribution_86400":   {"PikabuUser", "LastUpdateTimestamp", &PikabuUserLastUpdateTimestampDistribution_86400{}, 86400},
+	"PikabuUserNextUpdateTimestampDistribution_86400":   {"PikabuUser", "NextUpdateTimestamp", &PikabuUserNextUpdateTimestampDistribution_86400{}, 86400},
 }
 var GeneratedDistributionFieldsAPI = map[string]interface{}{
-	"PikabuUserSignupTimestampDistribution_86400":     []PikabuUserSignupTimestampDistribution_86400{},
-	"PikabuUserLastUpdateTimestampDistribution_86400": []PikabuUserLastUpdateTimestampDistribution_86400{},
-	"PikabuUserNextUpdateTimestampDistribution_86400": []PikabuUserNextUpdateTimestampDistribution_86400{},
+	"PikabuCommentCreatedAtTimestampDistribution_86400": []PikabuCommentCreatedAtTimestampDistribution_86400{},
+	"PikabuStoryCreatedAtTimestampDistribution_86400":   []PikabuStoryCreatedAtTimestampDistribution_86400{},
+	"PikabuUserSignupTimestampDistribution_86400":       []PikabuUserSignupTimestampDistribution_86400{},
+	"PikabuUserLastUpdateTimestampDistribution_86400":   []PikabuUserLastUpdateTimestampDistribution_86400{},
+	"PikabuUserNextUpdateTimestampDistribution_86400":   []PikabuUserNextUpdateTimestampDistribution_86400{},
 }
 
 func init() {
 	for _, item := range []interface{}{
+		&PikabuCommentCreatedAtTimestampDistribution_86400{},
+		&PikabuStoryCreatedAtTimestampDistribution_86400{},
 		&PikabuUserSignupTimestampDistribution_86400{},
 		&PikabuUserLastUpdateTimestampDistribution_86400{},
 		&PikabuUserNextUpdateTimestampDistribution_86400{},
