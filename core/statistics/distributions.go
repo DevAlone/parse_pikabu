@@ -8,6 +8,7 @@ import (
 	"github.com/DevAlone/parse_pikabu/models"
 	"github.com/go-errors/errors"
 	"github.com/iancoleman/strcase"
+	"github.com/jinzhu/inflection"
 )
 
 // ProcessDistributions -
@@ -39,7 +40,7 @@ func ProcessDistribution(tableName string, columnName string, bucketSize int) er
 	if columnName == "updating_period" {
 		columnName = "(next_update_timestamp - last_update_timestamp)"
 	}
-	tableName += "s"
+	tableName = inflection.Plural(tableName)
 	request := `
 DELETE FROM ` + distributionTableName + `; 
 INSERT INTO ` + distributionTableName + `

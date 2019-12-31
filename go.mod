@@ -12,7 +12,7 @@ require (
 	github.com/go-redis/redis v6.15.6+incompatible
 	github.com/google/cel-go v0.3.2
 	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334
-	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/inflection v1.0.0
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
