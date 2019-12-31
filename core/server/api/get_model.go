@@ -19,6 +19,7 @@ import (
 var availableModels = map[string]interface{}{
 	"pikabu_user":                           []models.PikabuUser{},
 	"pikabu_community":                      []models.PikabuCommunity{},
+	"pikabu_story":                          []models.PikabuStory{},
 	"number_of_users_to_process_entries":    []models.NumberOfUsersToProcessEntry{},
 	"number_of_stories_to_process_entries":  []models.NumberOfStoriesToProcessEntry{},
 	"number_of_comments_to_process_entries": []models.NumberOfCommentsToProcessEntry{},

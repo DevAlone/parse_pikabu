@@ -10,7 +10,7 @@ type PikabuStoryBlock struct {
 type PikabuStory struct {
 	PikabuID uint64 `sql:",pk" json:"pikabu_id" api:"order,filter"`
 
-	Rating             int32              `sql:",notnull" json:"rating" gen_versions:""`
+	Rating             int32              `sql:",notnull" json:"rating" gen_versions:"" api:"order,filter"`
 	NumberOfPluses     int32              `sql:",notnull" json:"number_of_pluses" gen_versions:""`
 	NumberOfMinuses    int32              `sql:",notnull" json:"number_of_minuses" gen_versions:""`
 	Title              string             `sql:",notnull" json:"title" gen_versions:""`
