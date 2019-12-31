@@ -8,7 +8,7 @@ import (
 
 	"github.com/DevAlone/parse_pikabu/helpers"
 	"github.com/DevAlone/parse_pikabu/models"
-	"github.com/go-errors/errors"
+	"github.com/ansel1/merry"
 	"gogsweb.2-47.ru/d3dev/pikago"
 )
 
@@ -22,7 +22,7 @@ func (p *Parser) processParseUserTask(task *models.ParseUserTask) error {
 			if _, ok := err.(*pikago.PikabuErrorRequestedPageNotFound); ok {
 				res, err = p.ProcessParseUserTaskByID(task)
 			} else {
-				return errors.Errorf("Error while processing task %v. Error: %v", task, err)
+				return merry.Appendf(err, "Error during processing task %T %+v", task, task)
 			}
 		}
 	} else {
@@ -115,7 +115,7 @@ func (p *Parser) ProcessParseUserTaskByID(task *models.ParseUserTask) (*models.P
 	}
 	username := regex.FindString(resp.Data.HTML)
 	if len(username) < 3 {
-		return nil, errors.Errorf("Unable to find username in data. Resp: %v", resp)
+		return nil, merry.Errorf("Unable to find username in data. Resp: %v", resp)
 	}
 	username = username[1 : len(username)-1]
 
