@@ -33,7 +33,11 @@ func AnswerResponse(c *gin.Context, data interface{}) {
 	}
 	switch reflect.TypeOf(data).Kind() {
 	case reflect.Slice, reflect.Array:
-		resp["results"] = data
+		if reflect.ValueOf(data).Len() == 0 {
+			resp["results"] = []interface{}{}
+		} else {
+			resp["results"] = data
+		}
 		resp["number_of_results"] = reflect.ValueOf(data).Len()
 	default:
 		resp["result"] = data

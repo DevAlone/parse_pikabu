@@ -72,7 +72,7 @@ func ListModel(c *gin.Context) {
 	}
 
 	if request.Limit.Value > uint64(config.Settings.ServerMaximumNumberOfResultsPerPage) {
-		AnswerError(c, http.StatusBadRequest, "you want too many of it")
+		AnswerError(c, http.StatusBadRequest, "you want too many of them")
 		return
 	}
 
