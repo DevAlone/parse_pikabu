@@ -1,7 +1,7 @@
 package models
 
 // generated code, do not touch!
-// generated at timestamp 2019-12-31 15:15:15.97653395 &#43;0000 UTC m=&#43;0.003210093
+// generated at timestamp 2020-01-01 12:13:25.223370339 &#43;0000 UTC m=&#43;0.002993701
 
 type PikabuCommentParentIDVersion struct {
 	ItemId    uint64        `sql:",pk,notnull" json:"item_id" api:"order,filter"`
