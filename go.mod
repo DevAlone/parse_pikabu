@@ -24,7 +24,7 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271
 	github.com/stretchr/testify v1.4.0
-	gogsweb.2-47.ru/d3dev/pikago v0.0.0-20200107201359-038df907466d
+	gogsweb.2-47.ru/d3dev/pikago v0.0.0-20200107210434-535b2c15efbe
 	golang.org/x/crypto v0.0.0-20191227163750-53104e6ec876 // indirect
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553 // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
