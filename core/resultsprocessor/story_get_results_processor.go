@@ -6,6 +6,7 @@ import (
 
 	"github.com/DevAlone/parse_pikabu/core/logger"
 	"github.com/DevAlone/parse_pikabu/helpers"
+	"github.com/DevAlone/parse_pikabu/modelhooks"
 	"github.com/DevAlone/parse_pikabu/models"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
@@ -109,6 +110,8 @@ func processStoryData(parsingTimestamp models.TimestampType, storyData *pikago_m
 	err = models.Db.Select(story)
 
 	if err == pg.ErrNoRows {
+		modelhooks.HandleModelCreated(*newStory, parsingTimestamp)
+
 		err := models.Db.Insert(newStory)
 		if err != nil {
 			return errors.New(err)
@@ -117,6 +120,8 @@ func processStoryData(parsingTimestamp models.TimestampType, storyData *pikago_m
 	} else if err != nil {
 		return errors.New(err)
 	}
+
+	modelhooks.HandleModelChanged(*story, *newStory, parsingTimestamp)
 
 	wasDataChanged, err := processModelFieldsVersions(nil, story, newStory, parsingTimestamp)
 	if _, ok := err.(OldParserResultError); ok {

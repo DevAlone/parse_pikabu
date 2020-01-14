@@ -7,6 +7,7 @@ import (
 
 	"github.com/DevAlone/parse_pikabu/core/config"
 	"github.com/DevAlone/parse_pikabu/core/logger"
+	"github.com/DevAlone/parse_pikabu/modelhooks"
 	"github.com/DevAlone/parse_pikabu/models"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
@@ -123,6 +124,8 @@ func saveUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago_
 	err = models.Db.Select(user)
 
 	if err == pg.ErrNoRows {
+		modelhooks.HandleModelCreated(*newUser, parsingTimestamp)
+
 		err := models.Db.Insert(newUser)
 		if err != nil {
 			return errors.New(err)
@@ -131,6 +134,8 @@ func saveUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago_
 	} else if err != nil {
 		return errors.New(err)
 	}
+
+	modelhooks.HandleModelChanged(*user, *newUser, parsingTimestamp)
 
 	wasDataChanged, err := processModelFieldsVersions(nil, user, newUser, parsingTimestamp)
 	if _, ok := err.(OldParserResultError); ok {

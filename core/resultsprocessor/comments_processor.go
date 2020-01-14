@@ -105,7 +105,7 @@ func processComment(parsingTimestamp models.TimestampType, commentData *pikago_m
 	err = models.Db.Select(comment)
 
 	if err == pg.ErrNoRows {
-		modelhooks.HandlePikabuCommentCreate(*newComment, parsingTimestamp)
+		modelhooks.HandleModelCreated(*newComment, parsingTimestamp)
 		err := models.Db.Insert(newComment)
 		if err != nil {
 			return errors.New(err)
@@ -115,7 +115,7 @@ func processComment(parsingTimestamp models.TimestampType, commentData *pikago_m
 		return errors.New(err)
 	}
 
-	modelhooks.HandlePikabuCommentChange(*comment, *newComment, parsingTimestamp)
+	modelhooks.HandleModelChanged(*comment, *newComment, parsingTimestamp)
 
 	wasDataChanged, err := processModelFieldsVersions(nil, comment, newComment, parsingTimestamp)
 	if _, ok := err.(OldParserResultError); ok {

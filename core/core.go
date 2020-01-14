@@ -64,6 +64,14 @@ func Main() {
 		wg.Done()
 	}()
 
+	wg.Add(1)
+	// start modelhooks handler
+	go func() {
+		err := modelhooks.RunModelHooksHandler()
+		helpers.PanicOnError(err)
+		wg.Done()
+	}()
+
 	wg.Wait()
 
 	logger.Cleanup()

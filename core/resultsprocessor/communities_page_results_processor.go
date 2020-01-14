@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/DevAlone/parse_pikabu/core/logger"
+	"github.com/DevAlone/parse_pikabu/modelhooks"
 	"github.com/DevAlone/parse_pikabu/models"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
@@ -74,6 +75,7 @@ func processCommunity(
 
 	err := models.Db.Select(community)
 	if err == pg.ErrNoRows {
+		modelhooks.HandleModelCreated(*newCommunity, parsingTimestamp)
 		err := models.Db.Insert(newCommunity)
 		if err != nil {
 			return errors.New(err)
@@ -82,6 +84,8 @@ func processCommunity(
 	} else if err != nil {
 		return errors.New(err)
 	}
+
+	modelhooks.HandleModelChanged(*community, *newCommunity, parsingTimestamp)
 
 	if parsingTimestamp <= community.LastUpdateTimestamp {
 		// TODO: find a better way

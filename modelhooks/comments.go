@@ -14,6 +14,8 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
+// TODO: rewrite with a new framework
+
 type commentModelChange struct {
 	PrevState  models.PikabuComment
 	CurrState  models.PikabuComment
@@ -28,23 +30,6 @@ type commentModelCreate struct {
 }
 
 var commentModelCreates = make(chan *commentModelCreate)
-
-// HandlePikabuCommentChange - it's called when some comment is changed
-func HandlePikabuCommentChange(prev, curr models.PikabuComment, changeTime models.TimestampType) {
-	commentModelChanges <- &commentModelChange{
-		PrevState:  prev,
-		CurrState:  curr,
-		ChangeTime: changeTime,
-	}
-}
-
-// HandlePikabuCommentCreate - it's called when some comment is changed
-func HandlePikabuCommentCreate(model models.PikabuComment, timestamp models.TimestampType) {
-	commentModelCreates <- &commentModelCreate{
-		Data:       model,
-		CreateTime: timestamp,
-	}
-}
 
 // RunTelegramNotifier - call to run telegram notifier
 func RunTelegramNotifier() error {
