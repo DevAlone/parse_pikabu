@@ -15,6 +15,7 @@ var Settings struct {
 	Pikabu18BotToken                     string
 	Pikabu18BotDeletedChat               string
 	Pikabu18BotDeletedAtFirstParsingChat string
+	Pikabu18BotDeletedUsersChat          string
 	ServerListeningAddress               string
 	AMQPAddress                          string
 	// in seconds
@@ -74,6 +75,7 @@ func init() {
 	Settings.Pikabu18BotToken = ""
 	Settings.Pikabu18BotDeletedChat = ""
 	Settings.Pikabu18BotDeletedAtFirstParsingChat = ""
+	Settings.Pikabu18BotDeletedUsersChat = ""
 	Settings.ServerListeningAddress = "0.0.0.0:8080"
 	Settings.AMQPAddress = "amqp://guest:guest@localhost:5672/"
 	Settings.MaximumParseUserTaskProcessingTime = 5 * 60

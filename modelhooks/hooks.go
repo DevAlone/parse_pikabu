@@ -36,7 +36,6 @@ var modelCreatedEvents = make(chan *ModelCreatedEvent)
 var modelChangedEvents = make(chan *ModelChangedEvent)
 
 func RunModelHooksHandler() error {
-
 	for {
 		select {
 		case modelCreatedEvent := <-modelCreatedEvents:

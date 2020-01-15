@@ -11,6 +11,7 @@ import (
 	"github.com/DevAlone/parse_pikabu/helpers"
 	"github.com/DevAlone/parse_pikabu/modelhooks"
 	"github.com/DevAlone/parse_pikabu/models"
+	"github.com/DevAlone/parse_pikabu/telegram"
 )
 
 // Main - entry point for core of the project
@@ -59,7 +60,7 @@ func Main() {
 	wg.Add(1)
 	// start telegram notifier
 	go func() {
-		err := modelhooks.RunTelegramNotifier()
+		err := telegram.RunTelegramNotifier()
 		helpers.PanicOnError(err)
 		wg.Done()
 	}()
