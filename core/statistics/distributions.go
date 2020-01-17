@@ -2,9 +2,11 @@ package statistics
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/DevAlone/parse_pikabu/core/logger"
+	"github.com/DevAlone/parse_pikabu/helpers"
 	"github.com/DevAlone/parse_pikabu/models"
 	"github.com/go-errors/errors"
 	"github.com/iancoleman/strcase"
@@ -14,8 +16,29 @@ import (
 // ProcessDistributions -
 func ProcessDistributions() error {
 	for {
+		redisClient := helpers.GetRedisClient()
+
+		err := redisClient.SetNX("parse_pikabu/core/statistics/distributions/last_update_timestamp", 0, 0).Err()
+		if err != nil {
+			return err
+		}
+
+		lastUpdateTimestampStr, err := redisClient.Get("parse_pikabu/core/statistics/distributions/last_update_timestamp").Result()
+		if err != nil {
+			return err
+		}
+		lastUpdateTimestamp, err := strconv.ParseInt(lastUpdateTimestampStr, 10, 64)
+		if err != nil {
+			return err
+		}
+
+		if time.Now().Unix() < lastUpdateTimestamp+24*3600 {
+			time.Sleep(1 * time.Hour)
+			continue
+		}
+
 		// TODO: save last timestamp on redis
-		time.Sleep(10 * time.Minute)
+		// time.Sleep(10 * time.Minute)
 		for _, distributionFieldModel := range models.GeneratedDistributionFields {
 			baseTableNameSnakeCase := strcase.ToSnake(distributionFieldModel.BaseTableName)
 			baseColumnNameSnakeCase := strcase.ToSnake(distributionFieldModel.BaseColumnName)
@@ -25,7 +48,12 @@ func ProcessDistributions() error {
 			}
 		}
 
-		err := ProcessDistribution("pikabu_user", "updating_period", 3600)
+		err = ProcessDistribution("pikabu_user", "updating_period", 3600)
+		if err != nil {
+			return err
+		}
+
+		err = redisClient.Set("parse_pikabu/core/statistics/distributions/last_update_timestamp", time.Now().Unix(), 0).Err()
 		if err != nil {
 			return err
 		}

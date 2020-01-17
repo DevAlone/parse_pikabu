@@ -33,13 +33,12 @@ func Run() error {
 			StatTableName:         "number_of_stories_to_process_entries",
 			UpdatingPeriodSeconds: 10 * 60,
 		},
-		/*  // TODO: figure out why it takes more that 30 minutes
+		// TODO: comment out?
 		{
 			TableName:             "pikabu_comments",
 			StatTableName:         "number_of_comments_to_process_entries",
-			UpdatingPeriodSeconds: 60 * 60,
+			UpdatingPeriodSeconds: 12 * 60 * 60,
 		},
-		*/
 	} {
 		wg.Add(1)
 		go func(config ProcessNumberOfItemsInQueueConfig) {
