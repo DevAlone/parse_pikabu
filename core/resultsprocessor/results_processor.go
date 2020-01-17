@@ -60,6 +60,8 @@ func processMessage(message *models.ParserResult) error {
 		return processStoryGetResults(message.ParsingTimestamp, m)
 	case []models.ParserStoryNotFoundResultData:
 		return processStoryNotFoundResults(message.ParsingTimestamp, m)
+	case []models.ParserStoryHiddenInAPIResultData:
+		return processStoryHiddenInAPIResults(message.ParsingTimestamp, m)
 	default:
 		logger.Log.Warningf(
 			"processMessage(): Unregistered result type \"%v\". Message: \"%v\". m: \"%v\"",

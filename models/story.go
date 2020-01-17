@@ -38,6 +38,7 @@ type PikabuStory struct {
 	NextUpdateTimestamp  TimestampType `sql:",notnull" json:"next_update_timestamp" api:"order,filter"`
 	TaskTakenAtTimestamp TimestampType `sql:",notnull" json:"task_taken_at_timestamp" api:"order,filter"`
 	IsPermanentlyDeleted bool          `sql:",notnull,default:false" json:"is_permanently_deleted" api:"order,filter"`
+	IsHiddenInAPI        bool          `sql:",notnull,default:false" json:"is_hidden_in_api" api:"order,filter"`
 }
 
 // PikabuDeletedOrNeverExistedStory // TODO: add doc
@@ -86,6 +87,7 @@ func init() {
 	addIndex("pikabu_stories", "next_update_timestamp", "")
 	addIndex("pikabu_stories", "task_taken_at_timestamp", "")
 	addIndex("pikabu_stories", "is_permanently_deleted", "")
+	addIndex("pikabu_stories", "is_hidden_in_api", "")
 
 	addIndex("pikabu_deleted_or_never_existed_stories", "last_update_timestamp", "")
 	addIndex("pikabu_deleted_or_never_existed_stories", "next_update_timestamp", "")

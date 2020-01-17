@@ -28,7 +28,7 @@ func (p *Parser) processParseStoryTask(task *models.ParseStoryTask) error {
 				strings.Contains(pe.Message, `\u0437\u0430\u043f\u0440\u0435\u0449\u0435\u043d\u043d\u044b\u0435 \u043f\u043e\u043b\u0438\u0442\u0438\u043a\u043e\u0439 \u043c\u0430\u0433\u0430\u0437\u0438\u043d\u0430 \u043f\u0440\u0438\u043b\u043e\u0436\u0435\u043d\u0438\u0439`) ||
 				strings.Contains(pe.Message, "запрещенные политикой магазина приложений") {
 				// consider as deleted
-				return p.PutResultsToQueue("story_not_found", []models.ParserStoryNotFoundResultData{
+				return p.PutResultsToQueue("story_hidden_in_api", []models.ParserStoryHiddenInAPIResultData{
 					{
 						PikabuID:    task.PikabuID,
 						PikabuError: pe,

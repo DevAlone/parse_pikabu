@@ -46,3 +46,8 @@ type ParserStoryNotFoundResultData struct {
 	PikabuID    uint64      `json:"pikabu_id"`
 	PikabuError interface{} `json:"pikabu_error"`
 }
+
+type ParserStoryHiddenInAPIResultData struct {
+	PikabuID    uint64      `json:"pikabu_id"`
+	PikabuError interface{} `json:"pikabu_error"`
+}
