@@ -32,7 +32,7 @@ func ProcessDistributions() error {
 			return err
 		}
 
-		if time.Now().Unix() < lastUpdateTimestamp+24*3600 {
+		if time.Now().Unix() < lastUpdateTimestamp+2*24*3600 {
 			time.Sleep(1 * time.Hour)
 			continue
 		}
@@ -58,7 +58,7 @@ func ProcessDistributions() error {
 			return err
 		}
 
-		time.Sleep(24 * time.Hour)
+		time.Sleep(2 * 24 * time.Hour)
 	}
 }
 
