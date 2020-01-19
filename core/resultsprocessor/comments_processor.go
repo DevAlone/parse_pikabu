@@ -1,6 +1,8 @@
 package resultsprocessor
 
 import (
+	"time"
+
 	"github.com/DevAlone/parse_pikabu/core/logger"
 	"github.com/DevAlone/parse_pikabu/helpers"
 	"github.com/DevAlone/parse_pikabu/modelhooks"
@@ -141,5 +143,21 @@ func calculateCommentNextUpdateTimestamp(
 	comment *models.PikabuComment,
 	wasDataChanged bool,
 ) models.TimestampType {
-	return models.TimestampType(86400)
+	currentTimestamp := models.TimestampType(time.Now().Unix())
+
+	nextUpdateTimestamp := currentTimestamp
+
+	commentAgeInSeconds := currentTimestamp - comment.CreatedAtTimestamp
+	for age, updatingPeriod := range map[int64]int64{
+		3600 * 24 * 30 * 3: 3600 * 24 * 7,
+		3600 * 24 * 30 * 6: 3600 * 24 * 30 * 2,
+		4294967296:         3600 * 24 * 30 * 12, // 1 year
+	} {
+		if commentAgeInSeconds < models.TimestampType(age) {
+			nextUpdateTimestamp += models.TimestampType(updatingPeriod)
+			break
+		}
+	}
+
+	return nextUpdateTimestamp
 }
