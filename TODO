@@ -11,3 +11,27 @@ reorder columns to save some space
 store videos attached to comments(see pikago models)
 add community chiefs
 limit time per server request
+
+FIX this bug:
+
+postgres@(none):pikagraphs> select pikabu_id, content_blocks from pikabu_stories where NOT (content_blocks @> '[{"type": "t"}]') AND NOT (content_blocks @> '[{"type": "i"}]') AND NOT (content_blocks @> '[{"type": "v"}]') AND NOT (content_blocks @> '[{"type": "vf"}]') limit 10;
++-------------+------------------+                                                                                                                                                                
+|   pikabu_id | content_blocks   |                                                                                                                                                                
+|-------------+------------------|                                                                                                                                                                
+|      170651 | []               | 
+|      171171 | []               |
+|      170721 | []               |                                                                                                                                                        
+|      170696 | []               |                                                                                                                                                        
+|      170746 | []               |
+|      170712 | []               |
+|      170595 | []               |
+|      170537 | []               |
+|      170594 | []               |
+|      170607 | []               |
++-------------+------------------+
+SELECT 10
+
+
+Fix this bug:
+
+https://pikastat.d3d.info/story/pikabu_id==60
