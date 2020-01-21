@@ -153,6 +153,7 @@ func calculateStoryNextUpdateTimestamp(
 
 	storyTimeGap := currentTimestamp - story.CreatedAtTimestamp
 	for gap, updatingPeriod := range map[int64]int64{
+		1800:               150,
 		3600:               300,
 		3600 * 12:          600,
 		3600 * 24:          1200,
