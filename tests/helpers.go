@@ -87,10 +87,10 @@ func waitForResultsQueueEmpty() {
 	for {
 		if len(globals.ParserResults) == 0 {
 			// TODO: check whether the message was actually processed
-			time.Sleep(1 * time.Second)
+			time.Sleep(10 * time.Second)
 			return
 		}
 
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(1 * time.Second)
 	}
 }

@@ -47,6 +47,7 @@ var Settings struct {
 	ParseDeletedOrNeverExistedStoryTaskImportance uint
 	ParseAllCommunitiesTaskImportance             uint
 	GetItemsToUpdateAtTime                        int
+	ModelHooksChannelSize int
 }
 
 // UpdateSettingsFromFile fills settings from the file
@@ -104,4 +105,5 @@ func init() {
 	Settings.ParseDeletedOrNeverExistedStoryTaskImportance = 5
 	Settings.ParseAllCommunitiesTaskImportance = 1
 	Settings.GetItemsToUpdateAtTime = 512
+	Settings.ModelHooksChannelSize = 128
 }

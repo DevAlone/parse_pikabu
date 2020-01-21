@@ -1,6 +1,7 @@
 package modelhooks
 
 import (
+	"github.com/DevAlone/parse_pikabu/core/config"
 	"github.com/DevAlone/parse_pikabu/models"
 )
 
@@ -32,8 +33,8 @@ type ModelChangedEvent struct {
 	EventTime models.TimestampType
 }
 
-var modelCreatedEvents = make(chan *ModelCreatedEvent)
-var modelChangedEvents = make(chan *ModelChangedEvent)
+var modelCreatedEvents = make(chan *ModelCreatedEvent, config.Settings.ModelHooksChannelSize)
+var modelChangedEvents = make(chan *ModelChangedEvent, config.Settings.ModelHooksChannelSize)
 
 func RunModelHooksHandler() error {
 	for {
@@ -90,7 +91,7 @@ func handleModelCreatedEvent(modelCreatedEvent *ModelCreatedEvent) error {
 func handleModelChangedEvent(modelChangedEvent *ModelChangedEvent) error {
 	switch prevData := modelChangedEvent.PrevData.(type) {
 	case models.PikabuUser:
-		currData := modelChangedEvent.PrevData.(models.PikabuUser)
+		currData := modelChangedEvent.CurrData.(models.PikabuUser)
 		for _, handler := range pikabuUserChangedEventHandlers {
 			err := handler(&prevData, &currData, modelChangedEvent.EventTime)
 			if err != nil {
@@ -98,7 +99,7 @@ func handleModelChangedEvent(modelChangedEvent *ModelChangedEvent) error {
 			}
 		}
 	case models.PikabuCommunity:
-		currData := modelChangedEvent.PrevData.(models.PikabuCommunity)
+		currData := modelChangedEvent.CurrData.(models.PikabuCommunity)
 		for _, handler := range pikabuCommunityChangedEventHandlers {
 			err := handler(&prevData, &currData, modelChangedEvent.EventTime)
 			if err != nil {
@@ -106,7 +107,7 @@ func handleModelChangedEvent(modelChangedEvent *ModelChangedEvent) error {
 			}
 		}
 	case models.PikabuStory:
-		currData := modelChangedEvent.PrevData.(models.PikabuStory)
+		currData := modelChangedEvent.CurrData.(models.PikabuStory)
 		for _, handler := range pikabuStoryChangedEventHandlers {
 			err := handler(&prevData, &currData, modelChangedEvent.EventTime)
 			if err != nil {
@@ -114,7 +115,7 @@ func handleModelChangedEvent(modelChangedEvent *ModelChangedEvent) error {
 			}
 		}
 	case models.PikabuComment:
-		currData := modelChangedEvent.PrevData.(models.PikabuComment)
+		currData := modelChangedEvent.CurrData.(models.PikabuComment)
 		for _, handler := range pikabuCommentChangedEventHandlers {
 			err := handler(&prevData, &currData, modelChangedEvent.EventTime)
 			if err != nil {
