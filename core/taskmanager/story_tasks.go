@@ -34,11 +34,14 @@ func storyTasksWorker() error {
 
 func addMissingStoriesWorker() error {
 	for {
-		count, err := models.Db.Model((*models.PikabuStory)(nil)).Count()
-		if err != nil {
+		var stories []models.PikabuStory
+		err := models.Db.Model(&stories).
+			Limit(1).
+			Select()
+		if err != nil && err != pg.ErrNoRows {
 			return errors.New(err)
 		}
-		if count == 0 {
+		if err == pg.ErrNoRows {
 			// init database
 			for _, storyID := range []uint64{
 				6579296,
