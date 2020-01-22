@@ -14,6 +14,7 @@ import (
 
 // Run -
 func Run() error {
+	time.Sleep(10 * time.Minute)
 	var wg sync.WaitGroup
 
 	type ProcessNumberOfItemsInQueueConfig struct {
@@ -33,12 +34,14 @@ func Run() error {
 			StatTableName:         "number_of_stories_to_process_entries",
 			UpdatingPeriodSeconds: 10 * 60,
 		},
-		// TODO: comment out?
-		{
-			TableName:             "pikabu_comments",
-			StatTableName:         "number_of_comments_to_process_entries",
-			UpdatingPeriodSeconds: 12 * 60 * 60,
-		},
+		// TODO:
+		/*
+			{
+				TableName:             "pikabu_comments",
+				StatTableName:         "number_of_comments_to_process_entries",
+				UpdatingPeriodSeconds: 12 * 60 * 60,
+			},
+		*/
 	} {
 		wg.Add(1)
 		go func(config ProcessNumberOfItemsInQueueConfig) {
