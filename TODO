@@ -35,3 +35,5 @@ SELECT 10
 Fix this bug:
 
 https://pikastat.d3d.info/story/pikabu_id==60
+
+consider using something like prometheus
