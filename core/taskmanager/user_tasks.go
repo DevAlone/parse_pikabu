@@ -4,11 +4,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-errors/errors"
-
 	"github.com/DevAlone/parse_pikabu/core/config"
 	"github.com/DevAlone/parse_pikabu/helpers"
 	"github.com/DevAlone/parse_pikabu/models"
+	"github.com/ansel1/merry"
+	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
 )
 
@@ -172,6 +172,17 @@ func updateUsersWorker() error {
 		}
 
 		for _, user := range usersToUpdate {
+			// if there's duplicates, parse by both ID and username
+			count, err := models.Db.Model((*models.PikabuUser)(nil)).Count()
+			if err != nil {
+				return merry.Wrap(err)
+			}
+			if count > 1 {
+				err = AddParseUserTask(user.PikabuID, "", UpdateUserTask)
+				if err != nil {
+					return err
+				}
+			}
 			err = AddParseUserTask(user.PikabuID, user.Username, UpdateUserTask)
 			if err != nil {
 				return err
