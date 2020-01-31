@@ -1,6 +1,7 @@
 package taskmanager
 
 import (
+	"strings"
 	"sync"
 	"time"
 
@@ -173,7 +174,9 @@ func updateUsersWorker() error {
 
 		for _, user := range usersToUpdate {
 			// if there's duplicates, parse by both ID and username
-			count, err := models.Db.Model((*models.PikabuUser)(nil)).Count()
+			count, err := models.Db.Model((*models.PikabuUser)(nil)).
+				Where("LOWER(username) = ?", strings.ToLower(user.Username)).
+				Count()
 			if err != nil {
 				return merry.Wrap(err)
 			}

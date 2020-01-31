@@ -55,7 +55,9 @@ func unlockUserByID(userID uint64) {
 }
 
 func handleUsernameDuplicates(parsingTimestamp models.TimestampType, userProfile *pikago_models.UserProfile) error {
-	count, err := models.Db.Model((*models.PikabuUser)(nil)).Count()
+	count, err := models.Db.Model((*models.PikabuUser)(nil)).
+		Where("LOWER(username) = ?", strings.ToLower(userProfile.Username)).
+		Count()
 	if err != nil {
 		return merry.Wrap(err)
 	}
