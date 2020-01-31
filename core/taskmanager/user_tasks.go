@@ -180,7 +180,7 @@ func updateUsersWorker() error {
 			if err != nil {
 				return merry.Wrap(err)
 			}
-			if count > 1 {
+			if count > 1 || user.IsDeleted {
 				err = AddParseUserTask(user.PikabuID, "", UpdateUserTask)
 				if err != nil {
 					return err
