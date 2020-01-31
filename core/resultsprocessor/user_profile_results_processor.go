@@ -2,7 +2,6 @@ package resultsprocessor
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -10,7 +9,6 @@ import (
 	"github.com/DevAlone/parse_pikabu/core/logger"
 	"github.com/DevAlone/parse_pikabu/modelhooks"
 	"github.com/DevAlone/parse_pikabu/models"
-	"github.com/ansel1/merry"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
 	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
@@ -54,7 +52,7 @@ func unlockUserByID(userID uint64) {
 	userProfileIDLocksMutex.Unlock()
 }
 
-func handleUsernameDuplicates(parsingTimestamp models.TimestampType, userProfile *pikago_models.UserProfile) error {
+/*func handleUsernameDuplicates(parsingTimestamp models.TimestampType, userProfile *pikago_models.UserProfile) error {
 	count, err := models.Db.Model((*models.PikabuUser)(nil)).
 		Where("LOWER(username) = ?", strings.ToLower(userProfile.Username)).
 		Count()
@@ -77,13 +75,13 @@ func handleUsernameDuplicates(parsingTimestamp models.TimestampType, userProfile
 		return merry.Wrap(err)
 	}
 	return nil
-}
+}*/
 
 func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pikago_models.UserProfile) error {
-	err := handleUsernameDuplicates(parsingTimestamp, userProfile)
+	/*err := handleUsernameDuplicates(parsingTimestamp, userProfile)
 	if err != nil {
 		return err
-	}
+	}*/
 	lockUserByID(userProfile.UserID.Value)
 	defer unlockUserByID(userProfile.UserID.Value)
 
@@ -92,7 +90,7 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 	}
 
 	// save results
-	err = saveUserProfile(parsingTimestamp, userProfile)
+	err := saveUserProfile(parsingTimestamp, userProfile)
 	if err != nil {
 		return err
 	}
