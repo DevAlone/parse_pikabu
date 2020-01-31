@@ -164,7 +164,7 @@ func updateUsersWorker() error {
 				time.Now().Unix(),
 				time.Now().Unix()-int64(config.Settings.MaximumParseUserTaskProcessingTime),
 			).
-			// Order("next_update_timestamp").
+			Order("next_update_timestamp").
 			Limit(config.Settings.GetItemsToUpdateAtTime).
 			Select()
 		if err != pg.ErrNoRows && err != nil {
