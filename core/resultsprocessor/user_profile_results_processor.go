@@ -2,6 +2,7 @@ package resultsprocessor
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -67,7 +68,7 @@ func handleUsernameDuplicates(parsingTimestamp models.TimestampType, userProfile
 
 	_, err = models.Db.Model((*models.PikabuUser)(nil)).
 		Set("next_update_timestamp = ?", nextUpdateTimestamp).
-		Where("LOWER(username) = ?", userProfile.Username).
+		Where("LOWER(username) = ?", strings.ToLower(userProfile.Username)).
 		Update()
 
 	if err != nil {
