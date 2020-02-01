@@ -2,6 +2,7 @@ package resultsprocessor
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/DevAlone/parse_pikabu/core/logger"
 	"github.com/DevAlone/parse_pikabu/modelhooks"
 	"github.com/DevAlone/parse_pikabu/models"
+	"github.com/ansel1/merry"
 	"github.com/go-errors/errors"
 	"github.com/go-pg/pg"
 	pikago_models "gogsweb.2-47.ru/d3dev/pikago/models"
@@ -90,7 +92,7 @@ func processUserProfile(parsingTimestamp models.TimestampType, userProfile *pika
 	}
 
 	// save results
-	err := saveUserProfile(parsingTimestamp, userProfile)
+	err = saveUserProfile(parsingTimestamp, userProfile)
 	if err != nil {
 		return err
 	}
