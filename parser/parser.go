@@ -33,29 +33,37 @@ func NewParser(parserConfig *ParserConfig) (*Parser, error) {
 		Timeout: time.Duration(parser.Config.APITimeout) * time.Second,
 	}
 
-	proxyGettingPolicy := pikago.ProxyGettingPoliceRandom
-	switch parserConfig.ProxyGettingPolicy {
-	case "ProxyGettingPoliceRandom":
-		proxyGettingPolicy = pikago.ProxyGettingPoliceRandom
-	case "ProxyGettingPolice1024BestResponseTime":
-		proxyGettingPolicy = pikago.ProxyGettingPolice1024BestResponseTime
-	default:
-		return nil, errors.Errorf("bad proxy getting policy %v", parserConfig.ProxyGettingPolicy)
+	var proxyProvider pikago.ProxyProvider
+
+	if len(parserConfig.FixedProxyAddress) > 0 {
+		proxyProvider = pikago.GetFixedProxyProvider(parserConfig.FixedProxyAddress)
+	} else {
+		proxyGettingPolicy := pikago.ProxyGettingPoliceRandom
+		switch parserConfig.ProxyGettingPolicy {
+		case "ProxyGettingPoliceRandom":
+			proxyGettingPolicy = pikago.ProxyGettingPoliceRandom
+		case "ProxyGettingPolice1024BestResponseTime":
+			proxyGettingPolicy = pikago.ProxyGettingPolice1024BestResponseTime
+		default:
+			return nil, errors.Errorf("bad proxy getting policy %v", parserConfig.ProxyGettingPolicy)
+		}
+
+		proxyProvider, err = pikago.GetProxyPyProxyProvider(
+			parser.Config.ProxyProviderAPIURL,
+			parser.Config.ProxyProviderTimeout,
+			proxyGettingPolicy,
+		)
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	proxyProvider, err := pikago.GetProxyPyProxyProvider(
-		parser.Config.ProxyProviderAPIURL,
-		parser.Config.ProxyProviderTimeout,
-		proxyGettingPolicy,
-	)
-
-	if err != nil {
-		return nil, err
-	}
 	requestsSender, err := pikago.NewClientProxyRequestsSender(proxyProvider)
 	if err != nil {
 		return nil, err
 	}
+
 	requestsSender.NumberOfRequestTries = parser.Config.PikagoNumberOfRequestTries
 	requestsSender.ChangeProxyOnNthBadTry = parser.Config.PikagoChangeProxyOnNthBadTry
 	requestsSender.WaitBeforeNextRequestMs = parser.Config.PikagoWaitBeforeNextRequestMs

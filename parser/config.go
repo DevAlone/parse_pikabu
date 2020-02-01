@@ -13,12 +13,14 @@ type ParserConfig struct {
 	// by default 1, can be used in config to
 	// define multiple parsers with the same behavior
 	// parser_id will be suffixed with number of copy
-	NumberOfInstances                uint
-	APIURL                           string
-	APITimeout                       int
-	APISessionID                     string
-	ProxyProviderAPIURL              string
-	ProxyProviderTimeout             int
+	NumberOfInstances    uint
+	APIURL               string
+	APITimeout           int
+	APISessionID         string
+	ProxyProviderAPIURL  string
+	ProxyProviderTimeout int
+	// everything else will be ignored if this value is not empty string
+	FixedProxyAddress                string
 	PikagoTimeout                    uint
 	PikagoWaitBetweenProcessingPages int
 	PikagoNumberOfRequestTries       uint

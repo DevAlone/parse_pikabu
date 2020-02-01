@@ -3,7 +3,7 @@ module github.com/DevAlone/parse_pikabu
 go 1.12
 
 require (
-	github.com/ansel1/merry v1.5.0
+	github.com/ansel1/merry v1.5.1
 	github.com/antlr/antlr4 v0.0.0-20191217191749-ff67971f8580 // indirect
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-errors/errors v1.0.1
@@ -24,11 +24,11 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/streadway/amqp v0.0.0-20190827072141-edfb9018d271
 	github.com/stretchr/testify v1.4.0
-	gogsweb.2-47.ru/d3dev/pikago v0.0.0-20200107210434-535b2c15efbe
+	gogsweb.2-47.ru/d3dev/pikago v0.0.0-20200201192244-21f9086d5235
 	golang.org/x/crypto v0.0.0-20191227163750-53104e6ec876 // indirect
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553 // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
-	golang.org/x/sys v0.0.0-20200107162124-548cf772de50 // indirect
+	golang.org/x/sys v0.0.0-20200124204421-9fbb57f87de9 // indirect
 	golang.org/x/tools v0.0.0-20191120143758-e97fc272220f // indirect
 	golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 // indirect
 	google.golang.org/genproto v0.0.0-20191230161307-f3c370f40bfb
