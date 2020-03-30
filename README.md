@@ -9,10 +9,10 @@ See how it works here -> https://pikastat.d3d.info
 1 Install postgres
 2 Create db and user
 ```sql
-CREATE USER username WITH ENCRYPTED PASSWORD 'password';
-CREATE DATABASE database_name;
-GRANT ALL ON DATABASE database_name TO username;
-CREATE EXTENSION pg_trgm;
+postgres> CREATE USER username WITH ENCRYPTED PASSWORD 'password';
+postgres> CREATE DATABASE database_name;
+postgres> GRANT ALL ON DATABASE database_name TO username;
+username> CREATE EXTENSION pg_trgm;
 ```
 
 # Mirrors
