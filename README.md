@@ -14,6 +14,7 @@ postgres> CREATE DATABASE database_name;
 postgres> GRANT ALL ON DATABASE database_name TO username;
 username> CREATE EXTENSION pg_trgm;
 ```
+3 Install redis
 
 # Mirrors
 
