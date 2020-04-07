@@ -36,8 +36,8 @@ func NewParser(parserConfig *ParserConfig) (*Parser, error) {
 	var proxyProvider pikago.ProxyProvider
 
 	if len(parserConfig.FixedProxyAddress) > 0 {
-		proxyProvider = pikago.GetFixedProxyProvider(parserConfig.FixedProxyAddress)
-	} else {
+		proxyProvider = pikago.NewFixedProxyProvider(parserConfig.FixedProxyAddress)
+	} else if len(parserConfig.ProxyProviderAPIURL) > 0 {
 		proxyGettingPolicy := pikago.ProxyGettingPoliceRandom
 		switch parserConfig.ProxyGettingPolicy {
 		case "ProxyGettingPoliceRandom":
@@ -62,6 +62,10 @@ func NewParser(parserConfig *ParserConfig) (*Parser, error) {
 	requestsSender, err := pikago.NewClientProxyRequestsSender(proxyProvider)
 	if err != nil {
 		return nil, err
+	}
+
+	if proxyProvider == nil {
+		requestsSender.DoRequestsWithoutProxy = true
 	}
 
 	requestsSender.NumberOfRequestTries = parser.Config.PikagoNumberOfRequestTries
