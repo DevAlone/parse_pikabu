@@ -14,7 +14,7 @@ import (
 
 // Run -
 func Run() error {
-	time.Sleep(10 * time.Minute)
+	// time.Sleep(10 * time.Minute)
 	var wg sync.WaitGroup
 
 	type ProcessNumberOfItemsInQueueConfig struct {
