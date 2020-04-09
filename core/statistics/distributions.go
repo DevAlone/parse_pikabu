@@ -13,6 +13,8 @@ import (
 	"github.com/jinzhu/inflection"
 )
 
+const updatingPeriodSeconds = 12 * 3600
+
 // ProcessDistributions -
 func ProcessDistributions() error {
 	for {
@@ -32,7 +34,7 @@ func ProcessDistributions() error {
 			return err
 		}
 
-		if time.Now().Unix() < lastUpdateTimestamp+2*24*3600 {
+		if time.Now().Unix() < lastUpdateTimestamp+updatingPeriodSeconds {
 			time.Sleep(1 * time.Hour)
 			continue
 		}
@@ -58,7 +60,7 @@ func ProcessDistributions() error {
 			return err
 		}
 
-		time.Sleep(2 * 24 * time.Hour)
+		time.Sleep(1 * time.Hour)
 	}
 }
 
