@@ -63,6 +63,7 @@ func init() {
 	addIndex("pikabu_comments", "parent_id", "")
 	// TODO: addIndex("pikabu_comments", "parent_id", "hash") ?
 	addIndex("pikabu_comments", "created_at_timestamp", "")
+	addIndex("pikabu_comments", "text gin_trgm_ops", "gin")
 	// TODO: Text                   ?
 	// TODO: Images                ?
 	addIndex("pikabu_comments", "rating", "")
