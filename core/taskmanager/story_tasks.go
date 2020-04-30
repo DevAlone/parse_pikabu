@@ -170,7 +170,7 @@ func updateStoriesWorker() error {
 				time.Now().Unix(),
 				time.Now().Unix()-int64(config.Settings.MaximumParseStoryTaskProcessingTime),
 			).
-			Order("next_update_timestamp").
+			Order("next_update_timestamp DESC").
 			Limit(config.Settings.GetItemsToUpdateAtTime).
 			Select()
 		if err != pg.ErrNoRows && err != nil {
